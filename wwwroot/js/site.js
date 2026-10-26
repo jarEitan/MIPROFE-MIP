@@ -983,15 +983,14 @@ function cambiarAmistad(accion) {
         body: new URLSearchParams({ idOtroUsuario: document.getElementById("perfil").dataset.idPerfil, accion: accion })
     })
         .then(resultado => {
-            pintarBotonAmistad(botonAmistad, resultado.estadoAmistad);
-            actualizarCantidadAmigos(resultado.cantidadAmigos);
-            const avisos = { enviada: "Le mandaste una solicitud de amistad.", amigos: "¡Ahora son amigos!" };
-            if (avisos[resultado.estadoAmistad]) mostrarSnackbar(avisos[resultado.estadoAmistad], "exito");
-            // Aceptar acá resuelve la notificación de la solicitud: la insignia del header se pone al día
-            if (accion === "enviar" && resultado.estadoAmistad === "amigos") {
-                pedirJson("/Notificaciones/Contar")
-                    .then(contador => actualizarInsigniaDeNotificaciones(contador.cantidad))
-                    .catch(error => console.error(error));
+            if (resultado.codigo == 0) {
+                mostrarCambioDeAmistad(botonAmistad, accion, resultado);
+            } else if (accion === "enviar" && resultado.codigo == 1) {
+                mostrarSnackbar("No podés agregarte a vos mismo.", "error");
+            } else if (accion === "enviar" && resultado.codigo == 2) {
+                mostrarSnackbar("Este perfil ya no existe.", "error");
+            } else {
+                mostrarSnackbar("Algo cambió mientras tanto. Recargá la página.", "error");
             }
         })
         .catch(error => {
@@ -999,6 +998,19 @@ function cambiarAmistad(accion) {
             mostrarSnackbar("No pudimos guardar el cambio. Probá de nuevo.", "error");
         })
         .finally(() => { botonAmistad.disabled = false; });
+}
+
+function mostrarCambioDeAmistad(botonAmistad, accion, resultado) {
+    pintarBotonAmistad(botonAmistad, resultado.estadoAmistad);
+    actualizarCantidadAmigos(resultado.cantidadAmigos);
+    const avisos = { enviada: "Le mandaste una solicitud de amistad.", amigos: "¡Ahora son amigos!" };
+    if (avisos[resultado.estadoAmistad]) mostrarSnackbar(avisos[resultado.estadoAmistad], "exito");
+    // Aceptar acá resuelve la notificación de la solicitud: la insignia del header se pone al día
+    if (accion === "enviar" && resultado.estadoAmistad === "amigos") {
+        pedirJson("/Notificaciones/Contar")
+            .then(contador => actualizarInsigniaDeNotificaciones(contador.cantidad))
+            .catch(error => console.error(error));
+    }
 }
 
 function pintarBotonAmistad(botonAmistad, estadoAmistad) {

@@ -1,0 +1,7 @@
+{
+  "enabledPlugins": {
+    "frontend-design@anthropic-plugin-directory": true,
+    "caveman@caveman": true,
+    "caveman@anthropic-plugin-directory": true
+  }
+}

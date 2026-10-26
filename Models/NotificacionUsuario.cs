@@ -1,7 +1,7 @@
 namespace MIP_MIPROFESOR.Models;
 
 // Una fila del SP obtenerNotificaciones. No hay tabla de notificaciones: se calculan con lo que está a medio
-// resolver en Amigos, Mensajes y Clases (función notificacionesDeUsuario en MIP-BD.sql), así que cada una
+// resolver en Amigos, Mensajes y Clases (función notificacionesDeUsuario), así que cada una
 // desaparece sola cuando se resuelve.
 // grupo: accion (cuenta en la insignia) | noticia (solo para enterarse, se muestra 3 días).
 // tipo (acciones): solicitudAmistad | mensajesSinLeer | pedidoPorResponder | propuestaPorResponder | horarioRechazado |

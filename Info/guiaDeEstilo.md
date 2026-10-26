@@ -88,18 +88,169 @@ Antes de crear una clase nueva: ¿se resuelve con una existente + un selector de
 - Una sección = una clase propia (`<section class="pasos">`). El orden del HTML coincide con el orden del CSS.
 - Partials para lo que se repite (`_marcaLogo`, `_tarjetaProfesor`, `_preguntasFrecuentes`, `_encabezadoInvitado/Usuario`, `_piePagina`).
 - Los datos salen de la BD (SP); lo que falta conectar lleva `TODO BD:`. La vista nunca inventa datos.
+- Los campos obligatorios se validan en JS antes de enviar (`validarRegistro`, `validarIngreso`): el controlador ya no revisa si vienen vacíos (ver sección 5).
 - Sesión: `@if (Context.Session.GetString("idUsuario") == null) { … }` (sintaxis de systemPrompt).
 - Íconos: `<i class="bi bi-nombre" aria-hidden="true"></i>` (Bootstrap Icons local).
 
 
 ## 4. JavaScript
 
-- `site.js` (común) + un archivo por función grande (`catalogo.js`, `clases.js`, `historial.js`, `chat.js`). **Una función por cosa**, cada una sale temprano si su elemento no existe; en `site.js` todas se llaman desde `inicializarSitio()`.
+- `site.js` (común) + un archivo por función grande (`catalogo.js`, `clases.js`, `historial.js`, `chat.js`, `calendario.js`, `miAgenda.js`). **Una función por cosa**, cada una sale temprano si su elemento no existe; en `site.js` todas se llaman desde `inicializarSitio()`.
 - Validación con el patrón del systemPrompt (`mensaje.innerHTML = "…"; mensaje.style.display = "block"; return false;`) mediante `mostrarMensaje` / `mostrarErrorEnCampo`.
 - Nombres de función = verbo + objeto: `validarRegistro`, `inicializarFiltrosCatalogo`, `enviarMensajeChat`.
 
 
-## 5. Bootstrap 6 (alpha): lo que hay que saber para no perder tiempo
+## 5. Backend: stored procedures, BD.cs y controladores
+
+Desde el 2026-10-26 el backend se escribe como el ejemplo de clase (`TP7 - RedSocial`): poco código, que se lea de un tirón y que no parezca generado. Ya están así **Sesión, Likes, Amigos, Chat y Notificaciones**; el resto se va pasando (ver Pendientes en el [log](log.md)).
+
+**La idea: el SP decide, C# solo lo llama y muestra el resultado.**
+
+1. El SP revisa con `IF` / `ELSE` anidados. Si está todo bien, hace el cambio y devuelve `SELECT 0 AS codigo` junto con los datos. Si no, devuelve `SELECT 1 AS codigo`, `2`, `3`… según el error.
+2. `BD.cs` hace un `EXEC` y devuelve lo que llegó.
+3. El controlador hace `if (codigo == 0) { … } else { … }` y elige el mensaje.
+4. La vista o el JS lo muestra.
+
+### Stored procedures
+
+```sql
+CREATE PROCEDURE [dbo].[iniciarSesion]
+@mail nvarchar(150),
+@contrasena nvarchar(255)
+AS
+BEGIN
+IF EXISTS (SELECT mail FROM Usuarios WHERE mail = @mail)
+	BEGIN
+	IF EXISTS (SELECT mail FROM Usuarios WHERE mail = @mail AND contrasena = @contrasena)
+		BEGIN
+		SELECT 0 AS codigo, ID, nombre, apellido, tipoUsuario, fotoPerfil, verificado FROM Usuarios WHERE mail = @mail
+		END
+	ELSE
+		BEGIN
+		SELECT 2 AS codigo
+		END
+	END
+ELSE
+	BEGIN
+	SELECT 1 AS codigo
+	END
+END
+```
+
+- Cada rama lleva su `BEGIN … END` aunque tenga una sola línea. El siguiente `IF` va **adentro** de la rama que corresponde, nunca después de un `RETURN`.
+- El resultado sale con `SELECT`, nunca con `RETURN`. En un stored procedure, `RETURN` solo acepta un número entero: `RETURN 'texto'` da error de conversión, y Dapper no lo lee como fila. (En las funciones SQL sí se usa `RETURN` con cualquier tipo.)
+- `0` = salió bien, y en esa misma fila van los datos. `1`, `2`, `3`… = cada error, en el orden en que se revisan.
+- Si hay dos acciones distintas, se hacen dos SP: `enviarAmistad` y `quitarAmistad`, no un SP `cambiarAmistad @accion`. El controlador puede seguir recibiendo `accion` y elegir cuál llamar.
+- No van: `SET NOCOUNT`, `TRY/CATCH`, transacciones, `WITH (UPDLOCK)`, funciones auxiliares para algo de una línea ni comentarios largos arriba del SP. Los códigos se explican en el modelo de C#.
+- Los textos con acentos van con `N'…'`.
+- Se usa `CREATE PROCEDURE`, porque la base se borra y se vuelve a crear con cada cambio.
+
+### BD.cs
+
+```csharp
+public ResultadoLike alternarLike(int idEmisor, int idReceptor)
+{
+    using (var connection = new SqlConnection(connectionString))
+    {
+        return connection.QueryFirst<ResultadoLike>("EXEC alternarLike @idEmisor, @idReceptor", new { idEmisor = idEmisor, idReceptor = idReceptor });
+    }
+}
+```
+
+- Hay una función por SP, con el mismo nombre que el SP. Los parámetros van en el mismo orden que en el SP.
+- Se usa `QueryFirst<T>` si el SP devuelve una fila y `Query<T>(…).ToList()` si devuelve una lista.
+- Si el modelo ya tiene las propiedades con esos nombres, se pasa el modelo entero: `registrarUsuario(registro)`.
+- No van `CommandType.StoredProcedure`, ni `?? new …` "por si acaso", ni `try/catch`.
+- Comentario de una línea solo si el nombre no alcanza. Por ejemplo, en `enviarAmistad`: "Manda la solicitud, o la acepta si el otro ya te había mandado una".
+
+### Modelos
+
+La clase que recibe la fila tiene `int codigo` más los datos. Arriba lleva un comentario con lo que significa cada código:
+
+```csharp
+// codigo: 0 = ok, 1 = sos vos, 2 = la persona no existe, 3 = mensaje vacío o de más de 1000 caracteres
+public class ResultadoMensaje
+{
+    public int codigo { get; set; }
+    public int? id { get; set; }
+    public DateTime? fechaEnvio { get; set; }
+}
+```
+
+Si no hay ningún error posible, no hay `codigo`: Likes devuelve solo `cantidadLikes` y `leGusta`.
+
+### Controladores
+
+```csharp
+[HttpPost]
+[ValidateAntiForgeryToken]
+public IActionResult IniciarSesion(string mail, string contrasena)
+{
+    ResultadoSesion cuenta = new BDsesion().iniciarSesion(mail, contrasena);
+
+    if (cuenta.codigo == 0)
+    {
+        guardarSesion(cuenta);
+        return RedirectToAction("Index", "Home");
+    }
+    else
+    {
+        if (cuenta.codigo == 1)
+        {
+            ViewBag.mensaje = "No hay ninguna cuenta con ese correo.";
+        }
+        else
+        {
+            ViewBag.mensaje = "La contraseña es incorrecta.";
+        }
+        ViewBag.mail = mail;
+        return View();
+    }
+}
+```
+
+- No llevan `try/catch` ni repiten lo que ya revisa el SP. Si falta un campo, lo frena el JS antes de mandar el formulario: `onsubmit="return validarRegistro()"`. Los formularios llevan `novalidate` para mostrar el mensaje propio, así que `required` y `minlength` solo quedan como marca.
+- El usuario siempre sale de la sesión:
+  - En un GET: `int.Parse(HttpContext.Session.GetString("idUsuario") ?? "0")` (0 = sin sesión).
+  - En un POST: `if (idUsuario == null) return Unauthorized();`.
+- Los que se llaman con fetch devuelven tal cual lo que vino de la BD: `return Json(new BD().alternarLike(…));`.
+- Se mantiene `[ValidateAntiForgeryToken]` en todos los POST. También lo que cuida los datos, como `tipoUsuario`, que desde el formulario solo puede ser `alumno` o `profesor`.
+- Sin banners `// ======` ni comentarios que repiten el nombre de la acción. En `BD.cs` los banners se van borrando a medida que se refactoriza cada sección.
+
+### JavaScript que recibe un código
+
+```js
+.then(resultado => {
+    if (resultado.codigo == 0) {
+        cargarChatAbierto(true);
+    } else if (resultado.codigo == 1) {
+        mostrarSnackbar("No podés mandarte mensajes a vos mismo.", "error");
+    } else {
+        mostrarSnackbar("Esta persona no existe.", "error");
+    }
+})
+```
+
+El `.catch` queda para todo lo que no es una respuesta normal del SP: sin conexión, sesión cerrada (401), token inválido (400) o error del servidor o de la BD (500). Como los controladores ya no tienen `try/catch`, un error de la BD llega como 500.
+
+### Contraseñas
+
+Se guardan en texto plano a propósito, porque es un TP de la escuela. `iniciarSesion` las compara en el SP. No volver a ponerles hash sin hablarlo antes con el equipo.
+
+### Scripts de la base (`MIP_Estructuras/`)
+
+| Archivo | Qué tiene |
+|---|---|
+| `MIP-BD_01_estructura.sql` | `CREATE DATABASE`, tablas, claves y restricciones |
+| `MIP-BD_02_stored_procedures.sql` | Funciones y SP |
+| `MIP-BD_03_datos_prueba.sql` | Datos de prueba (456 cuentas con contraseña `12345678`) |
+
+- Para aplicar cualquier cambio, se borra la base `MIP` y se corren los tres en orden: 01 → 02 → 03.
+- Están en **UTF-16**, como los exporta SSMS. Al editarlos hay que respetar esa codificación; si se guardan en otra, se rompen los acentos.
+- En 03, primero van las tablas a las que apuntan las demás (`Usuarios`, `Escuelas`, `Materias`, `Modalidades`, `Niveles`) y después el resto. Si se suma una tabla con clave foránea, va después de la tabla a la que apunta.
+
+
+## 6. Bootstrap 6 (alpha): lo que hay que saber para no perder tiempo
 
 `wwwroot/lib/bootstrap/dist`, **6.0.0-alpha.1** (puede cambiar).
 
@@ -112,9 +263,11 @@ Antes de crear una clase nueva: ¿se resuelve con una existente + un selector de
 7. `text-danger` ya no existe como en BS5: se usa `fg-danger`.
 
 
-## 6. Antes de dar algo por terminado
+## 7. Antes de dar algo por terminado
 
 - Revisar a **390, 768, 1024, 1280 y 1920 px**: sin scroll horizontal ni errores en consola.
 - Que toda clase usada en las vistas exista en `site.css` o en Bootstrap.
 - Que el orden de `site.css` siga Header → generales → Main (en orden de página) → Footer.
+- Si se tocó la BD: borrar `MIP` y correr los tres scripts en orden, sin errores.
+- Que cada código nuevo de un SP esté en el comentario de su modelo y en la tabla de códigos del [log](log.md).
 - Agregar una entrada nueva en el **Historial de cambios** de [log.md](log.md).

@@ -123,9 +123,9 @@ function inicializarSolicitudesDeAmistad() {
 
         enviarAccionDeClase("/Notificaciones/ResponderAmistad", { idOtroUsuario: item.dataset.idOtro, aceptar })
             .then(({ ok, cuerpo }) => {
-                if (!ok && cuerpo.resultado !== "solicitudInexistente") {
+                if (!ok) {
                     botones.forEach(b => { b.disabled = false; });
-                    mostrarSnackbar(cuerpo.mensaje || "No pudimos responder la solicitud. Probá de nuevo.", "error");
+                    mostrarSnackbar("No pudimos responder la solicitud. Probá de nuevo.", "error");
                     return;
                 }
                 // el foco pasa a la notificación de al lado (o al título) para no perderlo al borrar el botón
@@ -135,8 +135,11 @@ function inicializarSolicitudesDeAmistad() {
                 if (vecina) vecina.querySelector("a, button")?.focus();
                 else if (titulo) { titulo.tabIndex = -1; titulo.focus(); }
 
-                if (!ok) mostrarSnackbar(cuerpo.mensaje, "info");
-                else mostrarSnackbar(aceptar ? `Ahora ${nombre} y vos son amigos.` : `Rechazaste la solicitud de ${nombre}.`, "exito");
+                if (cuerpo.codigo == 0) {
+                    mostrarSnackbar(aceptar ? `Ahora ${nombre} y vos son amigos.` : `Rechazaste la solicitud de ${nombre}.`, "exito");
+                } else {
+                    mostrarSnackbar("Esa solicitud ya no está pendiente.", "info");
+                }
             })
             .catch(error => {
                 console.error(error);

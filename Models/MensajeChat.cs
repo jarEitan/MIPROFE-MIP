@@ -1,7 +1,6 @@
 namespace MIP_MIPROFESOR.Models;
 
-// Un mensaje del chat visto por el usuario de la sesión (segundo resultado del SP obtenerChat).
-// estado: No visto | Visto (si el otro ya lo leyó, en los propios).
+// estado: No visto | Visto
 public class MensajeChat
 {
     public int id { get; set; }
@@ -11,27 +10,21 @@ public class MensajeChat
     public DateTime fechaEnvio { get; set; }
 }
 
-// La otra persona del chat (primer resultado del SP obtenerChat). marcados = cuántos mensajes suyos
-// se acaban de marcar como Visto al abrir el chat.
-public class UsuarioChat
+// codigo: 0 = ok, 1 = sos vos, 2 = la persona no existe
+// Los datos son de la otra persona. marcados = cuántos mensajes suyos se acaban de marcar como Visto
+public class ResultadoChat
 {
+    public int codigo { get; set; }
     public int id { get; set; }
     public string nombre { get; set; } = "";
     public string apellido { get; set; } = "";
     public string? fotoPerfil { get; set; }
     public string tipoUsuario { get; set; } = "";
     public int marcados { get; set; }
-}
-
-// El chat completo con una persona, del mensaje más viejo al más nuevo. encontrado = false si la persona no existe.
-public class ResultadoChat
-{
-    public bool encontrado { get; set; }
-    public UsuarioChat? otroUsuario { get; set; }
     public List<MensajeChat> mensajes { get; set; } = new List<MensajeChat>();
+    public int cantidadNotificaciones { get; set; }
 }
 
-// Una fila del SP obtenerConversaciones: una persona con la que el usuario intercambió mensajes
 public class ConversacionChat
 {
     public int idOtroUsuario { get; set; }
@@ -45,10 +38,10 @@ public class ConversacionChat
     public int sinLeer { get; set; }
 }
 
-// Fila del SP enviarMensaje. resultado: ok | mismoUsuario | usuarioInexistente | mensajeInvalido
+// codigo: 0 = ok, 1 = sos vos, 2 = la persona no existe, 3 = mensaje vacío o de más de 1000 caracteres
 public class ResultadoMensaje
 {
-    public string resultado { get; set; } = "";
+    public int codigo { get; set; }
     public int? id { get; set; }
     public DateTime? fechaEnvio { get; set; }
 }

@@ -4,15 +4,7 @@ using Microsoft.Data.SqlClient;
 
 namespace MIP_MIPROFESOR.Models;
 
-// Acceso a datos del sitio con Dapper. El inicio de sesión y el registro están en BDsesion.cs.
-// Perfiles: stored procedures obtenerPerfil, obtenerOpcionesPerfil, obtenerDatosEdicion,
-// obtenerFaltantesVerificacion y guardarPerfilCompleto de la base MIP.
-// Catálogo: stored procedure obtenerCatalogo (en MIP-BD.sql).
-// Likes: stored procedures obtenerLike y alternarLike (en MIP-BD.sql).
-// Amigos: obtenerAmistad, cambiarAmistad y obtenerAmigos. Reseñas: darResena (en MIP-BD.sql).
-// Clases y notificaciones: stored procedures en MIP-BD.sql (reglas y estados en Info/log.md, entradas 2026-10-14 y 2026-10-20).
-// Agenda del profesor: tabla Disponibilidad y stored procedures obtenerDisponibilidad, guardarDisponibilidad, bloquearDia y desbloquearDia.
-// Chat: stored procedures enviarMensaje, obtenerConversaciones y obtenerChat (en MIP-BD.sql).
+// Los SP están en MIP_Estructuras/MIP-BD_02_stored_procedures.sql. Login y registro en BDsesion.cs.
 public class BD
 {
     private static string connectionString = @"Server=localhost;Database=MIP;Integrated Security=True;TrustServerCertificate=True;";
@@ -41,43 +33,45 @@ public class BD
         }
     }
 
-    // ================= LIKES =================
-
-    // Si idEmisor (null = visitante sin sesión) le dio me gusta al perfil idReceptor, y cuántos tiene
-    public ResultadoLike obtenerLike(int? idEmisor, int idReceptor)
+    public ResultadoLike obtenerLike(int idEmisor, int idReceptor)
     {
         using (var connection = new SqlConnection(connectionString))
         {
-            return connection.QuerySingle<ResultadoLike>("obtenerLike", new { idEmisor = idEmisor, idReceptor = idReceptor }, commandType: CommandType.StoredProcedure);
+            return connection.QueryFirst<ResultadoLike>("EXEC obtenerLike @idEmisor, @idReceptor", new { idEmisor = idEmisor, idReceptor = idReceptor });
         }
     }
 
-    // Da o saca el me gusta y devuelve cómo quedó. resultado: ok | mismoUsuario | usuarioInexistente
     public ResultadoLike alternarLike(int idEmisor, int idReceptor)
     {
         using (var connection = new SqlConnection(connectionString))
         {
-            return connection.QuerySingle<ResultadoLike>("alternarLike", new { idEmisor = idEmisor, idReceptor = idReceptor }, commandType: CommandType.StoredProcedure);
+            return connection.QueryFirst<ResultadoLike>("EXEC alternarLike @idEmisor, @idReceptor", new { idEmisor = idEmisor, idReceptor = idReceptor });
         }
     }
 
-    // ================= AMIGOS =================
-
-    // Cómo están idUsuario (null = sin sesión) e idOtroUsuario: ninguna | enviada | recibida | amigos
-    public ResultadoAmistad obtenerAmistad(int? idUsuario, int idOtroUsuario)
+    public ResultadoAmistad obtenerAmistad(int idUsuario, int idOtroUsuario)
     {
         using (var connection = new SqlConnection(connectionString))
         {
-            return connection.QuerySingle<ResultadoAmistad>("obtenerAmistad", new { idUsuario = idUsuario, idOtroUsuario = idOtroUsuario }, commandType: CommandType.StoredProcedure);
+            return connection.QueryFirst<ResultadoAmistad>("EXEC obtenerAmistad @idUsuario, @idOtroUsuario", new { idUsuario = idUsuario, idOtroUsuario = idOtroUsuario });
         }
     }
 
-    // accion: enviar (manda o acepta la solicitud) | quitar (la cancela o deja de ser amigo)
-    public ResultadoAmistad cambiarAmistad(int idUsuario, int idOtroUsuario, string accion)
+    // Manda la solicitud, o la acepta si el otro ya te había mandado una
+    public ResultadoAmistad enviarAmistad(int idUsuario, int idOtroUsuario)
     {
         using (var connection = new SqlConnection(connectionString))
         {
-            return connection.QuerySingle<ResultadoAmistad>("cambiarAmistad", new { idUsuario = idUsuario, idOtroUsuario = idOtroUsuario, accion = accion }, commandType: CommandType.StoredProcedure);
+            return connection.QueryFirst<ResultadoAmistad>("EXEC enviarAmistad @idUsuario, @idOtroUsuario", new { idUsuario = idUsuario, idOtroUsuario = idOtroUsuario });
+        }
+    }
+
+    // Cancela la solicitud que mandaste o deja de ser amigo
+    public ResultadoAmistad quitarAmistad(int idUsuario, int idOtroUsuario)
+    {
+        using (var connection = new SqlConnection(connectionString))
+        {
+            return connection.QueryFirst<ResultadoAmistad>("EXEC quitarAmistad @idUsuario, @idOtroUsuario", new { idUsuario = idUsuario, idOtroUsuario = idOtroUsuario });
         }
     }
 
@@ -85,7 +79,7 @@ public class BD
     {
         using (var connection = new SqlConnection(connectionString))
         {
-            return connection.Query<AmigoPerfil>("obtenerAmigos", new { idUsuario = idUsuario }, commandType: CommandType.StoredProcedure).ToList();
+            return connection.Query<AmigoPerfil>("EXEC obtenerAmigos @idUsuario", new { idUsuario = idUsuario }).ToList();
         }
     }
 
@@ -374,72 +368,71 @@ public class BD
         }
     }
 
-    // ================= CHAT =================
-    // Tabla Mensajes: cada mensaje tiene emisor, receptor y estado (No visto | Visto).
-
-    // Guarda un mensaje (queda No visto hasta que el receptor abre el chat)
-    public ResultadoMensaje enviarMensaje(int idEmisor, int idReceptor, string contenido)
+    public ResultadoMensaje enviarMensaje(int idEmisor, int idReceptor, string? contenido)
     {
         using (var connection = new SqlConnection(connectionString))
         {
-            return connection.QuerySingle<ResultadoMensaje>("enviarMensaje", new { idEmisor = idEmisor, idReceptor = idReceptor, contenido = contenido }, commandType: CommandType.StoredProcedure);
+            return connection.QueryFirst<ResultadoMensaje>("EXEC enviarMensaje @idEmisor, @idReceptor, @contenido", new { idEmisor = idEmisor, idReceptor = idReceptor, contenido = contenido });
         }
     }
 
-    // Las personas con las que el usuario habló, la del último mensaje primero
     public List<ConversacionChat> obtenerConversaciones(int idUsuario)
     {
         using (var connection = new SqlConnection(connectionString))
         {
-            return connection.Query<ConversacionChat>("obtenerConversaciones", new { idUsuario = idUsuario }, commandType: CommandType.StoredProcedure).ToList();
+            return connection.Query<ConversacionChat>("EXEC obtenerConversaciones @idUsuario", new { idUsuario = idUsuario }).ToList();
         }
     }
 
-    // Todos los mensajes entre los dos, del más viejo al más nuevo. Los que idOtroUsuario le mandó
-    // a idUsuario y estaban No visto pasan a Visto (se llama cuando el usuario abre el chat).
+    // Los mensajes que el otro te mandó pasan a Visto
     public ResultadoChat obtenerChat(int idUsuario, int idOtroUsuario)
     {
         using (var connection = new SqlConnection(connectionString))
         {
-            using (var tablas = connection.QueryMultiple("obtenerChat", new { idUsuario = idUsuario, idOtroUsuario = idOtroUsuario }, commandType: CommandType.StoredProcedure))
+            using (var tablas = connection.QueryMultiple("EXEC obtenerChat @idUsuario, @idOtroUsuario", new { idUsuario = idUsuario, idOtroUsuario = idOtroUsuario }))
             {
-                UsuarioChat? otroUsuario = tablas.ReadFirstOrDefault<UsuarioChat>();
-                List<MensajeChat> mensajes = tablas.Read<MensajeChat>().ToList();
-                if (otroUsuario == null) return new ResultadoChat { encontrado = false };
-                return new ResultadoChat { encontrado = true, otroUsuario = otroUsuario, mensajes = mensajes };
+                ResultadoChat chat = tablas.ReadFirst<ResultadoChat>();
+                if (chat.codigo == 0)
+                {
+                    chat.mensajes = tablas.Read<MensajeChat>().ToList();
+                }
+                return chat;
             }
         }
     }
 
-    // ================= NOTIFICACIONES =================
-    // Se calculan con lo que está a medio resolver (acciones: amistades, mensajes sin leer y clases que esperan una
-    // respuesta) y con las novedades de los últimos 3 días (noticias), función notificacionesDeUsuario.
-    // Las acciones desaparecen solas cuando se resuelven.
-
-    // Las notificaciones del usuario, la más reciente primero
     public List<NotificacionUsuario> obtenerNotificaciones(int idUsuario)
     {
         using (var connection = new SqlConnection(connectionString))
         {
-            return connection.Query<NotificacionUsuario>("obtenerNotificaciones", new { idUsuario = idUsuario }, commandType: CommandType.StoredProcedure).ToList();
+            return connection.Query<NotificacionUsuario>("EXEC obtenerNotificaciones @idUsuario", new { idUsuario = idUsuario }).ToList();
         }
     }
 
-    // El número de la insignia del botón Panel de Control (cuántas notificaciones de acción hay; las noticias no cuentan)
+    // El número de la insignia: solo cuentan las notificaciones de acción
     public int contarNotificaciones(int idUsuario)
     {
         using (var connection = new SqlConnection(connectionString))
         {
-            return connection.QuerySingle<int>("contarNotificaciones", new { idUsuario = idUsuario }, commandType: CommandType.StoredProcedure);
+            return connection.QueryFirst<int>("EXEC contarNotificaciones @idUsuario", new { idUsuario = idUsuario });
         }
     }
 
-    // Acepta o rechaza una solicitud de amistad recibida. resultado: ok | solicitudInexistente
-    public string responderSolicitudAmistad(int idUsuario, int idOtroUsuario, bool aceptar)
+    // codigo: 0 = ok, 1 = la solicitud ya no está pendiente
+    public int aceptarAmistad(int idUsuario, int idOtroUsuario)
     {
         using (var connection = new SqlConnection(connectionString))
         {
-            return connection.QuerySingle<string>("responderSolicitudAmistad", new { idUsuario = idUsuario, idOtroUsuario = idOtroUsuario, aceptar = aceptar }, commandType: CommandType.StoredProcedure);
+            return connection.QueryFirst<int>("EXEC aceptarAmistad @idUsuario, @idOtroUsuario", new { idUsuario = idUsuario, idOtroUsuario = idOtroUsuario });
+        }
+    }
+
+    // codigo: 0 = ok, 1 = la solicitud ya no está pendiente
+    public int rechazarAmistad(int idUsuario, int idOtroUsuario)
+    {
+        using (var connection = new SqlConnection(connectionString))
+        {
+            return connection.QueryFirst<int>("EXEC rechazarAmistad @idUsuario, @idOtroUsuario", new { idUsuario = idUsuario, idOtroUsuario = idOtroUsuario });
         }
     }
 }

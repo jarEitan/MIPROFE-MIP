@@ -1,11 +1,11 @@
 namespace MIP_MIPROFESOR.Models;
 
-// Fila que devuelven los stored procedures obtenerAmistad y cambiarAmistad.
-// estadoAmistad: ninguna | enviada | recibida | amigos (visto desde el usuario de la sesión).
-// resultado y cantidadAmigos (del otro) solo en cambiarAmistad. resultado: ok | mismoUsuario | usuarioInexistente | accionInvalida
+// estadoAmistad: ninguna | enviada | recibida | amigos
+// codigo en enviarAmistad: 0 = ok, 1 = sos vos, 2 = el perfil no existe, 3 = ya hay solicitud o ya son amigos
+// codigo en quitarAmistad: 0 = ok, 1 = no había nada para quitar
 public class ResultadoAmistad
 {
-    public string resultado { get; set; } = "ok";
+    public int codigo { get; set; }
     public string estadoAmistad { get; set; } = "ninguna";
     public int cantidadAmigos { get; set; }
 }

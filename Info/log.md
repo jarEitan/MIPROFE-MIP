@@ -1,6 +1,6 @@
 # LOG — MiProfesor (MIP)
 
-Contexto para seguir programando. Reglas: [systemPrompt.md](systemPrompt.md); estilo: [guiaDeEstilo.md](guiaDeEstilo.md). Sumar una entrada al **Historial** cada vez que se trabaje.
+Contexto para seguir programando. Reglas: [systemPrompt.md](systemPrompt.md); estilo: [guiaDeEstilo.md](guiaDeEstilo.md); qué falta refactorizar: [progreso.md](progreso.md). Sumar una entrada al **Historial** cada vez que se trabaje.
 
 ## 1. Proyecto
 
@@ -18,14 +18,21 @@ Diseño: [Figma](https://www.figma.com/design/HDhfuOx62CKtV0MSiQWDl4/MIP), [Miro
 |---|---|
 | Framework | ASP.NET Core MVC **.NET 9** (namespace `MIP_MIPROFESOR`), Razor |
 | CSS | **Bootstrap 6.0.0-alpha.1** local + un solo `wwwroot/css/site.css` |
-| JS | Vanilla: `site.js` (todas las páginas), `clases.js` (todas), `catalogo.js`, `historial.js`, `chat.js` (solo donde se usan). Bootstrap como **módulo ES**; sin jQuery (si una vista usa `_ValidationScriptsPartial`, cargarlo en su `@section Scripts`) |
+| JS | Vanilla: `site.js` (todas las páginas), `clases.js` (todas), `catalogo.js`, `historial.js`, `chat.js`, `calendario.js` y `miAgenda.js` (solo donde se usan). Bootstrap como **módulo ES**; sin jQuery (si una vista usa `_ValidationScriptsPartial`, cargarlo en su `@section Scripts`) |
 | Libs locales (`wwwroot/lib`) | Bootstrap Icons 1.11.3 (`<i class="bi bi-x" aria-hidden="true">`), Quill 2 (Sobre mí), Cropper.js 1.6.2 (foto) |
 | Fuentes (`wwwroot/fonts`) | Eras Bold ITC (`--fuenteTitulos`), Fredoka (`--fuenteMarca`), Plus Jakarta Sans (`--fuenteTexto`) |
-| BD | SQL Server 2022 + Dapper + Microsoft.Data.SqlClient. **Todo por stored procedures**; consultas en `Models/BD.cs` (login/registro en `BDsesion.cs`). Script único: `MIP-BD.sql` (tablas, SP, funciones y datos de prueba) |
+| BD | SQL Server 2017 + Dapper + Microsoft.Data.SqlClient. `01_estructura` tiene escrita fija la ruta del `.mdf` de `MSSQL14`: con otra versión hay que cambiarla. **Todo por stored procedures**, desde `Models/BD.cs` (login y registro en `BDsesion.cs`). Lo ya refactorizado los llama con `EXEC`; el resto todavía usa `CommandType.StoredProcedure` (ver [progreso.md](progreso.md)). Tres scripts en `MIP_Estructuras/`, en UTF-16: `01_estructura`, `02_stored_procedures` y `03_datos_prueba` |
 | Otros NuGet | HtmlSanitizer (limpia el HTML de Sobre mí), SkiaSharp (re-encode de fotos) |
 | Sesión | Claves `idUsuario`, `nombre`, `apellido`, `tipoUsuario`, `fotoPerfil`, `verificado`, `datosFaltantes`, `cantidadNotificaciones`. Cultura `es-AR` |
 
-**Arquitectura**: navegación en `HomeController` (y `SesionController`); cada función con fetch + BD en su propio controlador (`Perfiles`, `Catalogo`, `Likes`, `Clases`, `Notificaciones`, `Historial`, `Mensajes`, `Amigos`, `Resenas`). El usuario siempre sale **de la sesión**, nunca del pedido; todos los POST llevan `[ValidateAntiForgeryToken]`. Lo que viene de la BD se pinta con `textContent`.
+**Arquitectura**: la navegación está en `HomeController` (y `SesionController`). Cada función que usa fetch y BD tiene su propio controlador: `Perfiles`, `Catalogo`, `Likes`, `Clases`, `Notificaciones`, `Historial`, `Mensajes`, `Amigos` y `Resenas`. El usuario siempre sale **de la sesión**, nunca del pedido, y todos los POST llevan `[ValidateAntiForgeryToken]`. Lo que viene de la BD se pinta con `textContent`.
+
+**Cómo se escribe el backend** (detalle en la [guía](guiaDeEstilo.md), sección 5):
+- El SP revisa con `IF` / `ELSE` anidados y devuelve `codigo`: 0 = ok, junto con los datos; 1, 2… = cada error.
+- `BD.cs` hace un `EXEC` y devuelve lo que llegó.
+- El controlador no tiene `try/catch` y elige el mensaje con `if (codigo == 0) … else …`.
+
+Las contraseñas se guardan en texto plano a propósito, porque es un TP de la escuela.
 
 ## 3. Sistema de diseño
 
@@ -63,22 +70,52 @@ Landing (`Index`): `.portada`, `.cinta`, `.pasos` (`#seccionComoFunciona`), `.pe
 - **Notificaciones calculadas** (`notificacionesDeUsuario`, sin tabla): solicitudes de amistad pendientes, mensajes `No visto` (una por persona) y clases por responder. Desaparecen solas al resolverse. `clases.js` actualiza la insignia cada minuto.
 - **Historial** (`obtenerHistorialClases`, tope fijo 20): propio = Completada, Cancelada y Rechazada vencida; de otro = solo Completadas. Solo el día, sin hora.
 - **Reseñas** (`darResena`): solo con una clase Completada, una por persona, 1–5 estrellas + hasta 500 caracteres. Quedan `Aprobada` hasta que haya moderación (entonces cambiar a `Pendiente` en el SP).
-- **Amigos**: `idUsuario1` = quien envía. `estadoAmistad`: `ninguna | enviada | recibida | amigos`. Rechazar es desde la notificación (`responderSolicitudAmistad` borra la fila). El catálogo con sesión ordena primero por amigos que completaron clase (`amigosRecomiendan`). No hay seguidores: los Me gusta cumplen ese papel.
+- **Amigos**: `idUsuario1` = quien envía.
+  - `obtenerAmistad` devuelve `estadoAmistad`: `ninguna | enviada | recibida | amigos`.
+  - `enviarAmistad` manda la solicitud, o la acepta si el otro ya había mandado una.
+  - `quitarAmistad` cancela la solicitud propia o deja de ser amigo.
+  - Desde la notificación se acepta (`aceptarAmistad`) o se rechaza (`rechazarAmistad`, borra la fila). El catálogo con sesión ordena primero por amigos que completaron clase (`amigosRecomiendan`). No hay seguidores: los Me gusta cumplen ese papel.
 - **Verificación**: `faltantesVerificacion` recalcula `Usuarios.verificado` al guardar el perfil; aviso `_avisoVerificacion` en todas las páginas.
 - **Fotos**: el navegador recorta (Cropper) y sube WEBP 256×256; el servidor valida (≤5 MB, imagen), recorta al centro, re-encoda WEBP y borra la anterior. El DNI nunca es accesible por URL.
 - **Chat**: se actualiza cada 10 s solo con la pestaña visible (leer marca `Visto`). Entrada directa: `/Home/PanelControl?tab=chat&chat=ID`.
 
-## 6. Pendientes
+## 6. Códigos de los stored procedures
 
+Solo los SP que ya están en el estilo nuevo. En todos, `0` = salió bien y en esa misma fila vienen los datos.
+
+| SP | 1 | 2 | 3 |
+|---|---|---|---|
+| `registrarUsuario` | El mail ya está registrado | Fecha de nacimiento inválida | — |
+| `iniciarSesion` | No hay cuenta con ese mail | Contraseña incorrecta | — |
+| `enviarAmistad` | Sos vos | El perfil no existe | Ya hay una solicitud o ya son amigos |
+| `quitarAmistad` | No había nada para quitar | — | — |
+| `aceptarAmistad` | La solicitud ya no está pendiente | — | — |
+| `rechazarAmistad` | La solicitud ya no está pendiente | — | — |
+| `enviarMensaje` | Sos vos | La persona no existe | Mensaje vacío o de más de 1000 caracteres |
+| `obtenerChat` | Sos vos | La persona no existe | — |
+
+`obtenerLike`, `alternarLike` (los dos devuelven `cantidadLikes` y `leGusta`), `obtenerAmistad`, `obtenerAmigos`, `obtenerConversaciones`, `obtenerNotificaciones` y `contarNotificaciones` no devuelven código: solo leen datos.
+
+## 7. Pendientes
+
+- **Pasar al estilo nuevo** (guía, sección 5) lo que todavía usa `resultado` en texto, `try/catch` y `CommandType.StoredProcedure`:
+  - Perfiles y edición
+  - Catálogo
+  - Clases y agenda
+  - Historial
+  - Reseñas
+  - `HomeController` (`try/catch` en `Index` y `PanelControl`)
+
+  El estado de cada módulo y el orden en que conviene seguir están en [progreso.md](progreso.md).
 - Moderación de reseñas (admin), filtros avanzados, pedido de alumno por un profesor (V2).
 - Reemplazar los `TODO BD` restantes: consulta de Soporte, sugerencias del buscador (`site.js`). `ViewBag.materiasDestacadas` (`HomeController`) ya no lo lee ninguna vista (la cinta muestra las palabras del moodboard): se puede borrar con su `TODO BD`.
 - Confirmar la licencia web de Eras Bold ITC (se sirve pública) y pedir imágenes de marca de más de 512px.
 - Bootstrap 6 es alpha: revisar cambios antes de actualizar.
-- Mejoras posibles: hash de contraseñas, filtro reutilizable de sesión para vistas privadas, ViewModels en vez de ViewBag, imagen OG 1200×630, modo oscuro (ya todo es variable).
+- Mejoras posibles: filtro reutilizable de sesión para vistas privadas, ViewModels en vez de ViewBag, imagen OG 1200×630, modo oscuro (ya todo es variable).
 
-## 7. Historial de cambios
+## 8. Historial de cambios
 
-Para aplicar cambios de BD: borrar la base `MIP` y correr `MIP-BD.sql`.
+Para aplicar cambios de BD: borrar la base `MIP` y correr, en orden, `MIP-BD_01_estructura.sql`, `MIP-BD_02_stored_procedures.sql` y `MIP-BD_03_datos_prueba.sql` (en `MIP_Estructuras/`).
 
 - **2026-10-07** — Landing sin sesión con el estilo de los prototipos Netlify; layout, partials de header/footer, `site.css` y `site.js` modulares. Bootstrap Icons y fuentes locales, Open Graph, `aria-current`, sin jQuery.
 - **2026-10-08** — Migración a Bootstrap 6 y CSS reorganizado (base + modificador, ver guía). Vistas Catálogo, Soporte, Quiénes somos, Registro, Ingreso, Panel. Cultura `es-AR`.
@@ -93,3 +130,16 @@ Para aplicar cambios de BD: borrar la base `MIP` y correr `MIP-BD.sql`.
 - **2026-10-20** — Agenda del Panel estilo consultorio: calendario mensual con líneas azul/roja/gris (punteada = esperando a la otra persona), agenda del día por hora y lista "Requiere tu acción" (`ClaseCalendario`, `calendario.js`, SP `obtenerCalendarioClases`/`obtenerContadoresClases`; `obtenerMisClases` y `ClasePanel` borrados). Estados nuevos `Pide cambio`, `Pide cancelar`, `No concretada` (`responderSolicitudClase`, `retirarSolicitudClase`, `marcarClaseNoConcretada`). Profesor: pestaña "Mi agenda" (tabla nueva `Disponibilidad`, `miAgenda.js`, SP `obtenerDisponibilidad`/`guardarDisponibilidad`/`bloquearDia`/`desbloquearDia`) y los pedidos fuera de su agenda se rechazan. Selector de horario en tira de días. Notificaciones separadas en "Requiere tu acción" (cuentan en el badge) y "Novedades". Historial paginado con "Ver más" y "No se dio". Tabla `Clases` suma `fechaPropuesta`.
 - **2026-10-22** — Rediseño visual "Plancha de pegatinas" en todas las páginas (PR #12): tokens y componentes nuevos (`--troquel`, `--fondoLavado`, `--colorFoco`, `.pegatina`, `.plancha`; reglas en la [guía](guiaDeEstilo.md)), header y cabeceras claras, Quiénes somos de cero, Panel con saludo y notificaciones en dos columnas, sin bordes negros, foco en tinta y controles de 44 px. Se borró: Opiniones de Inicio (testimonios inventados) con su carrusel, los accesos rápidos del Panel, el fade-up (`.revelar`, `jsActivo`), las 8 `.webp` de Quiénes somos y los alias `--bordeMarcado`, `--sombraMarcada*`, `--colorCoralOscuro` y `--colorPapel`. Revisión final: campos, selects y nombres que llevan a un perfil de 44 px; el texto de las cabeceras con lavado pasa a tinta (el gris no llegaba a 4,5:1 en el celular). Bugs: el chip "Nacional Buenos Aires" de Inicio devolvía 0 profesores (apuntaba a "Colegio Nacional de Buenos Aires") y la insignia del header del admin no tenía `id`, así que `#insigniaNotificaciones` nunca se actualizaba. Sin cambios en controladores, modelos ni BD.
 - **2026-10-23** — Segunda pasada de diseño (T1–T6): sin animaciones de entrada, hover solo con mouse y en lo clickeable, camino de 3 pasos y plancha de frases en Inicio, portada compacta en el celular, modalidad en la línea de datos del Catálogo y cabecera más baja, limpieza de tokens y selectores. `site.css` pasa de 5.474 a 5.538 líneas mientras se suman el camino, la plancha de frases y la portada compacta.
+- **2026-10-26** — Backend en el estilo del ejemplo de clase (guía, sección 5), empezando por Sesión, Likes y Amigos:
+  - Los SP usan `IF` / `ELSE` anidados y devuelven `codigo` en vez de `resultado` en texto.
+  - `BD.cs` y `BDsesion.cs` llaman con `EXEC`.
+  - Los controladores no tienen `try/catch` ni validaciones repetidas. En ingreso y registro, los campos vacíos los frenan `validarIngreso` y `validarRegistro` (`site.js`).
+  - Contraseñas en texto plano: se sacó el hash PBKDF2 y los datos de prueba quedan en `12345678`.
+  - El SP `cambiarAmistad` se separa en `enviarAmistad` y `quitarAmistad`, y se borra la función SQL `estadoAmistad`. El botón sigue llamando a `/Amigos/Cambiar` con `accion` = `enviar` o `quitar`, y el controlador elige el SP.
+  - La BD pasa de `MIP-BD.sql` a tres scripts en `MIP_Estructuras/`. Los datos de prueba se reordenaron para que `Usuarios` y las demás tablas a las que apuntan otras se carguen primero (antes fallaba `FK_Amigos_Usuarios_1`).
+- **2026-10-26** — Chat y Notificaciones al estilo nuevo:
+  - `enviarMensaje` y `obtenerChat` devuelven `codigo`. `obtenerChat` cuenta los mensajes sin leer antes de marcarlos como vistos (`marcados`), así el controlador sabe si tiene que bajar la insignia.
+  - `ResultadoChat` trae los datos de la otra persona en la misma fila del código (antes venían en `otroUsuario`); `chat.js` cambió en consecuencia.
+  - `obtenerConversaciones` sin `WITH` ni `ROW_NUMBER`: el último mensaje de cada conversación es el de `ID` más alto.
+  - El SP `responderSolicitudAmistad @aceptar` se separa en `aceptarAmistad` y `rechazarAmistad`. La acción `Notificaciones/ResponderAmistad` sigue recibiendo `aceptar` y elige el SP.
+  - Probado con una copia de la base (`MIP_prueba`) armada con los tres scripts: corren sin errores y cada SP devuelve los códigos de la tabla de la sección 6.

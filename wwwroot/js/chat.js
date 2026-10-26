@@ -180,23 +180,33 @@ function cargarChatAbierto(bajarAlFinal) {
     return pedirDatosDelChat(`/Mensajes/Chat/${encodeURIComponent(idPedido)}`)
         .then(chat => {
             if (idPedido !== idChatAbierto) return;
-            const eraNuevo = otroUsuarioDelChat === null;
-            otroUsuarioDelChat = chat.otroUsuario;
-            if (eraNuevo) {
-                mostrarCabeceraDelChat(chat.otroUsuario.id, chat.otroUsuario.nombre, chat.otroUsuario.apellido, chat.otroUsuario.fotoPerfil, chat.otroUsuario.tipoUsuario);
-                document.getElementById("formularioChat").hidden = false;
+            if (chat.codigo == 0) {
+                const eraNuevo = otroUsuarioDelChat === null;
+                otroUsuarioDelChat = chat;
+                if (eraNuevo) {
+                    mostrarCabeceraDelChat(chat.id, chat.nombre, chat.apellido, chat.fotoPerfil, chat.tipoUsuario);
+                    document.getElementById("formularioChat").hidden = false;
+                }
+                dibujarMensajes(chat.mensajes, bajarAlFinal);
+                if (chat.marcados > 0) quitarNotificacionDelChat(chat.id, chat.cantidadNotificaciones);
+            } else if (chat.codigo == 1) {
+                mostrarErrorDelChat("No podés chatear con vos mismo.");
+            } else {
+                mostrarErrorDelChat("Esta persona no existe o no se le pueden mandar mensajes.");
             }
-            dibujarMensajes(chat.mensajes, bajarAlFinal);
-            if (chat.otroUsuario.marcados > 0) quitarNotificacionDelChat(chat.otroUsuario.id, chat.cantidadNotificaciones);
         })
         .catch(error => {
             if (idPedido !== idChatAbierto) return;
             console.error(error);
             // Si ya se ve el chat, una actualización que falla no borra nada
             if (otroUsuarioDelChat !== null) return;
-            document.getElementById("formularioChat").hidden = true;
-            document.getElementById("mensajesChat").replaceChildren(crearAvisoDelChat("bi-exclamation-circle", error.message.startsWith("Error") ? "No pudimos cargar el chat. Probá de nuevo en unos minutos." : error.message));
+            mostrarErrorDelChat("No pudimos cargar el chat. Probá de nuevo en unos minutos.");
         });
+}
+
+function mostrarErrorDelChat(texto) {
+    document.getElementById("formularioChat").hidden = true;
+    document.getElementById("mensajesChat").replaceChildren(crearAvisoDelChat("bi-exclamation-circle", texto));
 }
 
 function mostrarCabeceraDelChat(id, nombre, apellido, fotoPerfil, tipoUsuario) {
@@ -296,11 +306,17 @@ function enviarMensajeDelChat() {
     enviarAccionDeClase("/Mensajes/Enviar", { idReceptor: idChatAbierto, contenido })
         .then(({ ok, cuerpo }) => {
             if (!ok) {
-                mostrarSnackbar(cuerpo.mensaje, "error");
-                return;
+                mostrarSnackbar("No pudimos enviar el mensaje. Probá de nuevo.", "error");
+            } else if (cuerpo.codigo == 0) {
+                campoMensaje.value = "";
+                return cargarChatAbierto(true).then(cargarConversaciones);
+            } else if (cuerpo.codigo == 1) {
+                mostrarSnackbar("No podés mandarte mensajes a vos mismo.", "error");
+            } else if (cuerpo.codigo == 2) {
+                mostrarSnackbar("Esta persona no existe o no se le pueden mandar mensajes.", "error");
+            } else {
+                mostrarSnackbar("El mensaje no puede estar vacío ni pasar los 1000 caracteres.", "error");
             }
-            campoMensaje.value = "";
-            return cargarChatAbierto(true).then(cargarConversaciones);
         })
         .catch(error => {
             console.error(error);
