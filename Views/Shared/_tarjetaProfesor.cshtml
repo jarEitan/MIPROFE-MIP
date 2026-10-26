@@ -1,6 +1,10 @@
-@* Tarjeta de profesor reutilizable (Inicio y Catálogo). Recibe un Profesor.
+@* Tarjeta de profesor reutilizable (Inicio y Catálogo). Recibe un Usuario.
    El filtrado lo hace el SP obtenerCatalogo. *@
-@model Profesor
+@model Usuario
+@{
+    string[] colegios = Model.colegios?.Split(" · ") ?? new string[0];
+    string[] materias = Model.materias?.Split(", ") ?? new string[0];
+}
 
 <article class="card profesor">
     <header>
@@ -14,7 +18,7 @@
         }
         <div>
             <h3><a asp-controller="Home" asp-action="Perfil" asp-route-id="@Model.id">@Model.nombreCompleto</a></h3>
-            <p><i class="bi bi-building" aria-hidden="true"></i> @(Model.colegios.Count == 0 ? "Sin colegio cargado" : string.Join(" · ", Model.colegios.Take(2)) + (Model.colegios.Count > 2 ? " +" + (Model.colegios.Count - 2) : ""))</p>
+            <p><i class="bi bi-building" aria-hidden="true"></i> @(colegios.Length == 0 ? "Sin colegio cargado" : string.Join(" · ", colegios.Take(2)) + (colegios.Length > 2 ? " +" + (colegios.Length - 2) : ""))</p>
         </div>
         @if (Model.verificado)
         {
@@ -23,13 +27,13 @@
     </header>
 
     <div class="etiquetas">
-        @for (int posicion = 0; posicion < Model.materias.Count && posicion < 3; posicion++)
+        @for (int posicion = 0; posicion < materias.Length && posicion < 3; posicion++)
         {
-            <span class="badge @(posicion == 0 ? "theme-accent" : "badge-subtle theme-inverse")">@Model.materias[posicion]</span>
+            <span class="badge @(posicion == 0 ? "theme-accent" : "badge-subtle theme-inverse")">@materias[posicion]</span>
         }
-        @if (Model.materias.Count > 3)
+        @if (materias.Length > 3)
         {
-            <span class="badge badge-subtle theme-inverse">+@(Model.materias.Count - 3)</span>
+            <span class="badge badge-subtle theme-inverse">+@(materias.Length - 3)</span>
         }
     </div>
 
@@ -39,13 +43,13 @@
     }
 
     <ul class="datos">
-        <li><i class="bi bi-star-fill" aria-hidden="true"></i> @(Model.cantidadResenas == 0 ? "Sin reseñas" : Model.calificacion.ToString("0.0")) @if (Model.cantidadResenas > 0) { <text>(@Model.cantidadResenas)</text> }</li>
-        <li><i class="bi bi-laptop" aria-hidden="true"></i> @string.Join(" y ", Model.modalidades)</li>
-        <li><i class="bi bi-mortarboard" aria-hidden="true"></i> @string.Join(", ", Model.niveles)</li>
+        <li><i class="bi bi-star-fill" aria-hidden="true"></i> @(Model.cantidadResenas == 0 ? "Sin reseñas" : (Model.calificacion ?? 0).ToString("0.0")) @if (Model.cantidadResenas > 0) { <text>(@Model.cantidadResenas)</text> }</li>
+        <li><i class="bi bi-laptop" aria-hidden="true"></i> @Model.modalidades</li>
+        <li><i class="bi bi-mortarboard" aria-hidden="true"></i> @Model.niveles</li>
     </ul>
 
     <footer>
-        <p><strong>$ @Model.precioHora.ToString("N0")</strong> <span>/ hora</span></p>
+        <p><strong>$ @(Model.precioHora ?? 0).ToString("N0")</strong> <span>/ hora</span></p>
         <a class="boton principal chico" asp-controller="Home" asp-action="Perfil" asp-route-id="@Model.id">Ver perfil</a>
     </footer>
 </article>

@@ -6,7 +6,6 @@
     ViewData["Title"] = "Panel de Control";
     ContadoresClases contadores = ViewBag.contadores ?? new ContadoresClases();
     List<NotificacionUsuario> notificaciones = ViewBag.notificaciones ?? new List<NotificacionUsuario>();
-    bool errorBD = ViewBag.errorBD ?? false;
     bool sinAgenda = ViewBag.sinAgenda ?? false;
     // Acciones: cuentan en la insignia. Noticias: solo para enterarse (3 días)
     List<NotificacionUsuario> acciones = notificaciones.Where(notificacion => notificacion.grupo == "accion").ToList();
@@ -101,11 +100,7 @@
                     <span class="badge" id="cantidadNotificacionesPanel" hidden="@(acciones.Count == 0)">@acciones.Count</span>
                 </h2>
 
-                @if (errorBD)
-                {
-                    <p class="sinNotificaciones">No pudimos cargar tus notificaciones. Probá de nuevo en unos minutos.</p>
-                }
-                else if (acciones.Count == 0)
+                @if (acciones.Count == 0)
                 {
                     <p class="sinNotificaciones">No tenés nada pendiente. Acá vas a ver las solicitudes de amistad, los mensajes sin leer y las clases que esperan tu respuesta.</p>
                 }
@@ -163,7 +158,7 @@
             </div>
 
             @* Novedades: noticias de los últimos 3 días. No cuentan en la insignia ni esperan respuesta. Sin noticias no se muestra la columna *@
-            @if (!errorBD && noticias.Count > 0)
+            @if (noticias.Count > 0)
             {
                 <div class="card novedades">
                     <h2 id="tituloNovedades"><i class="bi bi-megaphone" aria-hidden="true"></i> Novedades</h2>
@@ -220,45 +215,38 @@
             <!-- Mis clases: calendario del mes + agenda del día (calendario.js, con fetch a /Clases/Calendario) -->
             <div class="tab-pane tab-pane-instant show active" id="tabClases" role="tabpanel" aria-labelledby="botonTabClases" tabindex="0">
                 <h2 class="visually-hidden">Mis clases</h2>
-                @if (errorBD)
-                {
-                    <div class="card estadoVacio"><p>No pudimos cargar tus clases. Probá de nuevo en unos minutos.</p></div>
-                }
-                else
-                {
-                    <div class="misClases" id="misClases" data-rol="@rolUsuario">
-                        @* Las clases a las que les toca responder a esta persona, de todo el calendario *@
-                        <section class="requiereAccion" id="clasesRequierenAccion" aria-labelledby="tituloRequiereAccion" hidden>
-                            <h3 id="tituloRequiereAccion"><i class="bi bi-exclamation-circle" aria-hidden="true"></i> Clases que requieren tu acción <span class="badge theme-danger" id="cantidadRequiereAccion"></span></h3>
-                            <ul id="listaRequiereAccion"></ul>
-                        </section>
+                <div class="misClases" id="misClases" data-rol="@rolUsuario">
+                    @* Las clases a las que les toca responder a esta persona, de todo el calendario *@
+                    <section class="requiereAccion" id="clasesRequierenAccion" aria-labelledby="tituloRequiereAccion" hidden>
+                        <h3 id="tituloRequiereAccion"><i class="bi bi-exclamation-circle" aria-hidden="true"></i> Clases que requieren tu acción <span class="badge theme-danger" id="cantidadRequiereAccion"></span></h3>
+                        <ul id="listaRequiereAccion"></ul>
+                    </section>
 
-                        <div class="card calendarioMes">
-                            <header>
-                                <h3 id="tituloMes" aria-live="polite"></h3>
-                                <div class="controlesMes">
-                                    <button class="boton contorno chico" type="button" id="botonMesAnterior" aria-label="Mes anterior"><i class="bi bi-chevron-left" aria-hidden="true"></i></button>
-                                    <button class="boton contorno chico" type="button" id="botonHoy">Hoy</button>
-                                    <button class="boton contorno chico" type="button" id="botonMesSiguiente" aria-label="Mes siguiente"><i class="bi bi-chevron-right" aria-hidden="true"></i></button>
-                                </div>
-                            </header>
-                            <div class="diasSemana" aria-hidden="true">
-                                <span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span><span>Dom</span>
+                    <div class="card calendarioMes">
+                        <header>
+                            <h3 id="tituloMes" aria-live="polite"></h3>
+                            <div class="controlesMes">
+                                <button class="boton contorno chico" type="button" id="botonMesAnterior" aria-label="Mes anterior"><i class="bi bi-chevron-left" aria-hidden="true"></i></button>
+                                <button class="boton contorno chico" type="button" id="botonHoy">Hoy</button>
+                                <button class="boton contorno chico" type="button" id="botonMesSiguiente" aria-label="Mes siguiente"><i class="bi bi-chevron-right" aria-hidden="true"></i></button>
                             </div>
-                            <div class="diasMes" id="diasMes" role="group" aria-labelledby="tituloMes">
-                                <p class="cargandoHistorial"><i class="bi bi-arrow-repeat" aria-hidden="true"></i> Cargando tus clases…</p>
-                            </div>
-                            <ul class="leyenda" aria-label="Referencias del calendario">
-                                <li><i class="linea azul" aria-hidden="true"></i> Está bien</li>
-                                <li><i class="linea azul punteada" aria-hidden="true"></i> Esperando al otro</li>
-                                <li><i class="linea rojo" aria-hidden="true"></i> Necesita tu acción</li>
-                                <li><i class="linea gris" aria-hidden="true"></i> No se dio o se canceló</li>
-                            </ul>
+                        </header>
+                        <div class="diasSemana" aria-hidden="true">
+                            <span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span><span>Dom</span>
                         </div>
-
-                        <div class="agendaDia" id="agendaDia" aria-live="polite"></div>
+                        <div class="diasMes" id="diasMes" role="group" aria-labelledby="tituloMes">
+                            <p class="cargandoHistorial"><i class="bi bi-arrow-repeat" aria-hidden="true"></i> Cargando tus clases…</p>
+                        </div>
+                        <ul class="leyenda" aria-label="Referencias del calendario">
+                            <li><i class="linea azul" aria-hidden="true"></i> Está bien</li>
+                            <li><i class="linea azul punteada" aria-hidden="true"></i> Esperando al otro</li>
+                            <li><i class="linea rojo" aria-hidden="true"></i> Necesita tu acción</li>
+                            <li><i class="linea gris" aria-hidden="true"></i> No se dio o se canceló</li>
+                        </ul>
                     </div>
-                }
+
+                    <div class="agendaDia" id="agendaDia" aria-live="polite"></div>
+                </div>
             </div>
 
             @if (esProfesor)

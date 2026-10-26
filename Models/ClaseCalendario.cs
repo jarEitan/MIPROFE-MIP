@@ -4,15 +4,15 @@ namespace MIP_MIPROFESOR.Models;
 // estado: Pendiente | Rechazada | Confirmada | Pide cambio | Pide cancelar | Completada | No concretada | Cancelada.
 // esperaA (Pendiente, Rechazada activa, Pide cambio / Pide cancelar): a quién le toca mover ficha, yo | otro.
 // requiereAccion: me toca a mí (se pinta en rojo). fechaPropuesta: horario nuevo, solo en Pide cambio.
-// motivo: solo en No concretada (por qué; sale de fechaEmision). Los puede...: qué botones corresponden.
+// motivo: solo en No concretada. Los puede...: qué botones corresponden. Las fechas vienen como "2026-10-28T20:00".
 public class ClaseCalendario
 {
     public int id { get; set; }
     public string estado { get; set; } = "";
-    public DateTime fecha { get; set; }
-    public DateTime fechaFin { get; set; }
-    public DateTime? fechaPropuesta { get; set; }
-    public DateTime fechaEmision { get; set; }
+    public string fecha { get; set; } = "";
+    public string fechaFin { get; set; } = "";
+    public string? fechaPropuesta { get; set; }
+    public string fechaEmision { get; set; } = "";
     public int idOtroUsuario { get; set; }
     public string nombreOtro { get; set; } = "";
     public string apellidoOtro { get; set; } = "";
@@ -38,37 +38,36 @@ public class ContadoresClases
     public int completadas { get; set; }
 }
 
-// Fila de los SP de clases (enviarPedidoClase, responderPedidoClase, cancelarClase, reubicarClase,
-// responderSolicitudClase, retirarSolicitudClase y marcarClaseNoConcretada).
-// resultado: ok o el motivo por el que no se pudo (ver Info/log.md, entradas 2026-10-14 y 2026-10-20).
+// Lo que devuelven los SP de clases. Qué significa cada codigo está arriba de cada función en BD.cs.
+// estado: cómo quedó la clase (en cancelarClase y reubicarClase). cantidadNotificaciones la pone ClasesController.
 public class ResultadoClase
 {
-    public string resultado { get; set; } = "";
+    public int codigo { get; set; }
     public string? estado { get; set; }
     public int? idClase { get; set; }
-    public int? idOtroUsuario { get; set; }
+    public int cantidadNotificaciones { get; set; }
 }
 
 // Franja ocupada que devuelve obtenerHorariosOcupados. de: profesor | alumno
 public class HorarioOcupado
 {
-    public DateTime inicio { get; set; }
-    public DateTime fin { get; set; }
+    public string inicio { get; set; } = "";
+    public string fin { get; set; } = "";
     public string de { get; set; } = "";
 }
 
-// Franja semanal de la agenda del profesor (tabla Disponibilidad). diaSemana: 1 = lunes ... 7 = domingo
+// Franja semanal de la agenda del profesor (tabla Disponibilidad). diaSemana: 1 = lunes ... 7 = domingo. Horas: "14:00"
 public class FranjaSemanal
 {
     public int diaSemana { get; set; }
-    public TimeSpan desde { get; set; }
-    public TimeSpan hasta { get; set; }
+    public string desde { get; set; } = "";
+    public string hasta { get; set; } = "";
 }
 
-// Día bloqueado del profesor y cuántas clases activas tiene ese día (para avisar "avisales o cancelalas")
+// Día bloqueado del profesor ("2026-10-28") y cuántas clases activas tiene ese día
 public class DiaBloqueado
 {
-    public DateTime fecha { get; set; }
+    public string fecha { get; set; } = "";
     public int clasesEseDia { get; set; }
 }
 
@@ -77,12 +76,12 @@ public class AgendaProfesor
 {
     public List<FranjaSemanal> franjas { get; set; } = new List<FranjaSemanal>();
     public List<DiaBloqueado> diasBloqueados { get; set; } = new List<DiaBloqueado>();
-    public bool tieneAgenda { get { return franjas.Count > 0; } }
+    public bool tieneAgenda => franjas.Count > 0;
 }
 
-// Fila de los SP guardarDisponibilidad, bloquearDia y desbloquearDia
+// codigo (bloquearDia): 0 = ok, 1 = no sos profesor, 2 = el día ya pasó o falta más de un año, 3 = ya estaba bloqueado
 public class ResultadoAgenda
 {
-    public string resultado { get; set; } = "";
+    public int codigo { get; set; }
     public int clasesEseDia { get; set; }
 }

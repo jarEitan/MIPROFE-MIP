@@ -4,8 +4,8 @@ namespace MIP_MIPROFESOR.Models;
 public class ResultadoCatalogo
 {
     public int total { get; set; }
-    public int pagina { get; set; } = 1;
-    public int porPagina { get; set; } = 10;
-    public int totalPaginas { get; set; } = 1;
+    public int pagina { get; set; }
+    public int porPagina { get; set; }
+    public int totalPaginas { get; set; }
     public List<Profesor> profesores { get; set; } = new List<Profesor>();
 }

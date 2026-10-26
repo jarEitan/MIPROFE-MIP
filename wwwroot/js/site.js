@@ -573,7 +573,7 @@ function cargarPerfil() {
     pedirJson(`/Perfiles/ObtenerPerfil/${seccionPerfil.dataset.idPerfil}`)
         .then(perfil => {
             estadoPerfil.hidden = true;
-            if (!perfil.encontrado) {
+            if (perfil.codigo != 0) {
                 mostrarContenidoCargado(document.getElementById("perfilInexistente"));
                 return;
             }
@@ -1491,18 +1491,21 @@ function guardarPerfil() {
 
     pedirJson(formularioEditarPerfil.action, { method: "POST", body: datosFormulario })
         .then(respuesta => {
-            if (respuesta.resultado === "mailExistente") return errorEnCampoDeEdicion(campo("edicionMail"), respuesta.mensaje);
-            if (respuesta.resultado === "dniExistente") return errorEnCampoDeEdicion(campo("edicionDni"), respuesta.mensaje);
-            if (respuesta.resultado !== "ok") {
-                mostrarMensaje(mensajeEditarPerfil, respuesta.mensaje);
-                return;
+            if (respuesta.codigo == 0) {
+                formularioEditarPerfil.querySelector("[data-bs-dismiss='dialog']").click();
+                mostrarSnackbar(respuesta.verificado ? "¡Listo! Tu cuenta está verificada." : "Cambios guardados.", "exito");
+                actualizarUsuarioEnEncabezado(respuesta);
+                mostrarAvisoVerificacionPerfil(respuesta.verificado, respuesta.faltantes);
+                cargarPerfil();
+            } else if (respuesta.codigo == 1) {
+                errorEnCampoDeEdicion(campo("edicionMail"), "Ese correo ya lo usa otra cuenta.");
+            } else if (respuesta.codigo == 2) {
+                errorEnCampoDeEdicion(campo("edicionDni"), "Ese DNI ya está registrado en otra cuenta.");
+            } else if (respuesta.codigo == 3) {
+                mostrarMensaje(mensajeEditarPerfil, "Revisá los datos: nombre y apellido de hasta 50 caracteres, dirección de hasta 200, hasta 10 títulos y el año de cada colegio.");
+            } else {
+                mostrarMensaje(mensajeEditarPerfil, "Las fotos tienen que ser imágenes JPG, PNG o WEBP de hasta 5 MB.");
             }
-
-            formularioEditarPerfil.querySelector("[data-bs-dismiss='dialog']").click();
-            mostrarSnackbar(respuesta.mensaje, "exito");
-            actualizarUsuarioEnEncabezado(respuesta);
-            mostrarAvisoVerificacionPerfil(respuesta.verificado, respuesta.faltantes);
-            cargarPerfil();
         })
         .catch(error => {
             console.error(error);
@@ -1589,16 +1592,19 @@ function enviarResena() {
 
     pedirJson("/Resenas/Dar", { method: "POST", body: datos })
         .then(respuesta => {
-            if (respuesta.resultado !== "ok") {
-                mostrarMensaje(mensaje, respuesta.mensaje);
-                return;
+            if (respuesta.codigo == 0) {
+                const gracias = "¡Gracias! Tu reseña ya está en el perfil.";
+                document.getElementById("dialogoDarResena").close();
+                // historial.js vuelve a pedir el historial a la vista (y avisa adentro del modal, si está abierto)
+                document.dispatchEvent(new CustomEvent("resenaPublicada", { detail: { idReceptor: datos.get("idReceptor"), mensaje: gracias } }));
+                if (!document.getElementById("dialogoHistorial")?.open) mostrarSnackbar(gracias, "exito");
+                // En el perfil de quien la recibió, la reseña y el promedio se ven enseguida
+                if (document.getElementById("perfil")?.dataset.idPerfil === datos.get("idReceptor")) cargarPerfil();
+            } else if (respuesta.codigo == 1) {
+                mostrarMensaje(mensaje, "Podés dejar una reseña después de tener una clase con esta persona.");
+            } else {
+                mostrarMensaje(mensaje, "Ya le dejaste una reseña a esta persona.");
             }
-            document.getElementById("dialogoDarResena").close();
-            // historial.js vuelve a pedir el historial a la vista (y avisa adentro del modal, si está abierto)
-            document.dispatchEvent(new CustomEvent("resenaPublicada", { detail: { idReceptor: datos.get("idReceptor"), mensaje: respuesta.mensaje } }));
-            if (!document.getElementById("dialogoHistorial")?.open) mostrarSnackbar(respuesta.mensaje, "exito");
-            // En el perfil de quien la recibió, la reseña y el promedio se ven enseguida
-            if (document.getElementById("perfil")?.dataset.idPerfil === datos.get("idReceptor")) cargarPerfil();
         })
         .catch(error => {
             console.error(error);

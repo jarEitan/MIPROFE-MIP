@@ -304,10 +304,8 @@ function enviarMensajeDelChat() {
 
     botonEnviar.disabled = true;
     enviarAccionDeClase("/Mensajes/Enviar", { idReceptor: idChatAbierto, contenido })
-        .then(({ ok, cuerpo }) => {
-            if (!ok) {
-                mostrarSnackbar("No pudimos enviar el mensaje. Probá de nuevo.", "error");
-            } else if (cuerpo.codigo == 0) {
+        .then(cuerpo => {
+            if (cuerpo.codigo == 0) {
                 campoMensaje.value = "";
                 return cargarChatAbierto(true).then(cargarConversaciones);
             } else if (cuerpo.codigo == 1) {

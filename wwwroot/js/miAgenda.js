@@ -235,13 +235,15 @@ function guardarMiAgenda() {
     boton.disabled = true;
 
     enviarAccionDeClase("/Clases/GuardarAgenda", { franjas: franjasEnTexto() })
-        .then(({ ok, cuerpo }) => {
-            if (!ok) {
-                mostrarMensaje(document.getElementById("mensajeAgenda"), cuerpo.mensaje);
-                return;
+        .then(cuerpo => {
+            if (cuerpo.codigo == 0) {
+                mostrarSnackbar("Guardamos tu agenda.", "exito");
+                actualizarAvisosDeAgenda(true);
+            } else if (cuerpo.codigo == 1) {
+                mostrarMensaje(document.getElementById("mensajeAgenda"), "Solo los profesores tienen agenda.");
+            } else {
+                mostrarMensaje(document.getElementById("mensajeAgenda"), "Revisá las franjas: tienen que ser de al menos 60 minutos, entre las 7 y las 23, y no pueden tocarse ni superponerse en un mismo día.");
             }
-            mostrarSnackbar(cuerpo.mensaje, "exito");
-            actualizarAvisosDeAgenda(true);
         })
         .catch(error => {
             console.error(error);
@@ -283,14 +285,19 @@ function bloquearUnDia(evento) {
 
     mostrarMensaje(mensaje, "");
     enviarAccionDeClase("/Clases/BloquearDia", { fecha: campo.value })
-        .then(({ ok, cuerpo }) => {
-            if (!ok) {
-                mostrarMensaje(mensaje, cuerpo.mensaje);
-                return;
+        .then(cuerpo => {
+            if (cuerpo.codigo == 0) {
+                campo.value = "";
+                if (cuerpo.clasesEseDia == 0) mostrarSnackbar("Bloqueaste ese día.", "exito");
+                else mostrarSnackbar(`Bloqueaste ese día. Tenés ${cuerpo.clasesEseDia} ${cuerpo.clasesEseDia === 1 ? "clase" : "clases"} ese día: avisales o cancelalas.`, "info");
+                return cargarMiAgenda();
+            } else if (cuerpo.codigo == 1) {
+                mostrarMensaje(mensaje, "Solo los profesores tienen agenda.");
+            } else if (cuerpo.codigo == 2) {
+                mostrarMensaje(mensaje, "Elegí un día de hoy en adelante y dentro del próximo año.");
+            } else {
+                mostrarMensaje(mensaje, "Ese día ya está bloqueado.");
             }
-            campo.value = "";
-            mostrarSnackbar(cuerpo.mensaje, cuerpo.clasesEseDia > 0 ? "info" : "exito");
-            return cargarMiAgenda();
         })
         .catch(error => {
             console.error(error);
@@ -300,9 +307,9 @@ function bloquearUnDia(evento) {
 
 function desbloquearUnDia(fecha) {
     enviarAccionDeClase("/Clases/DesbloquearDia", { fecha })
-        .then(({ ok, cuerpo }) => {
-            mostrarSnackbar(cuerpo.mensaje, ok ? "exito" : "error");
-            if (ok) return cargarMiAgenda();
+        .then(() => {
+            mostrarSnackbar("Desbloqueaste ese día.", "exito");
+            return cargarMiAgenda();
         })
         .catch(error => {
             console.error(error);

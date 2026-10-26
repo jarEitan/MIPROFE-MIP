@@ -192,12 +192,12 @@ function crearTarjetaProfesor(profesor) {
     cuerpo.append(nombre);
 
     const colegios = crearElemento("p", "colegios");
-    colegios.append(crearIcono("bi-building"), ` ${profesor.colegios.length > 0 ? profesor.colegios.join(" · ") : "Sin colegio cargado"}`);
+    colegios.append(crearIcono("bi-building"), ` ${profesor.colegios ?? "Sin colegio cargado"}`);
     cuerpo.append(colegios);
 
-    if (profesor.materias.length > 0) {
+    if (profesor.materias) {
         const etiquetas = crearElemento("div", "etiquetas");
-        profesor.materias.forEach(materia => etiquetas.append(crearElemento("span", "badge badge-subtle theme-inverse", materia)));
+        profesor.materias.split(", ").forEach(materia => etiquetas.append(crearElemento("span", "badge badge-subtle theme-inverse", materia)));
         cuerpo.append(etiquetas);
     }
 
@@ -209,9 +209,9 @@ function crearTarjetaProfesor(profesor) {
         ? " Sin reseñas"
         : ` ${profesor.calificacion.toFixed(1).replace(".", ",")} (${profesor.cantidadResenas})`);
     const niveles = crearElemento("li");
-    niveles.append(crearIcono("bi-mortarboard"), ` ${profesor.niveles.join(", ")}`);
+    niveles.append(crearIcono("bi-mortarboard"), ` ${profesor.niveles ?? ""}`);
     const modalidades = crearElemento("li");
-    modalidades.append(crearIcono("bi-laptop"), ` ${profesor.modalidades.join(" y ")}`);
+    modalidades.append(crearIcono("bi-laptop"), ` ${profesor.modalidades ?? ""}`);
     datos.append(calificacion, modalidades, niveles);
     cuerpo.append(datos);
 

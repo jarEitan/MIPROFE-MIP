@@ -21,8 +21,12 @@ const calendario = {
 let selectorDeReubicacion = null;
 let claseElegida = null;
 
-// Si el servidor contesta alguno de estos, lo que se ve en pantalla está viejo (la otra persona ya respondió, canceló, etc.)
-const resultadosDePantallaVieja = ["yaRespondida", "noSePuedeCancelar", "noSePuedeReubicar", "claseInexistente", "noEsTuClase", "fueraDePlazo"];
+// En todas las acciones sobre una clase, los códigos 1 y 2 quieren decir que lo que se ve en pantalla está viejo
+// (la otra persona ya respondió, canceló, etc.)
+const mensajesDePantallaVieja = {
+    1: "Esta acción no la podés hacer vos en esta clase.",
+    2: "Esta clase cambió mientras tanto (ya se respondió, se canceló o venció). Actualizamos tus clases."
+};
 
 // ----- Datos -----
 // Pide las clases entre dos días, en tramos de hasta 60 días (el servidor no acepta más de 62 por pedido)
@@ -32,7 +36,7 @@ function pedirClasesEntre(desde, hasta) {
         const fin = new Date(Math.min(hasta.getTime(), new Date(inicio.getFullYear(), inicio.getMonth(), inicio.getDate() + maximoDiasPorPedido).getTime()));
         pedidos.push(pedirJson(`/Clases/Calendario?desde=${fechaATexto(inicio)}&hasta=${fechaATexto(fin)}`));
     }
-    return Promise.all(pedidos).then(respuestas => respuestas.flatMap(respuesta => respuesta.clases));
+    return Promise.all(pedidos).then(respuestas => respuestas.flat());
 }
 
 function guardarClases(clases) {
@@ -457,11 +461,11 @@ function inicializarAccionesDelCalendario() {
         claseElegida = clase;
 
         switch (boton.dataset.accionClase) {
-            case "aceptar": responderClase(boton, "/Clases/Responder", true); break;
-            case "rechazar": responderClase(boton, "/Clases/Responder", false); break;
-            case "aceptarSolicitud": responderClase(boton, "/Clases/ResponderSolicitud", true); break;
-            case "rechazarSolicitud": responderClase(boton, "/Clases/ResponderSolicitud", false); break;
-            case "retirar": responderClase(boton, "/Clases/RetirarSolicitud"); break;
+            case "aceptar": responderClase(boton, "/Clases/Responder", true, "Clase confirmada."); break;
+            case "rechazar": responderClase(boton, "/Clases/Responder", false, "Rechazaste ese horario. La otra persona puede proponer otro o cancelar la clase."); break;
+            case "aceptarSolicitud": responderClase(boton, "/Clases/ResponderSolicitud", true, "Aceptaste el pedido."); break;
+            case "rechazarSolicitud": responderClase(boton, "/Clases/ResponderSolicitud", false, "No aceptaste el pedido: la clase sigue como estaba."); break;
+            case "retirar": responderClase(boton, "/Clases/RetirarSolicitud", undefined, "Retiraste el pedido: la clase sigue como estaba."); break;
             case "cancelar": abrirCancelacionDeClase(); break;
             case "reubicar": abrirReubicacionDeClase(); break;
             case "noSeDio": abrirNoSeDio(clase.id, nombreCompleto(clase), textoFechaCorta(leerFechaLocal(clase.fecha))); break;
@@ -483,28 +487,30 @@ function accionDeClaseCompletada(mensaje) {
     refrescarPanel().then(() => resaltarClase(id));
 }
 
-// La acción no se pudo: si lo que se ve ya está viejo se actualiza el Panel; si no, el motivo va en el diálogo
-function accionDeClaseRechazada(cuerpo, mensajeDelDialogo) {
-    if (resultadosDePantallaVieja.includes(cuerpo.resultado)) {
+// La acción no se pudo: con los códigos 1 y 2 lo que se ve ya está viejo y se actualiza el Panel; si no, el motivo
+// va en el diálogo
+function accionDeClaseRechazada(codigo, mensaje, mensajeDelDialogo) {
+    if (codigo <= 2) {
         ["dialogoCancelarClase", "dialogoReubicarClase", "dialogoNoSeDio"].forEach(cerrarDialogo);
-        mostrarSnackbar(cuerpo.mensaje, "error");
+        mostrarSnackbar(mensaje, "error");
         refrescarPanel();
     } else if (mensajeDelDialogo) {
-        mostrarMensaje(mensajeDelDialogo, cuerpo.mensaje);
+        mostrarMensaje(mensajeDelDialogo, mensaje);
     } else {
-        mostrarSnackbar(cuerpo.mensaje, "error");
+        mostrarSnackbar(mensaje, "error");
     }
 }
 
 // Aceptar / rechazar un pedido o un pedido de cambio o cancelación, o retirar el propio. aceptar es undefined al retirar
-function responderClase(boton, url, aceptar) {
+function responderClase(boton, url, aceptar, mensajeExito) {
     boton.disabled = true;
     const datos = { idClase: claseElegida.id };
     if (aceptar !== undefined) datos.aceptar = aceptar;
     enviarAccionDeClase(url, datos)
-        .then(({ ok, cuerpo }) => {
-            if (ok) accionDeClaseCompletada(cuerpo.mensaje);
-            else accionDeClaseRechazada(cuerpo);
+        .then(cuerpo => {
+            if (cuerpo.codigo == 0) accionDeClaseCompletada(mensajeExito);
+            else if (cuerpo.codigo == 3) accionDeClaseRechazada(3, "Ya hay otra clase confirmada en ese horario, no se puede aceptar.");
+            else accionDeClaseRechazada(cuerpo.codigo, mensajesDePantallaVieja[cuerpo.codigo]);
         })
         .catch(error => {
             console.error(error);
@@ -544,14 +550,14 @@ function confirmarCancelacionDeClase() {
     botonConfirmar.disabled = true;
 
     enviarAccionDeClase("/Clases/Cancelar", { idClase: clase.id, motivo: document.getElementById("motivoCancelar").value.trim() })
-        .then(({ ok, cuerpo }) => {
-            if (!ok) {
-                accionDeClaseRechazada(cuerpo, mensajeCancelar);
-                return;
+        .then(cuerpo => {
+            if (cuerpo.codigo != 0) {
+                accionDeClaseRechazada(cuerpo.codigo, mensajesDePantallaVieja[cuerpo.codigo], mensajeCancelar);
+            } else if (cuerpo.estado === "Pide cancelar") {
+                accionDeClaseCompletada(`Le pedimos a ${clase.nombreOtro} que confirme la cancelación.`);
+            } else {
+                accionDeClaseCompletada(clase.estado === "Pendiente" ? "Pedido cancelado." : "Clase cancelada.");
             }
-            const mensaje = cuerpo.resultado === "solicitudEnviada" ? `Le pedimos a ${clase.nombreOtro} que confirme la cancelación.`
-                : clase.estado === "Pendiente" ? "Pedido cancelado." : cuerpo.mensaje;
-            accionDeClaseCompletada(mensaje);
         })
         .catch(error => {
             console.error(error);
@@ -585,12 +591,20 @@ function enviarReubicacionDeClase() {
     mostrarMensaje(mensajeReubicar, "");
     botonConfirmar.disabled = true;
     enviarAccionDeClase("/Clases/Reubicar", { idClase: clase.id, fecha: horario, motivo: document.getElementById("motivoReubicar").value.trim() })
-        .then(({ ok, cuerpo }) => {
-            if (ok) {
-                accionDeClaseCompletada(cuerpo.estado === "Pide cambio" ? `Le pedimos a ${clase.nombreOtro} que confirme el cambio. Tu clase sigue en su horario.` : cuerpo.mensaje);
+        .then(cuerpo => {
+            const mensajes = {
+                ...mensajesDePantallaVieja,
+                3: "Elegí un horario distinto al actual.",
+                4: "Elegí un horario que empiece dentro de 1 hora o más y dentro de los próximos 90 días.",
+                5: "Ese horario está fuera de la agenda del profesor.",
+                6: "El alumno ya tiene una clase en ese horario. Elegí otro.",
+                7: "El profesor ya tiene una clase confirmada en ese horario. Elegí otro."
+            };
+            if (cuerpo.codigo == 0) {
+                accionDeClaseCompletada(cuerpo.estado === "Pide cambio" ? `Le pedimos a ${clase.nombreOtro} que confirme el cambio. Tu clase sigue en su horario.` : "Pedimos confirmar el nuevo horario.");
             } else {
-                accionDeClaseRechazada(cuerpo, mensajeReubicar);
-                if (cuerpo.resultado?.startsWith("horarioOcupado") || cuerpo.resultado === "fueraDeAgenda") selectorDeReubicacion.recargar();
+                accionDeClaseRechazada(cuerpo.codigo, mensajes[cuerpo.codigo], mensajeReubicar);
+                if (cuerpo.codigo >= 5) selectorDeReubicacion.recargar();
             }
         })
         .catch(error => {
@@ -623,9 +637,10 @@ function confirmarNoSeDio() {
     boton.disabled = true;
 
     enviarAccionDeClase("/Clases/NoSeDio", { idClase: claseNoSeDio })
-        .then(({ ok, cuerpo }) => {
-            if (ok) accionDeClaseCompletada(cuerpo.mensaje);
-            else accionDeClaseRechazada(cuerpo, mensaje);
+        .then(cuerpo => {
+            if (cuerpo.codigo == 0) accionDeClaseCompletada("Marcaste que la clase no se dio.");
+            else if (cuerpo.codigo == 1) accionDeClaseRechazada(1, mensajesDePantallaVieja[1]);
+            else accionDeClaseRechazada(2, "Ya pasaron más de 48 horas desde que terminó la clase: no se puede marcar.");
         })
         .catch(error => {
             console.error(error);

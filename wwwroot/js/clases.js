@@ -50,8 +50,8 @@ function textoFechaCorta(fecha) {
     return `${nombresDeDias[fecha.getDay()].slice(0, 3)} ${dosDigitos(fecha.getDate())}/${dosDigitos(fecha.getMonth() + 1)} ${textoHoraDe(fecha)}`;
 }
 
-// POST con el token anti-falsificación. Devuelve { ok, cuerpo } aunque el servidor responda con error,
-// porque el cuerpo trae el motivo (horario ocupado, muy cerca, etc.) y lo necesitamos para avisar.
+// POST con el token anti-falsificación. Devuelve lo que contestó el SP (con su codigo). Sin sesión lleva a
+// Iniciar sesión; si el servidor falla, tira un error y lo agarra el .catch de quien llama.
 function enviarAccionDeClase(url, datos) {
     const token = document.querySelector("input[name='__RequestVerificationToken']");
     return fetch(url, {
@@ -59,13 +59,9 @@ function enviarAccionDeClase(url, datos) {
         headers: { "RequestVerificationToken": token ? token.value : "" },
         body: new URLSearchParams(datos)
     }).then(respuesta => {
-        if (respuesta.status === 401) {
-            window.location.href = "/Sesion/IniciarSesion";
-            return { ok: false, cuerpo: { resultado: "sinSesion", mensaje: "Iniciá sesión para continuar." } };
-        }
-        return respuesta.json()
-            .catch(() => ({ resultado: "error", mensaje: "No pudimos completar la acción. Probá de nuevo." }))
-            .then(cuerpo => ({ ok: respuesta.ok, cuerpo }));
+        if (respuesta.status === 401) window.location.href = "/Sesion/IniciarSesion";
+        if (!respuesta.ok) throw new Error(`Error ${respuesta.status} en ${url}`);
+        return respuesta.json();
     });
 }
 
@@ -122,12 +118,7 @@ function inicializarSolicitudesDeAmistad() {
         botones.forEach(b => { b.disabled = true; });
 
         enviarAccionDeClase("/Notificaciones/ResponderAmistad", { idOtroUsuario: item.dataset.idOtro, aceptar })
-            .then(({ ok, cuerpo }) => {
-                if (!ok) {
-                    botones.forEach(b => { b.disabled = false; });
-                    mostrarSnackbar("No pudimos responder la solicitud. Probá de nuevo.", "error");
-                    return;
-                }
+            .then(cuerpo => {
                 // el foco pasa a la notificación de al lado (o al título) para no perderlo al borrar el botón
                 const vecina = item.nextElementSibling || item.previousElementSibling;
                 const titulo = document.getElementById("tituloNotificaciones");
@@ -429,14 +420,21 @@ function enviarPedidoDeClase() {
         fecha: horario,
         mensaje: document.getElementById("mensajePedido").value.trim()
     })
-        .then(({ ok, cuerpo }) => {
-            if (!ok) {
-                mostrarMensaje(mensajePedir, cuerpo.mensaje);
-                if (cuerpo.resultado?.startsWith("horarioOcupado") || cuerpo.resultado === "fueraDeAgenda") selectorDePedido.recargar();
+        .then(cuerpo => {
+            if (cuerpo.codigo != 0) {
+                const mensajes = {
+                    1: "Solo los alumnos pueden pedirle clases a un profesor.",
+                    2: "Elegí un horario que empiece dentro de 1 hora o más y dentro de los próximos 90 días.",
+                    3: "Ese horario está fuera de la agenda del profesor.",
+                    4: "Ya tenés una clase en ese horario. Elegí otro.",
+                    5: "El profesor ya tiene una clase confirmada en ese horario. Elegí otro."
+                };
+                mostrarMensaje(mensajePedir, mensajes[cuerpo.codigo]);
+                if (cuerpo.codigo >= 3) selectorDePedido.recargar();
                 return;
             }
             cerrarDialogo("dialogoPedirClase");
-            mostrarSnackbar(cuerpo.mensaje, "exito");
+            mostrarSnackbar("Pedido enviado. Te avisamos cuando el profesor responda.", "exito");
             actualizarInsigniaDeNotificaciones(cuerpo.cantidadNotificaciones);
             // Desde el Historial del Panel ("Pedir otra clase") el pedido nuevo aparece en Mis clases sin recargar
             if (document.getElementById("panelTabs")) refrescarPanel().then(() => resaltarClase(cuerpo.idClase));

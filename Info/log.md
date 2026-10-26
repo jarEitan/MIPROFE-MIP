@@ -69,7 +69,7 @@ Landing (`Index`): `.portada`, `.cinta`, `.pasos` (`#seccionComoFunciona`), `.pe
 - **Sin jobs**: `actualizarEstadosClases(@idUsuario)` (la llaman los SP) pasa Confirmada terminada → Completada y Pendiente vencida → Rechazada.
 - **Notificaciones calculadas** (`notificacionesDeUsuario`, sin tabla): solicitudes de amistad pendientes, mensajes `No visto` (una por persona) y clases por responder. Desaparecen solas al resolverse. `clases.js` actualiza la insignia cada minuto.
 - **Historial** (`obtenerHistorialClases`, tope fijo 20): propio = Completada, Cancelada y Rechazada vencida; de otro = solo Completadas. Solo el día, sin hora.
-- **Reseñas** (`darResena`): solo con una clase Completada, una por persona, 1–5 estrellas + hasta 500 caracteres. Quedan `Aprobada` hasta que haya moderación (entonces cambiar a `Pendiente` en el SP).
+- **Reseñas** (`darResena`): solo con una clase Completada, una por persona, 1–5 estrellas + hasta 500 caracteres. Quedan `Aprobada` hasta que haya moderación (entonces cambiar a `Pendiente` en el SP y filtrar por `Aprobada` en `obtenerHistorialClases`, donde está marcado con `shortcut:`). Las estrellas (1–5), que no sea a uno mismo y el largo del comentario los frenan las restricciones de la tabla `Resenas`.
 - **Amigos**: `idUsuario1` = quien envía.
   - `obtenerAmistad` devuelve `estadoAmistad`: `ninguna | enviada | recibida | amigos`.
   - `enviarAmistad` manda la solicitud, o la acepta si el otro ya había mandado una.
@@ -81,7 +81,7 @@ Landing (`Index`): `.portada`, `.cinta`, `.pasos` (`#seccionComoFunciona`), `.pe
 
 ## 6. Códigos de los stored procedures
 
-Solo los SP que ya están en el estilo nuevo. En todos, `0` = salió bien y en esa misma fila vienen los datos.
+En todos, `0` = salió bien y en esa misma fila vienen los datos.
 
 | SP | 1 | 2 | 3 |
 |---|---|---|---|
@@ -93,22 +93,29 @@ Solo los SP que ya están en el estilo nuevo. En todos, `0` = salió bien y en e
 | `rechazarAmistad` | La solicitud ya no está pendiente | — | — |
 | `enviarMensaje` | Sos vos | La persona no existe | Mensaje vacío o de más de 1000 caracteres |
 | `obtenerChat` | Sos vos | La persona no existe | — |
+| `darResena` | No tuvieron ninguna clase completada | Ya le dejaste una reseña | — |
+| `obtenerHistorialClases` | El usuario no existe | — | — |
+| `obtenerPerfil` | No es de ningún alumno ni profesor | — | — |
+| `guardarPerfilCompleto` | El mail lo usa otra cuenta | El DNI lo usa otra cuenta | Datos inválidos (largos, formatos, un solo colegio y nivel para el alumno, año de cada colegio para el profesor). `4` = foto inválida, lo revisa `PerfilesController` |
+| `guardarDisponibilidad` | No sos profesor | Alguna franja no sirve | — |
+| `bloquearDia` | No sos profesor | El día ya pasó o falta más de un año | Ya estaba bloqueado |
 
-`obtenerLike`, `alternarLike` (los dos devuelven `cantidadLikes` y `leGusta`), `obtenerAmistad`, `obtenerAmigos`, `obtenerConversaciones`, `obtenerNotificaciones` y `contarNotificaciones` no devuelven código: solo leen datos.
+Clases: en todas las acciones sobre una clase, `1` = no es tu clase o no te toca y `2` = la clase cambió mientras tanto (ya se respondió, se canceló o venció). Con los dos, `calendario.js` actualiza el Panel.
+
+| SP | 3 | 4 | 5 | 6 | 7 |
+|---|---|---|---|---|---|
+| `enviarPedidoClase` (`1` = no sos alumno o el profesor no existe, `2` = tiene que empezar dentro de 1 hora o más y dentro de 90 días) | Fuera de la agenda del profesor | Ya tenés una clase en ese horario | El profesor ya tiene una confirmada | — | — |
+| `aceptarPedidoClase` / `aceptarSolicitudClase` | Alguno de los dos ya tiene una confirmada en ese horario | — | — | — | — |
+| `reubicarClase` | Mismo horario | Fecha inválida (1 hora a 90 días) | Fuera de agenda (solo si propone el alumno) | El alumno ya tiene una clase | El profesor ya tiene una confirmada |
+
+`rechazarPedidoClase`, `cancelarClase`, `rechazarSolicitudClase`, `retirarSolicitudClase` y `marcarClaseNoConcretada` solo usan `1` y `2` (en `marcarClaseNoConcretada`, `2` = pasaron más de 48 h). `cancelarClase` y `reubicarClase` devuelven también `estado`: `Pide cancelar` o `Pide cambio` cuando la otra persona tiene que aceptar.
+
+Los que solo leen datos no devuelven código: `obtenerLike`, `alternarLike` (los dos devuelven `cantidadLikes` y `leGusta`), `obtenerAmistad`, `obtenerAmigos`, `obtenerConversaciones`, `obtenerNotificaciones`, `contarNotificaciones`, `obtenerCatalogo`, `obtenerOpcionesPerfil`, `obtenerDatosEdicion`, `obtenerCalendarioClases`, `obtenerContadoresClases`, `obtenerHorariosOcupados` y `obtenerDisponibilidad`. `desbloquearDia` no devuelve nada.
 
 ## 7. Pendientes
 
-- **Pasar al estilo nuevo** (guía, sección 5) lo que todavía usa `resultado` en texto, `try/catch` y `CommandType.StoredProcedure`:
-  - Perfiles y edición
-  - Catálogo
-  - Clases y agenda
-  - Historial
-  - Reseñas
-  - `HomeController` (`try/catch` en `Index` y `PanelControl`)
-
-  El estado de cada módulo y el orden en que conviene seguir están en [progreso.md](progreso.md).
-- Moderación de reseñas (admin), filtros avanzados, pedido de alumno por un profesor (V2).
-- Reemplazar los `TODO BD` restantes: consulta de Soporte, sugerencias del buscador (`site.js`). `ViewBag.materiasDestacadas` (`HomeController`) ya no lo lee ninguna vista (la cinta muestra las palabras del moodboard): se puede borrar con su `TODO BD`.
+- Lo que todavía no existe está en [progreso.md](progreso.md): moderación de reseñas (admin), filtros avanzados, pedido de alumno por un profesor (V2).
+- Reemplazar los `TODO BD` restantes: consulta de Soporte, sugerencias del buscador (`site.js`).
 - Confirmar la licencia web de Eras Bold ITC (se sirve pública) y pedir imágenes de marca de más de 512px.
 - Bootstrap 6 es alpha: revisar cambios antes de actualizar.
 - Mejoras posibles: filtro reutilizable de sesión para vistas privadas, ViewModels en vez de ViewBag, imagen OG 1200×630, modo oscuro (ya todo es variable).
@@ -143,3 +150,9 @@ Para aplicar cambios de BD: borrar la base `MIP` y correr, en orden, `MIP-BD_01_
   - `obtenerConversaciones` sin `WITH` ni `ROW_NUMBER`: el último mensaje de cada conversación es el de `ID` más alto.
   - El SP `responderSolicitudAmistad @aceptar` se separa en `aceptarAmistad` y `rechazarAmistad`. La acción `Notificaciones/ResponderAmistad` sigue recibiendo `aceptar` y elige el SP.
   - Probado con una copia de la base (`MIP_prueba`) armada con los tres scripts: corren sin errores y cada SP devuelve los códigos de la tabla de la sección 6.
+- **2026-10-26** — Se termina de pasar al estilo nuevo: Catálogo, Perfil, Agenda, Clases y Navegación.
+  - Catálogo: un solo SELECT con `STRING_AGG` (las listas vienen como texto) y paginación con `OFFSET`; se borró `ItemDeProfesor`.
+  - Perfil: `guardarPerfilCompleto` valida en el SP (códigos 1 a 3); `PerfilesController` solo limpia el HTML de "Sobre mí" y revisa las fotos.
+  - Clases: `responderPedidoClase` y `responderSolicitudClase` se separan en aceptar y rechazar. Sin transacciones ni `bloquearAgendas`. Se borraron las funciones de una línea (`duracionClaseMinutos` = 60, `horasAnticipacionCancelar` = 24, `fechaClaseValida`).
+  - Las fechas y horas salen del SP ya como texto (`2026-10-28T20:00`, `14:00`); los mensajes de cada código están en el JS de cada pantalla.
+  - `enviarAccionDeClase` (`clases.js`) devuelve directamente lo que contestó el SP.

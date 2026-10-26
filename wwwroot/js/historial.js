@@ -16,7 +16,7 @@ function pedirHistorial(idUsuario, desde) {
 function dibujarHistorial(contenedor, resultado, opciones) {
     contenedor.replaceChildren();
 
-    if (!resultado.encontrado) {
+    if (resultado.codigo != 0) {
         contenedor.append(crearEstadoVacioHistorial("Este usuario no existe", "Revisá que el enlace esté completo."));
         return;
     }

@@ -1,6 +1,6 @@
 namespace MIP_MIPROFESOR.Models;
 
-// Una tarjeta del catálogo (SP obtenerCatalogo). Las listas se arman en BD.obtenerCatalogo.
+// Una tarjeta del catálogo (SP obtenerCatalogo). Las listas vienen como texto: "Física, Química"
 public class Profesor
 {
     public int id { get; set; }
@@ -14,10 +14,10 @@ public class Profesor
     public bool verificado { get; set; }
     // Cuántos amigos del visitante completaron clases con este profesor (0 sin sesión)
     public int amigosRecomiendan { get; set; }
-    public List<string> materias { get; set; } = new List<string>();
-    public List<string> niveles { get; set; } = new List<string>();
-    public List<string> modalidades { get; set; } = new List<string>();
-    public List<string> colegios { get; set; } = new List<string>();
+    public string? materias { get; set; }
+    public string? niveles { get; set; }
+    public string? modalidades { get; set; }
+    public string? colegios { get; set; }
 
     public string nombreCompleto => nombre + " " + apellido;
 

@@ -1,7 +1,7 @@
 @{
     ViewData["Title"] = "Crear cuenta";
     string mensaje = ViewBag.mensaje ?? "";
-    RegistroUsuario registro = ViewBag.registro ?? new RegistroUsuario();
+    Usuario registro = ViewBag.registro ?? new Usuario();
     string fechaNacimiento = registro.fechaNacimiento?.ToString("yyyy-MM-dd") ?? "";
     string fechaMaxima = DateTime.Today.ToString("yyyy-MM-dd");
     string rolSolicitado = ViewBag.rol ?? "";

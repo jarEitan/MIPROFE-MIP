@@ -276,3 +276,5 @@ __pycache__/
 # Archivos que suben los usuarios (fotos de perfil y fotos del DNI): las carpetas existen en el repo (.gitkeep) pero sus archivos no
 wwwroot/userData/*/*
 !wwwroot/userData/*/.gitkeep
+
+.claude

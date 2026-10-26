@@ -102,7 +102,7 @@ Antes de crear una clase nueva: ¿se resuelve con una existente + un selector de
 
 ## 5. Backend: stored procedures, BD.cs y controladores
 
-Desde el 2026-10-26 el backend se escribe como el ejemplo de clase (`TP7 - RedSocial`): poco código, que se lea de un tirón y que no parezca generado. Ya están así **Sesión, Likes, Amigos, Chat y Notificaciones**; el resto se va pasando (ver Pendientes en el [log](log.md)).
+Desde el 2026-10-26 el backend se escribe como el ejemplo de clase (`TP7 - RedSocial`): poco código, que se lea de un tirón y que no parezca generado. Está todo así (ver [progreso.md](progreso.md)).
 
 **La idea: el SP decide, C# solo lo llama y muestra el resultado.**
 

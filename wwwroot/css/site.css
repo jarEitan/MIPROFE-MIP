@@ -3010,48 +3010,6 @@ fieldset {
     align-self: flex-start;
 }
 
-/* Página de error: lavado, centrada y con salidas a Inicio y a Soporte */
-.paginaError {
-    padding-block: clamp(3rem, 2rem + 5vw, 6rem);
-    background: var(--fondoLavado);
-    text-align: center;
-}
-
-.paginaError .container {
-    display: grid;
-    justify-items: center;
-    gap: 1rem;
-}
-
-.paginaError .pegatina.redonda {
-    width: 7rem;
-    height: 7rem;
-    margin-bottom: .75rem;
-    font-size: 3.5rem;
-}
-
-.paginaError p {
-    max-width: 36rem;
-}
-
-/* El código baja entero de renglón y, si no entra (celular), se corta adentro de su caja */
-.paginaError code {
-    display: inline-block;
-    max-width: 100%;
-    padding: .2rem .8rem;
-    border: 1.5px solid var(--colorBorde);
-    border-radius: var(--radioChico);
-    background-color: var(--colorSuperficie);
-    color: var(--colorTinta);
-    font: 500 .9rem var(--fuenteMarca);
-    overflow-wrap: anywhere;
-}
-
-.paginaError .acciones {
-    justify-content: center;
-    margin-top: .75rem;
-}
-
 /* ---------- 3.14 Panel de control ---------- */
 /* Saludo: caja con el lavado, el avatar (sin troquel), el rol y los dos contadores como pegatinas */
 .bienvenida {

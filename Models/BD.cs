@@ -1,4 +1,3 @@
-using System.Data;
 using Dapper;
 using Microsoft.Data.SqlClient;
 
@@ -9,25 +8,22 @@ public class BD
 {
     private static string connectionString = @"Server=localhost;Database=MIP;Integrated Security=True;TrustServerCertificate=True;";
 
-    // ================= PERFIL PÚBLICO =================
-
-    // Lee las 7 tablas del SP. Si el usuario no existe (o es admin), devuelve encontrado = false.
     public PerfilUsuario obtenerPerfil(int idUsuario)
     {
         using (var connection = new SqlConnection(connectionString))
         {
-            using (var tablas = connection.QueryMultiple("obtenerPerfil", new { idUsuario = idUsuario }, commandType: CommandType.StoredProcedure))
+            using (var tablas = connection.QueryMultiple("EXEC obtenerPerfil @idUsuario", new { idUsuario = idUsuario }))
             {
-                PerfilUsuario? perfil = tablas.ReadFirstOrDefault<PerfilUsuario>();
-                if (perfil == null) return new PerfilUsuario { encontrado = false };
-
-                perfil.encontrado = true;
-                perfil.materias = tablas.Read<string>().ToList();
-                perfil.niveles = tablas.Read<string>().ToList();
-                perfil.modalidades = tablas.Read<string>().ToList();
-                perfil.colegios = tablas.Read<string>().ToList();
-                perfil.titulos = tablas.Read<string>().ToList();
-                perfil.resenas = tablas.Read<ResenaPerfil>().ToList();
+                PerfilUsuario perfil = tablas.ReadFirst<PerfilUsuario>();
+                if (perfil.codigo == 0)
+                {
+                    perfil.materias = tablas.Read<string>().ToList();
+                    perfil.niveles = tablas.Read<string>().ToList();
+                    perfil.modalidades = tablas.Read<string>().ToList();
+                    perfil.colegios = tablas.Read<string>().ToList();
+                    perfil.titulos = tablas.Read<string>().ToList();
+                    perfil.resenas = tablas.Read<ResenaPerfil>().ToList();
+                }
                 return perfil;
             }
         }
@@ -83,79 +79,63 @@ public class BD
         }
     }
 
-    // ================= RESEÑAS =================
-
-    // resultado: ok | mismoUsuario | usuarioInexistente | puntuacionInvalida | descripcionInvalida | sinClaseCompletada | yaReseno
-    public string darResena(int idEmisor, int idReceptor, int puntuacion, string? descripcion)
+    // codigo: 0 = ok, 1 = no tuvieron ninguna clase completada, 2 = ya le dejaste una reseña
+    public int darResena(int idEmisor, int idReceptor, int puntuacion, string? descripcion)
     {
         using (var connection = new SqlConnection(connectionString))
         {
-            return connection.QuerySingle<string>("darResena", new { idEmisor = idEmisor, idReceptor = idReceptor, puntuacion = puntuacion, descripcion = descripcion }, commandType: CommandType.StoredProcedure);
+            return connection.QueryFirst<int>("EXEC darResena @idEmisor, @idReceptor, @puntuacion, @descripcion", new { idEmisor = idEmisor, idReceptor = idReceptor, puntuacion = puntuacion, descripcion = descripcion });
         }
     }
 
-    // ================= EDICIÓN DEL PERFIL PROPIO =================
-
-    // Las 4 listas para los selectores: materias, niveles, modalidades y colegios
     public OpcionesPerfil obtenerOpcionesPerfil()
     {
         using (var connection = new SqlConnection(connectionString))
         {
-            using (var tablas = connection.QueryMultiple("obtenerOpcionesPerfil", commandType: CommandType.StoredProcedure))
+            using (var tablas = connection.QueryMultiple("EXEC obtenerOpcionesPerfil"))
             {
-                return new OpcionesPerfil
-                {
-                    materias = tablas.Read<OpcionPerfil>().ToList(),
-                    niveles = tablas.Read<OpcionPerfil>().ToList(),
-                    modalidades = tablas.Read<OpcionPerfil>().ToList(),
-                    escuelas = tablas.Read<OpcionPerfil>().ToList()
-                };
+                OpcionesPerfil opciones = new OpcionesPerfil();
+                opciones.materias = tablas.Read<OpcionPerfil>().ToList();
+                opciones.niveles = tablas.Read<OpcionPerfil>().ToList();
+                opciones.modalidades = tablas.Read<OpcionPerfil>().ToList();
+                opciones.escuelas = tablas.Read<OpcionPerfil>().ToList();
+                return opciones;
             }
         }
     }
 
-    // Datos privados del usuario de la sesión (6 tablas). null si no existe.
-    public DatosEdicion? obtenerDatosEdicion(int idUsuario)
+    public DatosEdicion obtenerDatosEdicion(int idUsuario)
     {
         using (var connection = new SqlConnection(connectionString))
         {
-            using (var tablas = connection.QueryMultiple("obtenerDatosEdicion", new { idUsuario = idUsuario }, commandType: CommandType.StoredProcedure))
+            using (var tablas = connection.QueryMultiple("EXEC obtenerDatosEdicion @idUsuario", new { idUsuario = idUsuario }))
             {
-                DatosEdicion? datos = tablas.ReadFirstOrDefault<DatosEdicion>();
-                if (datos == null) return null;
-
-                datos.tieneFotoDni = !string.IsNullOrWhiteSpace(datos.fotoDni);
+                DatosEdicion datos = tablas.ReadFirst<DatosEdicion>();
                 datos.idsMaterias = tablas.Read<int>().ToList();
                 datos.idsNiveles = tablas.Read<int>().ToList();
                 datos.idsModalidades = tablas.Read<int>().ToList();
                 datos.escuelas = tablas.Read<EscuelaUsuario>().ToList();
-                datos.idsEscuelas = datos.escuelas.Select(escuela => escuela.id).ToList();
                 datos.titulos = tablas.Read<string>().ToList();
                 return datos;
             }
         }
     }
 
-    // Textos de lo que le falta a la cuenta para estar verificada (vacía = verificada)
     public List<string> obtenerFaltantesVerificacion(int idUsuario)
     {
         using (var connection = new SqlConnection(connectionString))
         {
-            return connection.Query<string>(
-                "obtenerFaltantesVerificacion",
-                new { idUsuario = idUsuario },
-                commandType: CommandType.StoredProcedure).ToList();
+            return connection.Query<string>("EXEC obtenerFaltantesVerificacion @idUsuario", new { idUsuario = idUsuario }).ToList();
         }
     }
 
-    // Guarda las dos pestañas del modal con un solo SP y recalcula la verificación.
-    // rutaFotoPerfil / rutaFotoDni en null conservan las fotos que ya tenía.
-    public ResultadoGuardado guardarPerfilCompleto(int idUsuario, EdicionPerfil edicion, string? rutaFotoPerfil, string? rutaFotoDni)
+    // fotoPerfil / fotoDni en null conservan las fotos que ya tenía
+    public ResultadoGuardado guardarPerfilCompleto(int idUsuario, EdicionPerfil edicion, string? fotoPerfil, string? fotoDni)
     {
         using (var connection = new SqlConnection(connectionString))
         {
-            return connection.QueryFirstOrDefault<ResultadoGuardado>(
-                "guardarPerfilCompleto",
+            return connection.QueryFirst<ResultadoGuardado>(
+                "EXEC guardarPerfilCompleto @idUsuario, @nombre, @apellido, @mail, @fechaNacimiento, @dni, @direccion, @fotoPerfil, @fotoDni, @descripcion, @precioHora, @idsMaterias, @idsNiveles, @idsModalidades, @idsEscuelas, @titulos",
                 new
                 {
                     idUsuario = idUsuario,
@@ -165,175 +145,170 @@ public class BD
                     fechaNacimiento = edicion.fechaNacimiento,
                     dni = edicion.dni,
                     direccion = edicion.direccion,
-                    fotoPerfil = rutaFotoPerfil,
-                    fotoDni = rutaFotoDni,
+                    fotoPerfil = fotoPerfil,
+                    fotoDni = fotoDni,
                     descripcion = edicion.descripcion,
                     precioHora = edicion.precioHora,
-                    idsMaterias = edicion.idsMaterias ?? "",
-                    idsNiveles = edicion.idsNiveles ?? "",
-                    idsModalidades = edicion.idsModalidades ?? "",
-                    idsEscuelas = edicion.idsEscuelas ?? "",
+                    idsMaterias = edicion.idsMaterias,
+                    idsNiveles = edicion.idsNiveles,
+                    idsModalidades = edicion.idsModalidades,
+                    idsEscuelas = edicion.idsEscuelas,
                     titulos = string.Join("|", edicion.titulos)
-                },
-                commandType: CommandType.StoredProcedure) ?? new ResultadoGuardado { resultado = "datosInvalidos" };
+                });
         }
     }
 
-    // ================= CATÁLOGO =================
-
-    // Una página de profesores que cumplen los filtros (todos opcionales). niveles: nombres separados por coma.
-    public ResultadoCatalogo obtenerCatalogo(string? busqueda, string? materia, string? colegio, string? modalidad, string? niveles, int pagina, int porPagina, int? idVisitante)
+    // Con sesión, primero salen los profesores con los que tus amigos completaron clases
+    public ResultadoCatalogo obtenerCatalogo(string? busqueda, string? materia, string? colegio, string? modalidad, string niveles, int pagina, int porPagina, int idVisitante)
     {
         using (var connection = new SqlConnection(connectionString))
         {
-            using (var tablas = connection.QueryMultiple(
-                "obtenerCatalogo",
-                new { busqueda = busqueda, materia = materia, colegio = colegio, modalidad = modalidad, niveles = niveles, pagina = pagina, porPagina = porPagina, idVisitante = idVisitante },
-                commandType: CommandType.StoredProcedure))
+            using (var tablas = connection.QueryMultiple("EXEC obtenerCatalogo @busqueda, @materia, @colegio, @modalidad, @niveles, @pagina, @porPagina, @idVisitante", new { busqueda = busqueda, materia = materia, colegio = colegio, modalidad = modalidad, niveles = niveles, pagina = pagina, porPagina = porPagina, idVisitante = idVisitante }))
             {
-                ResultadoCatalogo resultado = tablas.ReadFirst<ResultadoCatalogo>();
-                resultado.profesores = tablas.Read<Profesor>().ToList();
-                var materiasPorProfesor = tablas.Read<ItemDeProfesor>().ToLookup(fila => fila.idUsuario, fila => fila.nombre);
-                var nivelesPorProfesor = tablas.Read<ItemDeProfesor>().ToLookup(fila => fila.idUsuario, fila => fila.nombre);
-                var modalidadesPorProfesor = tablas.Read<ItemDeProfesor>().ToLookup(fila => fila.idUsuario, fila => fila.nombre);
-                var colegiosPorProfesor = tablas.Read<ItemDeProfesor>().ToLookup(fila => fila.idUsuario, fila => fila.nombre);
-
-                foreach (Profesor profesor in resultado.profesores)
-                {
-                    profesor.materias = materiasPorProfesor[profesor.id].ToList();
-                    profesor.niveles = nivelesPorProfesor[profesor.id].ToList();
-                    profesor.modalidades = modalidadesPorProfesor[profesor.id].ToList();
-                    profesor.colegios = colegiosPorProfesor[profesor.id].ToList();
-                }
-                return resultado;
+                ResultadoCatalogo catalogo = tablas.ReadFirst<ResultadoCatalogo>();
+                catalogo.profesores = tablas.Read<Profesor>().ToList();
+                return catalogo;
             }
         }
     }
 
-    // ================= CLASES (pedidos alumno → profesor) =================
-    // Reglas y estados: Info/log.md, entrada 2026-10-14. Todos los SP devuelven una fila con "resultado".
-
-    // El alumno le pide una clase al profesor. fecha = hora de inicio. mensaje (opcional) va al chat del profesor
+    // codigo: 0 = ok (con idClase), 1 = vos no sos alumno o el profesor no existe, 2 = tiene que empezar dentro de 1 hora
+    // o más y dentro de los próximos 90 días, 3 = fuera de la agenda del profesor, 4 = ya tenés una clase en ese horario,
+    // 5 = el profesor ya tiene una clase confirmada en ese horario. mensaje (opcional) va al chat del profesor
     public ResultadoClase enviarPedidoClase(int idAlumno, int idProfesor, DateTime fecha, string? mensaje)
     {
         using (var connection = new SqlConnection(connectionString))
         {
-            return connection.QuerySingle<ResultadoClase>("enviarPedidoClase", new { idAlumno = idAlumno, idProfesor = idProfesor, fecha = fecha, mensaje = mensaje }, commandType: CommandType.StoredProcedure);
+            return connection.QueryFirst<ResultadoClase>("EXEC enviarPedidoClase @idAlumno, @idProfesor, @fecha, @mensaje", new { idAlumno = idAlumno, idProfesor = idProfesor, fecha = fecha, mensaje = mensaje });
         }
     }
 
-    // Acepta o rechaza quien tiene que responder (el profesor a un pedido, o el alumno a un nuevo horario propuesto)
-    public ResultadoClase responderPedidoClase(int idUsuario, int idClase, bool aceptar)
+    // Responde quien recibió el pedido (o el horario nuevo). codigo: 0 = ok, 1 = no te toca responder,
+    // 2 = ya se respondió o venció, 3 = alguno de los dos ya tiene una clase confirmada en ese horario
+    public ResultadoClase aceptarPedidoClase(int idUsuario, int idClase)
     {
         using (var connection = new SqlConnection(connectionString))
         {
-            return connection.QuerySingle<ResultadoClase>("responderPedidoClase", new { idUsuario = idUsuario, idClase = idClase, aceptar = aceptar }, commandType: CommandType.StoredProcedure);
+            return connection.QueryFirst<ResultadoClase>("EXEC aceptarPedidoClase @idUsuario, @idClase", new { idUsuario = idUsuario, idClase = idClase });
         }
     }
 
-    // Cancela una clase. Confirmada con menos de 24 h: queda Pide cancelar y el otro tiene que aceptar (solicitudEnviada).
-    // motivo (opcional) va al chat de la otra persona
+    // codigo: 0 = ok, 1 = no te toca responder, 2 = ya se respondió o venció
+    public ResultadoClase rechazarPedidoClase(int idUsuario, int idClase)
+    {
+        using (var connection = new SqlConnection(connectionString))
+        {
+            return connection.QueryFirst<ResultadoClase>("EXEC rechazarPedidoClase @idUsuario, @idClase", new { idUsuario = idUsuario, idClase = idClase });
+        }
+    }
+
+    // Una confirmada que empieza en menos de 24 h queda "Pide cancelar" y el otro tiene que aceptar (mirar estado).
+    // codigo: 0 = ok, 1 = no es tu clase, 2 = ya no se puede cancelar. motivo (opcional) va al chat del otro
     public ResultadoClase cancelarClase(int idUsuario, int idClase, string? motivo)
     {
         using (var connection = new SqlConnection(connectionString))
         {
-            return connection.QuerySingle<ResultadoClase>("cancelarClase", new { idUsuario = idUsuario, idClase = idClase, motivo = motivo }, commandType: CommandType.StoredProcedure);
+            return connection.QueryFirst<ResultadoClase>("EXEC cancelarClase @idUsuario, @idClase, @motivo", new { idUsuario = idUsuario, idClase = idClase, motivo = motivo });
         }
     }
 
-    // Propone otro horario. Pendiente / Rechazada: vuelve a Pendiente y le toca responder al otro. Confirmada: queda
-    // Pide cambio (sigue en su horario hasta que el otro acepte). motivo (opcional) va al chat
+    // Una confirmada queda "Pide cambio" y sigue en su horario hasta que el otro acepte (mirar estado).
+    // codigo: 0 = ok, 1 = no es tu clase, 2 = ya no se puede reubicar, 3 = es el mismo horario, 4 = tiene que empezar
+    // dentro de 1 hora o más y dentro de los próximos 90 días, 5 = fuera de la agenda del profesor,
+    // 6 = el alumno ya tiene una clase en ese horario, 7 = el profesor ya tiene una clase confirmada en ese horario
     public ResultadoClase reubicarClase(int idUsuario, int idClase, DateTime nuevaFecha, string? motivo)
     {
         using (var connection = new SqlConnection(connectionString))
         {
-            return connection.QuerySingle<ResultadoClase>("reubicarClase", new { idUsuario = idUsuario, idClase = idClase, nuevaFecha = nuevaFecha, motivo = motivo }, commandType: CommandType.StoredProcedure);
+            return connection.QueryFirst<ResultadoClase>("EXEC reubicarClase @idUsuario, @idClase, @nuevaFecha, @motivo", new { idUsuario = idUsuario, idClase = idClase, nuevaFecha = nuevaFecha, motivo = motivo });
         }
     }
 
-    // Acepta o rechaza el pedido de cambio de horario o de cancelación de una clase confirmada
-    public ResultadoClase responderSolicitudClase(int idUsuario, int idClase, bool aceptar)
+    // Acepta un pedido de cambio de horario o de cancelación. codigo: 0 = ok, 1 = no te toca responder,
+    // 2 = ya se respondió o venció, 3 = alguno de los dos ya tiene una clase confirmada en el horario nuevo
+    public ResultadoClase aceptarSolicitudClase(int idUsuario, int idClase)
     {
         using (var connection = new SqlConnection(connectionString))
         {
-            return connection.QuerySingle<ResultadoClase>("responderSolicitudClase", new { idUsuario = idUsuario, idClase = idClase, aceptar = aceptar }, commandType: CommandType.StoredProcedure);
+            return connection.QueryFirst<ResultadoClase>("EXEC aceptarSolicitudClase @idUsuario, @idClase", new { idUsuario = idUsuario, idClase = idClase });
         }
     }
 
-    // Quien pidió el cambio o la cancelación lo retira: la clase vuelve a Confirmada
+    // codigo: 0 = ok (la clase sigue como estaba), 1 = no te toca responder, 2 = ya se respondió o venció
+    public ResultadoClase rechazarSolicitudClase(int idUsuario, int idClase)
+    {
+        using (var connection = new SqlConnection(connectionString))
+        {
+            return connection.QueryFirst<ResultadoClase>("EXEC rechazarSolicitudClase @idUsuario, @idClase", new { idUsuario = idUsuario, idClase = idClase });
+        }
+    }
+
+    // Quien pidió el cambio o la cancelación se arrepiente. codigo: 0 = ok, 1 = no lo pediste vos, 2 = ya se respondió
     public ResultadoClase retirarSolicitudClase(int idUsuario, int idClase)
     {
         using (var connection = new SqlConnection(connectionString))
         {
-            return connection.QuerySingle<ResultadoClase>("retirarSolicitudClase", new { idUsuario = idUsuario, idClase = idClase }, commandType: CommandType.StoredProcedure);
+            return connection.QueryFirst<ResultadoClase>("EXEC retirarSolicitudClase @idUsuario, @idClase", new { idUsuario = idUsuario, idClase = idClase });
         }
     }
 
-    // "No se dio": pasa una clase Completada de las últimas 48 h a No concretada
+    // "No se dio". codigo: 0 = ok, 1 = no es tu clase, 2 = pasaron más de 48 h desde que terminó
     public ResultadoClase marcarClaseNoConcretada(int idUsuario, int idClase)
     {
         using (var connection = new SqlConnection(connectionString))
         {
-            return connection.QuerySingle<ResultadoClase>("marcarClaseNoConcretada", new { idUsuario = idUsuario, idClase = idClase }, commandType: CommandType.StoredProcedure);
+            return connection.QueryFirst<ResultadoClase>("EXEC marcarClaseNoConcretada @idUsuario, @idClase", new { idUsuario = idUsuario, idClase = idClase });
         }
     }
 
-    // Todas las clases del usuario con fecha entre desde y hasta (días completos), en cualquier estado: el calendario del Panel
+    // Todas las clases del usuario entre esos dos días (incluidos), en cualquier estado
     public List<ClaseCalendario> obtenerCalendarioClases(int idUsuario, DateTime desde, DateTime hasta)
     {
         using (var connection = new SqlConnection(connectionString))
         {
-            return connection.Query<ClaseCalendario>("obtenerCalendarioClases", new { idUsuario = idUsuario, desde = desde.Date, hasta = hasta.Date }, commandType: CommandType.StoredProcedure).ToList();
+            return connection.Query<ClaseCalendario>("EXEC obtenerCalendarioClases @idUsuario, @desde, @hasta", new { idUsuario = idUsuario, desde = desde, hasta = hasta }).ToList();
         }
     }
 
-    // Los contadores del Panel de Control (clases activas y completadas)
     public ContadoresClases obtenerContadoresClases(int idUsuario)
     {
         using (var connection = new SqlConnection(connectionString))
         {
-            return connection.QuerySingle<ContadoresClases>("obtenerContadoresClases", new { idUsuario = idUsuario }, commandType: CommandType.StoredProcedure);
+            return connection.QueryFirst<ContadoresClases>("EXEC obtenerContadoresClases @idUsuario", new { idUsuario = idUsuario });
         }
     }
 
-    // Historial de clases de idUsuario, de a cantidad desde la posición desde. idVisitante = quien mira (null = sin sesión):
-    // si es el mismo usuario ve todo su historial; si es otro, solo las clases completadas y con tope total de 20 (lo aplica el SP).
-    public ResultadoHistorial obtenerHistorialClases(int idUsuario, int? idVisitante, int desde, int cantidad)
+    // Mirando el propio se ven todas las clases; mirando el de otro, solo las completadas
+    public ResultadoHistorial obtenerHistorialClases(int idUsuario, int idVisitante, int desde, int cantidad)
     {
         using (var connection = new SqlConnection(connectionString))
         {
-            using (var tablas = connection.QueryMultiple("obtenerHistorialClases", new { idUsuario = idUsuario, idVisitante = idVisitante, desde = desde, cantidad = cantidad }, commandType: CommandType.StoredProcedure))
+            using (var tablas = connection.QueryMultiple("EXEC obtenerHistorialClases @idUsuario, @idVisitante, @desde, @cantidad", new { idUsuario = idUsuario, idVisitante = idVisitante, desde = desde, cantidad = cantidad }))
             {
-                ResultadoHistorial? resultado = tablas.ReadFirstOrDefault<ResultadoHistorial>();
-                if (resultado == null) return new ResultadoHistorial { encontrado = false };
-
-                resultado.encontrado = true;
-                resultado.clases = tablas.Read<ClaseHistorial>().ToList();
-                return resultado;
+                ResultadoHistorial historial = tablas.ReadFirst<ResultadoHistorial>();
+                if (historial.codigo == 0)
+                {
+                    historial.clases = tablas.Read<ClaseHistorial>().ToList();
+                }
+                return historial;
             }
         }
     }
 
-    // Franjas que el selector de horario tiene que bloquear (clases confirmadas del profesor y clases del alumno)
-    public List<HorarioOcupado> obtenerHorariosOcupados(int idProfesor, int? idAlumno, DateTime desde, DateTime hasta, int? idClaseExcluir)
+    // Lo que el selector de horario tiene que bloquear ese día. idClaseExcluir: la clase que se está moviendo (0 = ninguna)
+    public List<HorarioOcupado> obtenerHorariosOcupados(int idProfesor, int idAlumno, DateTime dia, int idClaseExcluir)
     {
         using (var connection = new SqlConnection(connectionString))
         {
-            return connection.Query<HorarioOcupado>(
-                "obtenerHorariosOcupados",
-                new { idProfesor = idProfesor, idAlumno = idAlumno, desde = desde, hasta = hasta, idClaseExcluir = idClaseExcluir },
-                commandType: CommandType.StoredProcedure).ToList();
+            return connection.Query<HorarioOcupado>("EXEC obtenerHorariosOcupados @idProfesor, @idAlumno, @dia, @idClaseExcluir", new { idProfesor = idProfesor, idAlumno = idAlumno, dia = dia, idClaseExcluir = idClaseExcluir }).ToList();
         }
     }
-
-    // ================= AGENDA DEL PROFESOR =================
-    // Tabla Disponibilidad: horario semanal (franjas) y días bloqueados. Un profesor sin franjas no configuró su agenda.
 
     public AgendaProfesor obtenerDisponibilidad(int idProfesor)
     {
         using (var connection = new SqlConnection(connectionString))
         {
-            using (var tablas = connection.QueryMultiple("obtenerDisponibilidad", new { idProfesor = idProfesor }, commandType: CommandType.StoredProcedure))
+            using (var tablas = connection.QueryMultiple("EXEC obtenerDisponibilidad @idProfesor", new { idProfesor = idProfesor }))
             {
                 AgendaProfesor agenda = new AgendaProfesor();
                 agenda.franjas = tablas.Read<FranjaSemanal>().ToList();
@@ -343,12 +318,13 @@ public class BD
         }
     }
 
-    // Reemplaza el horario semanal. franjas: "1:14:00-21:00,1:09:00-12:00,6:09:00-13:00" (lunes = 1)
-    public string guardarDisponibilidad(int idProfesor, string franjas)
+    // Reemplaza el horario semanal. franjas: "1:14:00-21:00,6:09:00-13:00" (lunes = 1)
+    // codigo: 0 = ok, 1 = no sos profesor, 2 = alguna franja no sirve (de al menos 60 minutos, entre las 7 y las 23 y sin tocarse con otra)
+    public int guardarDisponibilidad(int idProfesor, string franjas)
     {
         using (var connection = new SqlConnection(connectionString))
         {
-            return connection.QuerySingle<ResultadoAgenda>("guardarDisponibilidad", new { idProfesor = idProfesor, franjas = franjas }, commandType: CommandType.StoredProcedure).resultado;
+            return connection.QueryFirst<int>("EXEC guardarDisponibilidad @idProfesor, @franjas", new { idProfesor = idProfesor, franjas = franjas });
         }
     }
 
@@ -356,15 +332,15 @@ public class BD
     {
         using (var connection = new SqlConnection(connectionString))
         {
-            return connection.QuerySingle<ResultadoAgenda>("bloquearDia", new { idProfesor = idProfesor, fecha = fecha.Date }, commandType: CommandType.StoredProcedure);
+            return connection.QueryFirst<ResultadoAgenda>("EXEC bloquearDia @idProfesor, @fecha", new { idProfesor = idProfesor, fecha = fecha });
         }
     }
 
-    public ResultadoAgenda desbloquearDia(int idProfesor, DateTime fecha)
+    public void desbloquearDia(int idProfesor, DateTime fecha)
     {
         using (var connection = new SqlConnection(connectionString))
         {
-            return connection.QuerySingle<ResultadoAgenda>("desbloquearDia", new { idProfesor = idProfesor, fecha = fecha.Date }, commandType: CommandType.StoredProcedure);
+            connection.Execute("EXEC desbloquearDia @idProfesor, @fecha", new { idProfesor = idProfesor, fecha = fecha });
         }
     }
 
@@ -435,11 +411,4 @@ public class BD
             return connection.QueryFirst<int>("EXEC rechazarAmistad @idUsuario, @idOtroUsuario", new { idUsuario = idUsuario, idOtroUsuario = idOtroUsuario });
         }
     }
-}
-
-// Una fila (profesor, nombre) de las listas del SP obtenerCatalogo
-public class ItemDeProfesor
-{
-    public int idUsuario { get; set; }
-    public string nombre { get; set; } = "";
 }
