@@ -1,0 +1,48 @@
+@* Header para visitantes sin sesión iniciada *@
+@{
+    string accionActual = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+    string controladorActual = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+}
+
+<header class="encabezado" id="encabezado">
+    <nav class="navbar lg:navbar-expand">
+        <div class="container">
+            <partial name="_marcaLogo" />
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="drawer" data-bs-target="#menuInvitado"
+                    aria-controls="menuInvitado" aria-expanded="false" aria-label="Abrir menú">
+                <span class="navbar-toggler-icon" aria-hidden="true"></span>
+            </button>
+
+            @* En pantallas < lg el menú es un drawer lateral (<dialog>); desde lg queda en línea *@
+            <dialog class="drawer drawer-end" tabindex="-1" id="menuInvitado" aria-labelledby="tituloMenuInvitado">
+                <div class="drawer-header">
+                    <span class="drawer-title" id="tituloMenuInvitado">Menú</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="drawer" aria-label="Cerrar"></button>
+                </div>
+
+                <div class="drawer-body">
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <a class="nav-link @((controladorActual == "Home" && accionActual == "Index") ? "active" : "")" aria-current="@((controladorActual == "Home" && accionActual == "Index") ? "page" : null)" asp-controller="Home" asp-action="Index">Inicio</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(controladorActual == "Catalogo" ? "active" : "")" aria-current="@(controladorActual == "Catalogo" ? "page" : null)" asp-controller="Catalogo" asp-action="Index">Catálogo</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(accionActual == "QuienesSomos" ? "active" : "")" aria-current="@(accionActual == "QuienesSomos" ? "page" : null)" asp-controller="Home" asp-action="QuienesSomos">Quiénes somos</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(accionActual == "Soporte" ? "active" : "")" aria-current="@(accionActual == "Soporte" ? "page" : null)" asp-controller="Home" asp-action="Soporte">Soporte</a>
+                        </li>
+                    </ul>
+
+                    <div class="acciones">
+                        <a class="boton contorno" asp-controller="Sesion" asp-action="IniciarSesion">Iniciar sesión</a>
+                        <a class="boton principal" asp-controller="Sesion" asp-action="Registrarse">Crear cuenta</a>
+                    </div>
+                </div>
+            </dialog>
+        </div>
+    </nav>
+</header>

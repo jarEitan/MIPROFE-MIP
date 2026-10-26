@@ -1,0 +1,23 @@
+﻿@model ErrorViewModel
+@{
+    ViewData["Title"] = "Error";
+}
+
+<!-- ================= PÁGINA DE ERROR ================= -->
+<section class="paginaError">
+    <div class="container">
+        <span class="pegatina magenta redonda" aria-hidden="true" style="--giro:-8deg"><i class="bi bi-exclamation-lg"></i></span>
+        <h1>Ocurrió un error</h1>
+        <p>No pudimos procesar tu solicitud.</p>
+
+        @if (Model.ShowRequestId)
+        {
+            <p>Si nos escribís desde Soporte, contanos este código: <code>@Model.RequestId</code></p>
+        }
+
+        <div class="acciones">
+            <a class="boton principal" asp-controller="Home" asp-action="Index">Volver al inicio</a>
+            <a class="boton" asp-controller="Home" asp-action="Soporte">Ir a Soporte</a>
+        </div>
+    </div>
+</section>

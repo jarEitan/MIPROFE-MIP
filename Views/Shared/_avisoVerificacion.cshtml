@@ -1,0 +1,35 @@
+@* Aviso "Cuenta no verificada" (estilo Pop up del UI Kit). Va debajo del header en todas las páginas
+   cuando hay sesión y faltan datos. Se puede cerrar hasta la próxima sesión (site.js lo recuerda en
+   sessionStorage). En el perfil propio no se muestra: ahí está el aviso completo dentro de la página.
+   Claves de sesión: "verificado" y "datosFaltantes". *@
+@{
+    string tipoUsuario = Context.Session.GetString("tipoUsuario") ?? "";
+    bool hayCuentaSinVerificar = Context.Session.GetString("idUsuario") != null
+        && tipoUsuario != "admin"
+        && Context.Session.GetString("verificado") != "true";
+    bool ocultarEnEstaPagina = ViewBag.ocultarAvisoVerificacion ?? false;
+    string datosFaltantes = Context.Session.GetString("datosFaltantes") ?? "";
+}
+@if (hayCuentaSinVerificar && !ocultarEnEstaPagina)
+{
+    <div class="avisoVerificacion" id="avisoVerificacion" role="status" hidden>
+        <div class="container">
+            <div class="contenidoAviso">
+                <span class="icono"><i class="bi bi-shield-exclamation" aria-hidden="true"></i></span>
+                <p>
+                    <strong>Cuenta no verificada.</strong>
+                    @if (datosFaltantes != "")
+                    {
+                        <span>Te falta @datosFaltantes.</span>
+                    }
+                    else
+                    {
+                        <span>Completá tus datos para verificarla.</span>
+                    }
+                </p>
+                <a class="boton oscuro chico" asp-controller="Home" asp-action="Perfil" asp-route-id="@Context.Session.GetString("idUsuario")" asp-route-editar="true">Completar mis datos</a>
+                <button class="btn-close" type="button" id="botonCerrarAvisoVerificacion" aria-label="Cerrar aviso"></button>
+            </div>
+        </div>
+    </div>
+}

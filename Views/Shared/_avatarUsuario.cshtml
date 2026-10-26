@@ -1,0 +1,21 @@
+@* Avatar del usuario con sesión. Sin foto de perfil se genera con la primera letra del nombre y del apellido.
+   Modelo opcional: clases extra, por ejemplo "avatar-xl". *@
+@model string
+@{
+    string nombre = Context.Session.GetString("nombre") ?? "";
+    string apellido = Context.Session.GetString("apellido") ?? "";
+    string fotoPerfil = Context.Session.GetString("fotoPerfil") ?? "";
+    string inicialNombre = nombre.Length > 0 ? nombre.Substring(0, 1).ToUpper() : "";
+    string inicialApellido = apellido.Length > 0 ? apellido.Substring(0, 1).ToUpper() : "";
+    string iniciales = inicialNombre + inicialApellido;
+    if (iniciales == "") iniciales = "?";
+    string clasesExtra = Model ?? "";
+}
+@if (fotoPerfil != "")
+{
+    <span class="avatar @clasesExtra"><img src="@fotoPerfil" alt="Foto de perfil de @nombre @apellido" /></span>
+}
+else
+{
+    <span class="avatar theme-primary @clasesExtra" aria-hidden="true">@iniciales</span>
+}

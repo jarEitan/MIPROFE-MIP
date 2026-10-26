@@ -1,0 +1,42 @@
+@* Diálogo "Dar reseña" para alumnos y profesores con sesión. Lo abre cualquier botón [data-dar-resena]
+   (data-id-usuario y data-nombre-usuario): la estrella del Perfil y "Dar reseña" del Historial.
+   Lo maneja site.js (abrirResena / enviarResena) y la manda con fetch a /Resenas/Dar. *@
+<dialog class="dialog dialogoResena" id="dialogoDarResena" aria-labelledby="tituloDarResena">
+    <form id="formularioDarResena" onsubmit="return enviarResena()" novalidate>
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="idReceptor" id="idReceptorResena" />
+        <div class="dialog-header">
+            <h2 class="dialog-title" id="tituloDarResena">Reseña para <span id="nombreResena"></span></h2>
+            <button type="button" class="btn-close" data-bs-dismiss="dialog" aria-label="Cerrar"></button>
+        </div>
+
+        <div class="dialog-body">
+            <fieldset class="estrellasResena">
+                <legend>¿Cómo fueron las clases?</legend>
+                <div class="filaEstrellas">
+                    @for (int estrella = 1; estrella <= 5; estrella++)
+                    {
+                        <label>
+                            <input class="visually-hidden" type="radio" name="puntuacion" value="@estrella" />
+                            <i class="bi bi-star-fill" aria-hidden="true"></i>
+                            <span class="visually-hidden">@estrella @(estrella == 1 ? "estrella" : "estrellas")</span>
+                        </label>
+                    }
+                    <span class="textoPuntuacion" id="textoPuntuacion" aria-hidden="true"></span>
+                </div>
+            </fieldset>
+
+            <div class="form-field">
+                <label for="descripcionResena">Comentario (opcional)</label>
+                <textarea class="form-control" id="descripcionResena" name="descripcion" maxlength="500" rows="4" placeholder="Contá qué te sirvió y qué se podría mejorar"></textarea>
+                <small id="contadorResena">0 / 500</small>
+            </div>
+            <p class="mensajeError" id="mensajeDarResena" role="alert"></p>
+        </div>
+
+        <div class="dialog-footer">
+            <button type="button" class="boton contorno chico" data-bs-dismiss="dialog">Cancelar</button>
+            <button type="submit" class="boton principal chico" id="botonEnviarResena"><i class="bi bi-send" aria-hidden="true"></i> Publicar reseña</button>
+        </div>
+    </form>
+</dialog>

@@ -1,0 +1,5538 @@
+/* =====================================================================
+   MiProfesor (MIP) - Hoja de estilos única
+   Orden: 0) Variables y base · 1) Header · 2) Etiquetas generales y
+   componentes reutilizables · 3) Main (secciones en orden de aparición)
+   · 4) Footer · 5) Accesibilidad de movimiento
+
+   Cómo está pensada:
+   - Bootstrap 6 (alpha) pone la grilla (row/col), los componentes (navbar,
+     drawer, dialog, accordion, tabs, menu, badge, avatar) y los
+     formularios. Acá solo se pisan sus variables --bs-* y se agrega la
+     identidad de MIP. Bootstrap 6 va dentro de @layer, así que esta hoja
+     (sin layer) siempre gana, sin !important.
+   - Pocas clases reutilizables con modificadores: .boton .principal,
+     .card .coral, .icono .celeste. Todo lo demás se especializa con
+     selectores descendientes: ".portada h1", ".pie ul a", ".profesor header".
+   - Nombres en camelCase y en español, descriptivos.
+   ===================================================================== */
+
+
+/* =========================================================
+   0) VARIABLES Y BASE
+   ========================================================= */
+
+/* Fuentes locales (variables), sin depender de Google Fonts */
+@font-face {
+    font-family: 'Plus Jakarta Sans';
+    font-style: normal;
+    font-weight: 200 800;
+    font-display: swap;
+    src: url('../fonts/plusJakartaSansLatin.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+    font-family: 'Plus Jakarta Sans';
+    font-style: normal;
+    font-weight: 200 800;
+    font-display: swap;
+    src: url('../fonts/plusJakartaSansLatinExt.woff2') format('woff2');
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* Eras Bold ITC: titulares principales y logotipo (un solo peso; el rango evita que el navegador la engrose) */
+@font-face {
+    font-family: 'Eras Bold ITC';
+    font-style: normal;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url('../fonts/erasBoldItc.woff2') format('woff2');
+}
+
+/* Fredoka: la fuente redondeada de la marca para botones, cifras y etiquetas */
+@font-face {
+    font-family: 'Fredoka';
+    font-style: normal;
+    font-weight: 300 700;
+    font-display: swap;
+    src: url('../fonts/fredokaLatin.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+    font-family: 'Fredoka';
+    font-style: normal;
+    font-weight: 300 700;
+    font-display: swap;
+    src: url('../fonts/fredokaLatinExt.woff2') format('woff2');
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+:root {
+    /* Paleta de marca */
+    --colorCoral: #FF5757;
+    --colorMagenta: #D51F47;
+    --colorCoralSuave: #FFE8E8;
+    --colorCeleste: #5CE1E6;
+    --colorCelesteOscuro: #0E7490;
+    --colorCelesteSuave: #DDF8F9;
+    --colorTinta: #111827;
+    --colorFondo: #F9FAFB;
+    --colorSuperficie: #FFFFFF;
+    --colorBorde: #E5E7EB;
+    --colorTexto: #111827;
+    --colorTextoSuave: #6B7280;
+    --colorExito: #047857;
+    --colorExitoSuave: #D1FAE5;
+    --colorAlerta: #92400E;
+    --colorAlertaSuave: #FEF3C7;
+
+    /* Tipografías */
+    --fuenteTexto: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --fuenteTitulos: 'Eras Bold ITC', 'Fredoka', 'Plus Jakarta Sans', system-ui, sans-serif;
+    --fuenteMarca: 'Fredoka', 'Plus Jakarta Sans', system-ui, sans-serif;
+
+    /* Forma y profundidad */
+    --radioChico: .75rem;
+    --radioMedio: 1rem;
+    --radioGrande: 1.5rem;
+    --sombraSuave: 0 1px 2px rgba(17, 24, 39, .05), 0 10px 28px -14px rgba(17, 24, 39, .22);
+    --sombraFlotante: 0 2px 4px rgba(17, 24, 39, .06), 0 24px 44px -20px rgba(17, 24, 39, .35);
+    --sombraCoral: 0 24px 44px -24px rgba(213, 31, 71, .7);
+    --sombraTinta: 0 24px 44px -24px rgba(17, 24, 39, .75);
+    --sombraPanel: 0 30px 60px -36px rgba(17, 24, 39, .35);
+    --sombraAvatar: 0 12px 24px -12px rgba(17, 24, 39, .5);
+    --anilloFoco: 0 0 0 4px rgba(92, 225, 230, .6);
+    --troquel: 0 0 0 5px #fff, 0 0 0 6.5px rgba(17, 24, 39, .14), 0 18px 30px -14px rgba(17, 24, 39, .35);
+    --fondoLavado: radial-gradient(circle, rgba(17, 24, 39, .07) 1.2px, transparent 1.7px) 0 0 / 22px 22px,
+        radial-gradient(42rem 30rem at 100% 0%, rgba(255, 87, 87, .16), transparent 62%),
+        radial-gradient(36rem 26rem at 0% 100%, rgba(92, 225, 230, .24), transparent 62%),
+        var(--colorSuperficie);
+
+    /* Movimiento */
+    --curvaSuave: cubic-bezier(.2, .8, .2, 1);
+    --duracionRapida: .2s;
+    --duracionMedia: .45s;
+
+    /* Medidas fluidas */
+    --espacioSeccion: clamp(2.5rem, 2rem + 3vw, 4.5rem);
+    --alturaEncabezado: 4rem;
+
+    /* ---- Bootstrap 6: se pisan sus tokens para que TODOS sus componentes salgan con la paleta de MIP ---- */
+    --bs-body-font-family: var(--fuenteTexto);
+    --bs-body-font-size: 1rem;
+    --bs-body-line-height: 1.6;
+    --bs-link-color: var(--colorTinta);
+    --bs-link-hover-color: var(--colorMagenta);
+    --bs-border-color: var(--colorBorde);
+    --bs-focus-ring-color: var(--colorTinta);
+    --bs-control-checked-bg: var(--colorTinta);
+
+    --bs-primary-base: var(--colorCoral);
+    --bs-primary-fg: var(--colorTinta);
+    --bs-primary-fg-emphasis: #8E1230;
+    --bs-primary-bg: var(--colorCoral);
+    --bs-primary-bg-subtle: var(--colorCoralSuave);
+    --bs-primary-bg-muted: #FFD0D0;
+    --bs-primary-border: #FFA3A3;
+    --bs-primary-focus-ring: var(--colorCeleste);
+    --bs-primary-contrast: var(--colorTinta);
+
+    --bs-accent-base: var(--colorCeleste);
+    --bs-accent-fg: var(--colorTinta);
+    --bs-accent-fg-emphasis: #0B5566;
+    --bs-accent-bg: var(--colorCeleste);
+    --bs-accent-bg-subtle: var(--colorCelesteSuave);
+    --bs-accent-bg-muted: #B6F0F3;
+    --bs-accent-border: #8FE9ED;
+    --bs-accent-focus-ring: var(--colorCeleste);
+    --bs-accent-contrast: var(--colorTinta);
+
+    --bs-danger-base: var(--colorMagenta);
+    --bs-danger-fg: var(--colorMagenta);
+    --bs-danger-fg-emphasis: #8E1230;
+    --bs-danger-bg: var(--colorMagenta);
+    --bs-danger-bg-subtle: #FDE4EA;
+    --bs-danger-bg-muted: #FBC9D4;
+    --bs-danger-border: #F4A0B3;
+    --bs-danger-contrast: #FFFFFF;
+
+    --bs-success-base: var(--colorExito);
+    --bs-success-fg: var(--colorExito);
+    --bs-success-fg-emphasis: #065F46;
+    --bs-success-bg: var(--colorExito);
+    --bs-success-bg-subtle: var(--colorExitoSuave);
+    --bs-success-bg-muted: #A7F3D0;
+    --bs-success-border: #6EE7B7;
+    --bs-success-contrast: #FFFFFF;
+
+    --bs-warning-base: #FBBF24;
+    --bs-warning-fg: var(--colorAlerta);
+    --bs-warning-fg-emphasis: #78350F;
+    --bs-warning-bg: #FBBF24;
+    --bs-warning-bg-subtle: var(--colorAlertaSuave);
+    --bs-warning-bg-muted: #FDE68A;
+    --bs-warning-border: #FCD34D;
+    --bs-warning-contrast: var(--colorTinta);
+
+    --bs-inverse-base: var(--colorTinta);
+    --bs-inverse-fg: var(--colorTinta);
+    --bs-inverse-fg-emphasis: #000000;
+    --bs-inverse-bg: var(--colorTinta);
+    --bs-inverse-bg-subtle: #F3F4F6;
+    --bs-inverse-bg-muted: var(--colorBorde);
+    --bs-inverse-border: #D1D5DB;
+    --bs-inverse-contrast: #FFFFFF;
+}
+
+html {
+    scroll-behavior: smooth;
+    scroll-padding-top: calc(var(--alturaEncabezado) + .5rem);
+}
+
+/* En pantallas grandes todo escala: los rem (tipografías, espacios, tarjetas) crecen con la raíz
+   y el contenedor se ensancha para que el contenido no quede chico en el centro */
+@media (width >= 1536px) {
+    html {
+        font-size: 112.5%;
+    }
+
+    .container {
+        max-width: 80rem;
+    }
+}
+
+@media (width >= 1920px) {
+    html {
+        font-size: 125%;
+    }
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: var(--colorSuperficie);
+    color: var(--colorTexto);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+
+main {
+    flex: 1 0 auto;
+    overflow-x: clip;
+}
+
+::selection {
+    background-color: var(--colorCeleste);
+    color: var(--colorTinta);
+}
+
+:focus-visible {
+    outline: 3px solid var(--colorFoco, var(--colorTinta));
+    outline-offset: 3px;
+}
+
+/* Sobre fondos oscuros el foco es celeste */
+.pie,
+.llamadoFinal,
+.card.oscura,
+.ilustracion.oscura,
+.snackbar {
+    --colorFoco: var(--colorCeleste);
+}
+
+[hidden] {
+    display: none !important;
+}
+
+/* Enlace para saltar el menú con el teclado */
+.saltarContenido {
+    position: fixed;
+    top: .5rem;
+    left: .5rem;
+    z-index: 2000;
+    padding: .6rem 1rem;
+    border: 1.5px solid var(--colorBorde);
+    border-radius: var(--radioChico);
+    background-color: var(--colorCeleste);
+    color: var(--colorTinta);
+    font-weight: 700;
+    text-decoration: none;
+    translate: 0 -200%;
+    transition: translate var(--duracionRapida) var(--curvaSuave);
+}
+
+.saltarContenido:focus {
+    translate: 0 0;
+}
+
+
+/* =========================================================
+   1) HEADER
+   ========================================================= */
+/* La sombra está siempre puesta */
+.encabezado {
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+    background-color: var(--colorSuperficie);
+    box-shadow: 0 1px 0 rgba(17, 24, 39, .06), 0 10px 28px -16px rgba(17, 24, 39, .3);
+}
+
+.encabezado .navbar {
+    --bs-navbar-padding-y: .35rem;
+    min-height: var(--alturaEncabezado);
+}
+
+.encabezado .container {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 1rem;
+}
+
+.marcaLogo {
+    display: inline-flex;
+    align-items: center;
+    gap: .6rem;
+    text-decoration: none;
+}
+
+.marcaLogo img {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    object-fit: cover;
+    transition: transform var(--duracionMedia) var(--curvaSuave);
+}
+
+@media (hover: hover) {
+    .marcaLogo:hover img {
+        transform: rotate(-12deg) scale(1.08);
+    }
+}
+
+/* "Mi" en tinta y "Profesor" en coral (el pie pone "Mi" en blanco) */
+.marcaLogo > span {
+    font-family: var(--fuenteTitulos);
+    font-size: 1.3rem;
+    font-weight: 400;
+    letter-spacing: 0;
+    color: var(--colorTinta);
+}
+
+.marcaLogo > span > span {
+    color: var(--colorCoral);
+}
+
+/* Botón hamburguesa (solo se ve antes de lg): círculo celeste */
+.encabezado .navbar-toggler {
+    --bs-navbar-toggler-icon-size: 1.25rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    margin-left: auto;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background-color: var(--colorCeleste);
+    color: var(--colorTinta);
+    transition: translate var(--duracionRapida) var(--curvaSuave);
+}
+
+@media (hover: hover) {
+    .encabezado .navbar-toggler:hover {
+        translate: 0 -2px;
+    }
+}
+
+.encabezado .navbar-toggler:active {
+    translate: 0 1px;
+}
+
+/* Enlaces de navegación en píldora; el de la página actual va en tinta */
+.encabezado .nav-link {
+    align-items: center;
+    min-height: 2.75rem;
+    padding-inline: 1rem;
+    border-radius: 999px;
+    font: 500 1.0625rem/1.2 var(--fuenteMarca);
+    color: var(--colorTexto);
+    transition: background-color var(--duracionRapida) ease, color var(--duracionRapida) ease;
+}
+
+@media (hover: hover) {
+    .encabezado .nav-link:hover {
+        background-color: var(--colorCelesteSuave);
+    }
+}
+
+/* Va después del hover: el hover (sin capa) le ganaría al .active de Bootstrap */
+.encabezado .nav-link.active {
+    background-color: var(--colorTinta);
+    color: #fff;
+}
+
+.encabezado .acciones {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: .75rem;
+}
+
+/* Botón Panel de Control con insignia de notificaciones (header con sesión). Sin notificaciones la insignia
+   sigue en el HTML (site.js la actualiza) y el atributo hidden la oculta */
+.encabezado .boton .badge {
+    min-height: 1.15rem;
+    padding: .2rem .4rem;
+    background-color: var(--colorMagenta);
+    color: #fff;
+    font-family: var(--fuenteTexto);
+    font-weight: 800;
+}
+
+/* Nombre y foto del usuario: llevan al perfil */
+.encabezado .usuario {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .6rem;
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    color: var(--colorTinta);
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.encabezado .usuario .nombreUsuario {
+    max-width: 10rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.encabezado .usuario .avatar {
+    --bs-avatar-size: 2.5rem;
+    cursor: pointer;
+    transition: transform var(--duracionRapida) var(--curvaSuave);
+}
+
+@media (hover: hover) {
+    .encabezado .usuario .avatar:hover {
+        transform: scale(1.08) rotate(-4deg);
+    }
+}
+
+/* Antes de lg el menú es un drawer lateral.
+   (@container y no @media: el navbar de Bootstrap 6 se expande según el ancho de su propio contenedor,
+   que no cuenta la barra de scroll, así que el corte puede diferir unos píxeles del viewport) */
+@container (width < 1024px) {
+    .encabezado .drawer {
+        --bs-drawer-width: min(20rem, 88vw);
+        --bs-drawer-inset: 0;
+        --bs-drawer-border-radius: 0;
+        --bs-drawer-border-width: 0;
+        --bs-drawer-box-shadow: none;
+        --bs-drawer-backdrop-bg: rgba(17, 24, 39, .45);
+        --bs-drawer-backdrop-blur: 0;
+    }
+
+    .encabezado .drawer-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem 1.25rem;
+        background-color: var(--colorSuperficie);
+    }
+
+    .encabezado .drawer-title {
+        font-family: var(--fuenteMarca);
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--colorTinta);
+    }
+
+    .encabezado .drawer-body {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        padding: .5rem 1.25rem 1.5rem;
+    }
+
+    .encabezado :is(.navbar-nav, .acciones) {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .encabezado .usuario {
+        align-self: flex-start;
+    }
+}
+
+/* Desde lg el menú queda en línea y el drawer deja de serlo */
+@container (width >= 1024px) {
+    .encabezado .navbar-nav {
+        margin-left: 1rem;
+    }
+
+    .encabezado .acciones {
+        margin-left: auto;
+    }
+}
+
+/* Entre 1024 y 1279 px el contenedor mide 960 px: con los cuatro links del alumno el header solo entra en una línea
+   si los links se achican, los huecos se cierran y el nombre se oculta (el avatar lleva al perfil) */
+@container (1024px <= width < 1280px) {
+    .encabezado .container {
+        gap: .5rem;
+    }
+
+    .encabezado .navbar-nav {
+        margin-left: .5rem;
+    }
+
+    .encabezado .acciones {
+        gap: .5rem;
+    }
+
+    .encabezado .nav-link {
+        padding-inline: .75rem;
+    }
+
+    .encabezado .usuario .nombreUsuario {
+        display: none;
+    }
+}
+
+
+/* =========================================================
+   2) ETIQUETAS GENERALES Y COMPONENTES REUTILIZABLES
+   ========================================================= */
+section {
+    position: relative;
+    padding-block: var(--espacioSeccion);
+}
+
+h1, h2, h3, h4, h5 {
+    margin: 0;
+    font-weight: 800;
+    letter-spacing: -.025em;
+    line-height: 1.15;
+    color: var(--colorTinta);
+}
+
+/* Eras Bold ITC se reserva para los titulares de mayor jerarquía (h1 y h2) */
+h1, h2 {
+    font-family: var(--fuenteTitulos);
+    font-weight: 400;
+    text-wrap: balance;
+}
+
+h1 {
+    font-size: clamp(2.25rem, 1.4rem + 3.6vw, 4rem);
+    line-height: .96;
+    letter-spacing: -.01em;
+}
+
+h2 {
+    font-size: clamp(1.75rem, 1.2rem + 2.2vw, 2.75rem);
+    line-height: 1.05;
+    letter-spacing: 0;
+}
+
+h3 {
+    font-size: clamp(1rem, .95rem + .25vw, 1.125rem);
+}
+
+p {
+    margin: 0;
+    line-height: 1.7;
+}
+
+a {
+    text-decoration: none;
+}
+
+/* Los enlaces dentro de texto sí se subrayan */
+:is(p, label) a {
+    font-weight: 700;
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: .2em;
+}
+
+/* Un nombre que lleva al perfil (tarjetas de profesor, agenda, chat y reseñas): 44px de toque sin agrandar
+   la línea; el margen negativo descuenta el padding del alto */
+:is(h3, h4, .hilo strong, .resena header) > a {
+    display: inline-block;
+    padding-block: .8rem;
+    margin-block: -.8rem;
+}
+
+ul, ol {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+figure {
+    margin: 0;
+}
+
+blockquote {
+    margin: 0;
+}
+
+/* Palabra resaltada con un marcador celeste (h1 de portada y cabeceras) */
+mark {
+    padding: 0;
+    background-color: transparent;
+    background-image: linear-gradient(var(--colorCeleste), var(--colorCeleste));
+    background-repeat: no-repeat;
+    background-position: 0 88%;
+    background-size: 100% .28em;
+    color: var(--colorCoral);
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+}
+
+/* Encabezado centrado reutilizable de cada sección */
+.encabezadoSeccion {
+    max-width: 44rem;
+    margin: 0 auto 1.5rem;
+    text-align: center;
+}
+
+.encabezadoSeccion h2 {
+    margin-block: .6rem .4rem;
+}
+
+.encabezadoSeccion p {
+    font-size: .95rem;
+    color: var(--colorTextoSuave);
+}
+
+/* Píldora: solo para un dato real (el rol en el Perfil y en la lista de amigos) */
+.pildora {
+    display: inline-flex;
+    gap: .35rem;
+    padding: .2rem .8rem;
+    border: 0;
+    border-radius: 999px;
+    background-color: var(--colorCeleste);
+    color: var(--colorTexto);
+    font: 600 .875rem var(--fuenteMarca);
+}
+
+/* ---------- Botones de marca (píldora que sube al pasar el mouse) ---------- */
+/* .contorno es la base: no tiene regla propia pero el JS la usa */
+.boton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    min-height: 3rem;
+    padding: 0 1.6rem;
+    border: 2px solid var(--colorBorde);
+    border-radius: 999px;
+    background-color: var(--colorSuperficie);
+    color: var(--colorTexto);
+    font: 600 1.0625rem/1.2 var(--fuenteMarca);
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    box-shadow: 0 6px 14px -8px rgba(17, 24, 39, .35);
+    transition: translate .2s var(--curvaSuave), box-shadow .2s var(--curvaSuave);
+}
+
+@media (hover: hover) {
+    .boton:hover {
+        translate: 0 -3px;
+        box-shadow: 0 12px 22px -10px rgba(17, 24, 39, .45);
+    }
+}
+
+.boton:active {
+    translate: 0 1px;
+    box-shadow: 0 2px 6px -2px rgba(17, 24, 39, .4);
+}
+
+.boton.principal {
+    background-color: var(--colorCoral);
+    border-color: transparent;
+    box-shadow: 0 8px 18px -8px rgba(213, 31, 71, .6);
+}
+
+.boton.secundario {
+    background-color: var(--colorCeleste);
+    border-color: transparent;
+    box-shadow: 0 8px 18px -8px rgba(14, 116, 144, .6);
+}
+
+.boton.oscuro {
+    background-color: var(--colorTinta);
+    border-color: transparent;
+    color: #fff;
+}
+
+/* Para fondos oscuros */
+.boton.claro {
+    background-color: transparent;
+    border-color: rgba(255, 255, 255, .55);
+    color: #fff;
+    box-shadow: none;
+}
+
+.boton.chico {
+    min-height: 2.75rem;
+    padding: 0 1.1rem;
+    font-size: .9375rem;
+}
+
+/* Botones solo con ícono (Me gusta, Reseña, Copiar enlace) */
+.boton.botonIcono {
+    width: 2.75rem;
+    height: 2.75rem;
+    min-height: 2.75rem;
+    padding: 0;
+}
+
+/* ---------- Tarjeta (Bootstrap .card) ---------- */
+.card {
+    padding: 1.5rem;
+    gap: .75rem;
+    border: 1.5px solid var(--colorBorde);
+    border-radius: var(--radioGrande);
+    background-color: var(--colorSuperficie);
+    color: var(--colorTexto);
+    text-decoration: none;
+    box-shadow: var(--sombraSuave);
+    transition: translate .25s var(--curvaSuave), box-shadow .25s var(--curvaSuave), border-color .25s var(--curvaSuave);
+}
+
+/* Dentro de una grilla (row > col > card) todas las tarjetas de la fila miden lo mismo */
+.row > * > .card:only-child {
+    height: 100%;
+}
+
+@media (hover: hover) {
+    /* La capa celeste plana es la única del sistema */
+    .card:is(a, .profesor, .profesorFila):hover {
+        translate: -4px -4px;
+        border-color: var(--colorTinta);
+        box-shadow: 6px 6px 0 var(--colorCeleste), 0 22px 36px -18px rgba(17, 24, 39, .3);
+    }
+}
+
+.card :is(h2, h3) {
+    margin: 0;
+}
+
+/* Insignias, píldoras y botones dentro de una tarjeta no se estiran a lo ancho */
+.card > :is(.badge, .pildora, .boton) {
+    align-self: flex-start;
+}
+
+.card p {
+    font-size: .92rem;
+    color: var(--colorTextoSuave);
+}
+
+/* Sobre coral el texto va en tinta (el blanco no llega al contraste) */
+.card.coral {
+    background-color: var(--colorCoral);
+    border-color: transparent;
+    color: var(--colorTexto);
+    box-shadow: var(--sombraCoral);
+}
+
+.card.coral :is(h2, h3, p) {
+    color: var(--colorTexto);
+}
+
+.card.oscura {
+    background-color: var(--colorTinta);
+    border-color: transparent;
+    color: #fff;
+    box-shadow: var(--sombraTinta);
+}
+
+.card.oscura :is(h2, h3) {
+    color: #fff;
+}
+
+.card.oscura p {
+    color: #E5E7EB;
+}
+
+/* Tarjeta de "no hay nada todavía" (perfil inexistente, panel sin clases): centrada */
+.card.estadoVacio {
+    align-items: center;
+    max-width: 32rem;
+    margin-inline: auto;
+    padding-block: 2.5rem;
+    text-align: center;
+}
+
+.card.estadoVacio .boton {
+    align-self: center;
+}
+
+/* Ícono cuadrado de las tarjetas (al ícono le alcanza con 3:1) */
+.icono {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 3rem;
+    height: 3rem;
+    border: 0;
+    border-radius: var(--radioMedio);
+    background-color: var(--colorCoralSuave);
+    color: var(--colorMagenta);
+    font-size: 1.25rem;
+}
+
+.icono.celeste {
+    background-color: var(--colorCelesteSuave);
+    color: var(--colorTinta);
+}
+
+.icono.oscuro {
+    background-color: var(--colorTinta);
+    color: #fff;
+}
+
+/* ---------- Pegatina: etiqueta troquelada y girada (--giro va inline) ---------- */
+.pegatina {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    padding: .5rem 1rem;
+    border-radius: 1.125rem;
+    background-color: var(--colorSuperficie);
+    color: var(--colorTexto);
+    font-family: var(--fuenteMarca);
+    font-weight: 600;
+    box-shadow: var(--troquel);
+    rotate: var(--giro, -3deg);
+}
+
+.pegatina.coral {
+    background-color: var(--colorCoral);
+}
+
+.pegatina.celeste {
+    background-color: var(--colorCeleste);
+}
+
+.pegatina.magenta {
+    background-color: var(--colorMagenta);
+    color: #fff;
+}
+
+.pegatina.oscura {
+    background-color: var(--colorTinta);
+    color: #fff;
+}
+
+/* Redonda: el isotipo (logoChico.png) o un ícono grande; cada zona ajusta el tamaño */
+.pegatina.redonda {
+    justify-content: center;
+    width: 6rem;
+    height: 6rem;
+    padding: 0;
+    border-radius: 50%;
+}
+
+.pegatina.redonda img {
+    width: 100%;
+}
+
+/* I (corazón) MIP */
+.pegatina .bi-heart-fill {
+    color: var(--colorMagenta);
+}
+
+/* Contenedor de pegatinas sueltas: el padding deja lugar al troquel */
+.plancha {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem 1.25rem;
+    padding: 1rem;
+}
+
+/* ---------- Insignias y avatares (Bootstrap) ---------- */
+.badge {
+    --bs-badge-border-radius: 999px;
+    --bs-badge-font-weight: 600;
+    font-family: var(--fuenteMarca);
+    letter-spacing: 0;
+}
+
+.avatar {
+    --bs-avatar-border-width: 0;
+    --bs-avatar-font-weight: 600;
+    border: 0;
+    flex-shrink: 0;
+    font-family: var(--fuenteMarca);
+}
+
+/* Aro del isotipo: se ve solo cuando el avatar muestra iniciales (sin troquel) */
+.avatar.theme-primary {
+    box-shadow: inset 0 0 0 .1875rem var(--colorCeleste);
+}
+
+/* Avatares grandes que pueden tener foto (saludo del Panel, titular del Perfil y vista previa de Editar perfil):
+   el aro va por fuera, porque un inset queda tapado por la <img> */
+.saludo .avatar,
+.perfil .cabeceraPerfil .avatar,
+.dialogoEdicion .vistaPreviaFoto .avatar {
+    box-shadow: 0 0 0 .375rem var(--colorCeleste), var(--sombraAvatar);
+}
+
+.avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+    object-fit: cover;
+}
+
+.avatar.avatar-xl {
+    --bs-avatar-size: 4.25rem;
+}
+
+/* ---------- Formularios (Bootstrap) ---------- */
+.form-field label,
+legend {
+    font-size: .85rem;
+    font-weight: 700;
+    color: var(--colorTinta);
+}
+
+.form-field small {
+    font-size: .8rem;
+    color: var(--colorTextoSuave);
+}
+
+/* El borde #6B7280 da 4,8:1 sobre blanco; el gris de reposo de las tarjetas no llega a 3:1 */
+.form-control {
+    --bs-control-border-width: 1.5px;
+    --bs-control-border-color: var(--colorTextoSuave);
+    --bs-control-border-radius: var(--radioChico);
+    --bs-control-box-shadow: none;
+    --bs-control-bg: var(--colorSuperficie);
+    --bs-control-fg: var(--colorTexto);
+    --bs-control-font-size: 1rem;
+    /* 44px como todo control (inputs y selects) */
+    --bs-control-min-height: 2.75rem;
+    font-family: var(--fuenteTexto);
+}
+
+.form-control:focus {
+    border-color: var(--colorTinta);
+    outline: none;
+    box-shadow: var(--anilloFoco);
+}
+
+/* Elegidos en tinta por el token --bs-control-checked-bg; la tilde va en blanco (primary-contrast es tinta) */
+.check {
+    --bs-check-border-color: var(--colorTextoSuave);
+    --bs-theme-contrast: #fff;
+}
+
+.radio {
+    --bs-radio-border-color: var(--colorTextoSuave);
+    --bs-theme-contrast: #fff;
+}
+
+fieldset {
+    display: grid;
+    gap: .6rem;
+}
+
+/* Mensajes de validación: se ven solo cuando el JS les escribe un texto (blanco sobre magenta, 5,1:1) */
+.mensajeError {
+    margin-top: .75rem;
+    padding: .6rem 1rem;
+    border: 0;
+    border-radius: var(--radioChico);
+    background-color: var(--colorMagenta);
+    color: #fff;
+    font-size: .875rem;
+    font-weight: 600;
+    animation: sacudirError .4s var(--curvaSuave);
+}
+
+.mensajeError:empty {
+    display: none;
+}
+
+.mensajeExito {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    margin-top: .75rem;
+    padding: .6rem 1rem;
+    border-radius: var(--radioChico);
+    background-color: var(--colorExito);
+    color: #fff;
+    font-size: .875rem;
+    font-weight: 600;
+}
+
+/* Buscador en píldora (portada y soporte) */
+.buscador {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    max-width: 36rem;
+    padding: .375rem .375rem .375rem 1.4rem;
+    border: 0;
+    border-radius: 999px;
+    background-color: var(--colorSuperficie);
+    box-shadow: var(--sombraFlotante);
+    transition: box-shadow var(--duracionRapida) var(--curvaSuave);
+}
+
+/* El anillo tinta se suma porque el celeste solo no alcanza para el foco */
+.buscador:focus-within {
+    box-shadow: 0 0 0 2px var(--colorTinta), 0 0 0 6px rgba(92, 225, 230, .6), var(--sombraFlotante);
+}
+
+.buscador input {
+    flex: 1;
+    min-width: 0;
+    min-height: 2.75rem;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    font: inherit;
+    font-size: 1rem;
+    color: var(--colorTexto);
+}
+
+.buscador input:focus {
+    outline: none;
+}
+
+@media (hover: hover) {
+    /* El botón de adentro no se levanta */
+    .buscador .boton:hover {
+        translate: none;
+    }
+}
+
+.buscador .boton:active {
+    translate: none;
+}
+
+.buscador + .mensajeError {
+    max-width: 36rem;
+}
+
+/* Fila de botones */
+.acciones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .85rem;
+}
+
+/* Burbuja de chat (portada y chat directo) */
+.burbuja {
+    max-width: 85%;
+    margin: 0;
+    padding: .6rem .9rem;
+    border-radius: var(--radioMedio);
+    border-bottom-left-radius: .25rem;
+    background-color: #F3F4F6;
+    color: var(--colorTexto);
+    font-size: .85rem;
+    line-height: 1.4;
+}
+
+.burbuja.propia {
+    margin-left: auto;
+    border-radius: var(--radioMedio);
+    border-bottom-right-radius: .25rem;
+    background-color: var(--colorCoral);
+    font-weight: 700;
+}
+
+/* ".card p" pone gris a los párrafos: la burbuja conserva su texto oscuro */
+.card .burbuja {
+    color: var(--colorTexto);
+}
+
+/* Texto de ayuda debajo de un bloque */
+.ayudaExtra {
+    margin-top: 1.5rem;
+    text-align: center;
+    font-size: .9rem;
+    color: var(--colorTextoSuave);
+}
+
+/* ---------- Selector con búsqueda (select[data-buscable], ver site.js) ---------- */
+/* La lista va dentro del flujo (no flota): así nunca queda cortada dentro de un diálogo o del drawer */
+.selectorBuscable {
+    position: relative;
+    display: grid;
+    gap: .4rem;
+}
+
+.selectorBuscable .campoSelector {
+    position: relative;
+}
+
+.selectorBuscable .campoSelector .form-control {
+    padding-right: 2.75rem;
+    cursor: pointer;
+}
+
+.selectorBuscable .campoSelector .form-control:focus {
+    cursor: text;
+}
+
+/* 44px de toque, pegado al borde derecho del campo (la flecha queda donde estaba) */
+.selectorBuscable .desplegar {
+    position: absolute;
+    top: 50%;
+    right: 0;
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    transform: translateY(-50%);
+    border: 0;
+    border-radius: var(--radioChico);
+    background: transparent;
+    color: var(--colorTextoSuave);
+    cursor: pointer;
+}
+
+.selectorBuscable .desplegar .bi {
+    transition: transform var(--duracionRapida) var(--curvaSuave);
+}
+
+.selectorBuscable.abierto .desplegar .bi {
+    transform: rotate(180deg);
+}
+
+.selectorBuscable .listaOpciones {
+    max-height: 14rem;
+    margin: 0;
+    padding: .3rem;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border: 1.5px solid var(--colorBorde);
+    border-radius: var(--radioChico);
+    background-color: var(--colorSuperficie);
+    box-shadow: var(--sombraFlotante);
+    list-style: none;
+}
+
+.selectorBuscable .listaOpciones li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .5rem;
+    padding: .5rem .7rem;
+    border-radius: .55rem;
+    font-size: .92rem;
+    cursor: pointer;
+}
+
+.selectorBuscable .listaOpciones li.activa {
+    background-color: var(--colorCelesteSuave);
+}
+
+.selectorBuscable .listaOpciones li[aria-selected="true"] {
+    font-weight: 700;
+}
+
+.selectorBuscable .listaOpciones li .bi {
+    color: var(--colorTinta);
+}
+
+/* "Todas las materias", "Sin elegir": la opción que borra la elección */
+.selectorBuscable .listaOpciones li.vacia {
+    font-style: italic;
+    color: var(--colorTextoSuave);
+}
+
+.selectorBuscable .listaOpciones .sinCoincidencias {
+    color: var(--colorTextoSuave);
+    cursor: default;
+}
+
+/* Etiquetas de lo elegido (selector múltiple): como todo lo elegido, tinta con texto blanco; el foco va en celeste */
+.selectorBuscable .etiquetasElegidas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .35rem;
+}
+
+.selectorBuscable .etiquetasElegidas .badge {
+    --colorFoco: var(--colorCeleste);
+    display: inline-flex;
+    align-items: center;
+    gap: .2rem;
+    padding: .3em .35em .3em .75em;
+    border: 0;
+    background-color: var(--colorTinta);
+    color: #fff;
+    font-size: .8rem;
+}
+
+/* 24px de toque como mínimo (WCAG 2.5.8) */
+.selectorBuscable .etiquetasElegidas button {
+    display: grid;
+    place-items: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+}
+
+@media (hover: hover) {
+    .selectorBuscable .etiquetasElegidas button:hover {
+        background-color: rgba(255, 255, 255, .2);
+    }
+}
+
+/* El anillo va adentro de la etiqueta: afuera el celeste quedaría sobre blanco */
+.selectorBuscable .etiquetasElegidas button:focus-visible {
+    outline-offset: -3px;
+}
+
+/* ---------- Tick de cuenta verificada (el celeste sobre blanco no llega a 3:1) ---------- */
+.tickVerificado {
+    color: var(--colorTinta);
+}
+
+/* ---------- Pestañas (nav-pills de Bootstrap) ---------- */
+.nav-pills {
+    --bs-nav-pills-bg: #fff;
+    --bs-nav-pills-padding: .3rem;
+    --bs-nav-pills-link-active-bg: var(--colorTinta);
+    --bs-nav-pills-link-active-color: #fff;
+    gap: .25rem;
+    border: 1.5px solid var(--colorBorde);
+    box-shadow: var(--sombraSuave);
+}
+
+.nav-pills .nav-link {
+    min-height: 2.75rem;
+    font: 600 1rem var(--fuenteMarca);
+    color: var(--colorTexto);
+}
+
+@media (hover: hover) {
+    .nav-pills .nav-link:hover {
+        background-color: var(--colorCelesteSuave);
+    }
+}
+
+/* Va después del hover: el hover (sin capa) le ganaría al .active de Bootstrap */
+.nav-pills .nav-link.active {
+    background-color: var(--colorTinta);
+    color: #fff;
+}
+
+/* ---------- Diálogo de Bootstrap 6: header blanco, sin borde y sin giro al abrir ---------- */
+.dialog {
+    --bs-dialog-width: min(28rem, 92vw);
+    --bs-dialog-color: var(--colorTexto);
+    --bs-dialog-border-width: 0;
+    --bs-dialog-border-radius: var(--radioGrande);
+    --bs-dialog-box-shadow: var(--sombraFlotante);
+    --bs-dialog-backdrop-bg: rgba(17, 24, 39, .5);
+    --bs-dialog-backdrop-blur: 0;
+    --bs-dialog-header-border-width: 0;
+}
+
+/* Bootstrap 6 deja .dialog en display: flex aunque esté cerrado: ocupaba lugar al final del main y agregaba blanco debajo del footer */
+.dialog:not([open]) {
+    display: none;
+}
+
+.dialog .dialog-title {
+    font: 600 1.375rem/1.25 var(--fuenteMarca);
+}
+
+/* La cruz de cerrar (diálogos, drawers y avisos) mide 24px como mínimo */
+.btn-close {
+    --bs-btn-close-size: 1.5rem;
+}
+
+/* Pedir y reubicar una clase: día + grilla de horas (las arma crearSelectorHorario en site.js) */
+.dialogoClase {
+    --bs-dialog-width: min(34rem, 94vw);
+}
+
+.dialogoClase form {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    max-height: calc(100dvh - 56px);
+}
+
+.dialogoClase .dialog-body {
+    display: grid;
+    gap: 1rem;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+.selectorHorario {
+    display: grid;
+    gap: 1rem;
+}
+
+.selectorHorario .franjas {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(4.6rem, 1fr));
+    gap: .5rem;
+    max-height: 13rem;
+    padding: .25rem;
+    overflow-y: auto;
+}
+
+.selectorHorario .ayudaFranjas {
+    grid-column: 1 / -1;
+    margin: 0;
+    font-size: .9rem;
+}
+
+.selectorHorario .resumenAgenda {
+    margin: 0;
+    padding: .6rem .8rem;
+    border-radius: var(--radioChico);
+    background-color: var(--colorCelesteSuave);
+    font-size: .88rem;
+    font-weight: 600;
+    color: var(--colorTinta);
+}
+
+.selectorHorario .resumenAgenda .bi {
+    margin-right: .4rem;
+}
+
+/* Tira de los próximos 28 días: scrollea por dentro (con las flechas), la página nunca se mueve hacia los costados */
+.tiraDias {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: .4rem;
+    align-items: stretch;
+}
+
+.tiraDias .flecha {
+    width: 2.75rem;
+    min-height: 2.75rem;
+    border: 1.5px solid var(--colorBorde);
+    border-radius: var(--radioChico);
+    background-color: var(--colorSuperficie);
+    color: var(--colorTinta);
+    cursor: pointer;
+}
+
+@media (hover: hover) {
+    .tiraDias .flecha:hover {
+        border-color: var(--colorTinta);
+        background-color: var(--colorCelesteSuave);
+    }
+}
+
+.tiraDias .dias {
+    /* relative: los textos visually-hidden de los días quedan dentro del scroll y no desbordan el diálogo */
+    position: relative;
+    display: flex;
+    gap: .4rem;
+    padding: .25rem;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    scrollbar-width: thin;
+}
+
+.tiraDias .dias .ayudaFranjas {
+    align-self: center;
+    margin: 0;
+    font-size: .9rem;
+    color: var(--colorTextoSuave);
+}
+
+/* Días y franjas comparten estados: blanco en reposo y tinta con texto blanco cuando está elegido */
+.tiraDias .diaTira,
+.selectorHorario .franja {
+    border: 1.5px solid var(--colorBorde);
+    border-radius: var(--radioChico);
+    background-color: var(--colorSuperficie);
+    font-family: var(--fuenteMarca);
+    color: var(--colorTinta);
+    cursor: pointer;
+    transition: background-color .15s, border-color .15s, transform .15s var(--curvaSuave);
+}
+
+@media (hover: hover) {
+    .tiraDias .diaTira:hover:not(:disabled, [aria-pressed="true"]),
+    .selectorHorario .franja:hover:not(:disabled, [aria-pressed="true"]) {
+        border-color: var(--colorTinta);
+        background-color: var(--colorCelesteSuave);
+        transform: translateY(-2px);
+    }
+}
+
+.tiraDias .diaTira[aria-pressed="true"],
+.selectorHorario .franja[aria-pressed="true"] {
+    border-color: var(--colorTinta);
+    background-color: var(--colorTinta);
+    color: #fff;
+}
+
+/* Sin horario (o bloqueado): punteado, tenue y tachado; el texto "sin horario" lo leen los lectores de pantalla */
+.tiraDias .diaTira:disabled,
+.selectorHorario .franja:disabled {
+    border-style: dashed;
+    background-color: var(--colorFondo);
+    color: var(--colorTextoSuave);
+    text-decoration: line-through;
+    cursor: not-allowed;
+}
+
+.tiraDias .diaTira {
+    display: grid;
+    flex: 0 0 3.6rem;
+    justify-items: center;
+    min-height: 4.25rem;
+    padding: .4rem .2rem;
+    line-height: 1.15;
+    scroll-snap-align: start;
+}
+
+.tiraDias .diaTira strong {
+    font-size: 1.15rem;
+}
+
+.tiraDias .diaTira .nombreDia {
+    font-size: .72rem;
+    font-weight: 600;
+}
+
+.tiraDias .diaTira .mesDia {
+    font-size: .68rem;
+    color: var(--colorTextoSuave);
+}
+
+.tiraDias .diaTira[aria-pressed="true"] .mesDia {
+    color: inherit;
+}
+
+.selectorHorario .franja {
+    min-height: 2.75rem;
+    padding: .45rem .25rem;
+    font-size: .9rem;
+    font-weight: 600;
+}
+
+/* Diálogo "Dar reseña" (_dialogoDarResena) */
+.dialogoResena .dialog-body {
+    display: grid;
+    gap: 1rem;
+}
+
+.dialogoResena .estrellasResena {
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.dialogoResena .estrellasResena legend {
+    margin-bottom: .4rem;
+    font-size: .95rem;
+    font-weight: 600;
+}
+
+.dialogoResena .filaEstrellas {
+    display: flex;
+    align-items: center;
+    gap: .2rem;
+}
+
+/* Se pintan las estrellas hasta la elegida (o hasta la que está bajo el mouse); las vacías en #6B7280 llegan a 3:1 */
+.dialogoResena .filaEstrellas label {
+    display: inline-grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    font-size: 2rem;
+    line-height: 1;
+    color: var(--colorTextoSuave);
+    cursor: pointer;
+    transition: color var(--duracionRapida) var(--curvaSuave), transform var(--duracionRapida) var(--curvaSuave);
+}
+
+.dialogoResena .filaEstrellas:not(:has(label:hover)):has(input:checked) label,
+.dialogoResena .filaEstrellas:has(label:hover) label {
+    color: var(--colorCoral);
+}
+
+.dialogoResena .filaEstrellas:not(:has(label:hover)) label:has(input:checked) ~ label,
+.dialogoResena .filaEstrellas:has(label:hover) label:hover ~ label {
+    color: var(--colorTextoSuave);
+}
+
+.dialogoResena .filaEstrellas label:hover {
+    transform: scale(1.15);
+}
+
+/* El radio está oculto: el foco se dibuja en la estrella, con el mismo color que el foco global */
+.dialogoResena .filaEstrellas label:has(input:focus-visible) {
+    outline: 3px solid var(--colorFoco, var(--colorTinta));
+    outline-offset: 2px;
+    border-radius: var(--radioChico);
+}
+
+.dialogoResena .textoPuntuacion {
+    margin-left: .5rem;
+    font-family: var(--fuenteMarca);
+    font-weight: 600;
+    color: var(--colorMagenta);
+}
+
+.dialogoResena .form-field {
+    display: grid;
+    gap: .35rem;
+}
+
+.dialogoResena textarea {
+    resize: vertical;
+}
+
+.dialogoResena small {
+    justify-self: end;
+    color: var(--colorTextoSuave);
+}
+
+/* ---------- Snackbar (UI Kit): aviso corto abajo de la pantalla, entra subiendo sin girar ---------- */
+.snackbar {
+    position: fixed;
+    left: 50%;
+    bottom: 1.25rem;
+    z-index: 1100;
+    max-width: min(30rem, calc(100vw - 2rem));
+    padding: .75rem 1.1rem;
+    translate: -50% 1rem;
+    opacity: 0;
+    border: 0;
+    border-radius: 999px;
+    background-color: var(--colorTinta);
+    box-shadow: var(--sombraFlotante);
+    color: #fff;
+    font-family: var(--fuenteMarca);
+    font-size: .92rem;
+    font-weight: 600;
+    text-align: center;
+    transition: opacity var(--duracionRapida) ease, translate var(--duracionRapida) var(--curvaSuave);
+}
+
+.snackbar.visible {
+    translate: -50% 0;
+    opacity: 1;
+}
+
+.snackbar[data-tipo="exito"] {
+    background-color: var(--colorExito);
+}
+
+.snackbar[data-tipo="error"] {
+    background-color: var(--colorMagenta);
+}
+
+/* ---------- Aviso "Cuenta no verificada" (Pop up del UI Kit, debajo del header) ---------- */
+.avisoVerificacion {
+    padding-block: .75rem;
+    background-color: var(--colorCeleste);
+}
+
+.avisoVerificacion .contenidoAviso {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .6rem 1rem;
+}
+
+.avisoVerificacion .icono {
+    width: 2.25rem;
+    height: 2.25rem;
+    background-color: var(--colorSuperficie);
+    color: var(--colorTinta);
+}
+
+.avisoVerificacion p {
+    flex: 1 1 16rem;
+    font-size: .9rem;
+    color: var(--colorTinta);
+}
+
+.avisoVerificacion p strong {
+    margin-right: .25rem;
+}
+
+
+/* ---------- Animaciones reutilizables ---------- */
+@keyframes desplazarCinta {
+    from { transform: translateX(0); }
+    to { transform: translateX(-25%); }
+}
+
+@keyframes sacudirError {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-6px); }
+    75% { transform: translateX(6px); }
+}
+
+/* Íconos de "Cargando…" (Panel, chat, Perfil y sus diálogos) */
+@keyframes girarCarga {
+    to { transform: rotate(360deg); }
+}
+
+
+/* =========================================================
+   3) MAIN
+   ========================================================= */
+
+/* ---------- 3.1 Inicio: portada / buscador ---------- */
+/* Panel claro con el lavado; el padding lateral de la sección lo separa del borde en el celular */
+.portada {
+    padding: clamp(1rem, 2.5vw, 1.75rem) 1rem clamp(1.5rem, 3vw, 2.5rem);
+}
+
+.portada > .container {
+    padding: clamp(1.5rem, 4vw, 3.5rem);
+    border: 1.5px solid var(--colorBorde);
+    border-radius: 2.25rem;
+    background: var(--fondoLavado);
+    box-shadow: var(--sombraPanel);
+}
+
+.portada h1 {
+    margin-block: 0 1rem;
+    font-size: min(9.6vw, 4.5rem);
+}
+
+.portada h1 + p {
+    max-width: 34rem;
+    margin-inline: auto;
+    margin-bottom: 1.5rem;
+    font-size: clamp(1.05rem, .95rem + .4vw, 1.25rem);
+}
+
+.portada .buscador,
+.portada .buscador + .mensajeError {
+    margin-inline: auto;
+}
+
+.portada .acciones {
+    justify-content: center;
+    margin-top: 1.75rem;
+}
+
+/* En el celular el panel cede ancho para que el placeholder del buscador se lea entero */
+@media (width < 576px) {
+    .portada > .container {
+        padding-inline: .75rem;
+    }
+
+    .portada .buscador {
+        padding-left: 1rem;
+    }
+
+    .portada .buscador .boton {
+        width: 3rem;
+        padding-inline: 0;
+    }
+}
+
+/* Plancha: pegatinas superpuestas en todas las pantallas; en el celular quedan cuatro */
+.portada .plancha :is(.profe, .confirmada, .charla) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: .6rem;
+    max-width: 100%;
+    padding: 1.1rem;
+}
+
+/* Tarjeta de profe */
+.portada .plancha .profe {
+    gap: .75rem;
+    width: 18rem;
+    font-family: var(--fuenteTexto);
+}
+
+/* El colegio baja entero de renglón ("Belgrano Day School" no deja "School" solo) */
+.portada .plancha .profe p {
+    font-size: .8rem;
+    color: var(--colorTextoSuave);
+    text-wrap: balance;
+}
+
+/* Clase confirmada */
+.portada .plancha .confirmada {
+    gap: .15rem;
+    width: 13.75rem;
+}
+
+.portada .plancha .confirmada strong {
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.portada .plancha .confirmada p {
+    font: 600 .9rem var(--fuenteTexto);
+}
+
+/* Chat */
+.portada .plancha .charla {
+    width: 17rem;
+    font-family: var(--fuenteTexto);
+}
+
+/* I (corazón) MIP; el isotipo es la .pegatina.redonda */
+.portada .plancha .corazon {
+    border-radius: 999px;
+}
+
+.portada .plancha {
+    position: relative;
+    display: block;
+    min-height: 17rem;
+}
+
+.portada .plancha .pegatina {
+    position: absolute;
+}
+
+/* "Tutorías entre colegios" queda pegada en la esquina de la tarjeta de Sofía */
+.portada .plancha .tutorias {
+    top: 0;
+    left: 0;
+    z-index: 1;
+    padding: .4rem .9rem;
+    font-size: .875rem;
+}
+
+@media (width < 768px) {
+    .portada .plancha :is(.charla, .corazon) {
+        display: none;
+    }
+
+    .portada .plancha .profe {
+        top: 1.75rem;
+        left: 0;
+        width: 15.5rem;
+    }
+
+    .portada .plancha .confirmada {
+        top: 10.5rem;
+        right: 0;
+    }
+
+    .portada .plancha .isotipo {
+        top: 11.5rem;
+        left: .5rem;
+        width: 4.5rem;
+        height: 4.5rem;
+    }
+}
+
+@media (width >= 768px) {
+    .portada .plancha {
+        min-height: 29.5rem;
+    }
+
+    .portada .plancha .profe {
+        top: 1.75rem;
+        left: .6rem;
+    }
+
+    .portada .plancha .confirmada {
+        top: 9.5rem;
+        right: .5rem;
+    }
+
+    .portada .plancha .charla {
+        bottom: 1.25rem;
+        left: 2.5rem;
+    }
+
+    .portada .plancha .isotipo {
+        right: 2.5rem;
+        bottom: 1.9rem;
+    }
+
+    .portada .plancha .corazon {
+        top: 2.5rem;
+        right: 1.25rem;
+    }
+}
+
+/* Con la columna angosta (lg a xl) el isotipo tapaba la respuesta del chat: cada uno va a su borde */
+@media (1024px <= width < 1280px) {
+    .portada .plancha .charla {
+        left: .6rem;
+    }
+
+    .portada .plancha .isotipo {
+        right: .5rem;
+    }
+}
+
+@media (width >= 1024px) {
+    /* En dos columnas «El conocimiento» entra en un renglón (medido: 7,96 em de ancho) */
+    .portada h1 {
+        font-size: min(5vw, 4rem);
+    }
+
+    .portada .buscador,
+    .portada .buscador + .mensajeError,
+    .portada h1 + p {
+        margin-inline: 0;
+    }
+
+    .portada .acciones {
+        justify-content: flex-start;
+    }
+}
+
+/* ---------- 3.2 Inicio: cinta de palabras ---------- */
+.cinta {
+    overflow: hidden;
+    padding-block: .85rem;
+    background-color: var(--colorCoral);
+}
+
+.cinta > div {
+    display: flex;
+    width: max-content;
+    animation: desplazarCinta 35s linear infinite;
+}
+
+.cinta ul {
+    display: flex;
+    flex-shrink: 0;
+}
+
+.cinta li {
+    display: flex;
+    align-items: center;
+    padding-inline: 1.25rem;
+    color: var(--colorTexto);
+    font-family: var(--fuenteMarca);
+    font-size: clamp(1.1rem, 1rem + .5vw, 1.375rem);
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.cinta li::after {
+    content: "";
+    width: .5rem;
+    height: .5rem;
+    margin-left: 2.5rem;
+    border-radius: 50%;
+    background-color: #fff;
+}
+
+/* ---------- 3.3 Inicio: cómo funciona (camino de tres números unidos por una línea punteada) ---------- */
+.pasos {
+    background-color: var(--colorSuperficie);
+}
+
+/* Desde acá las secciones del Inicio son blancas y seguidas: un solo espacio entre ellas */
+.pasos ~ section {
+    padding-top: 0;
+}
+
+.pasos ol {
+    display: grid;
+    gap: 2rem;
+}
+
+/* En el celular el camino baja: número a la izquierda, título y texto a la derecha */
+.pasos li {
+    position: relative;
+    display: grid;
+    grid-template-columns: 4rem 1fr;
+    align-content: start;
+    gap: .35rem 1.25rem;
+}
+
+/* Tramo punteado hasta el número siguiente (el mismo punteado que separa el precio en la tarjeta de profesor) */
+.pasos li:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    top: 2rem;
+    left: 2rem;
+    height: calc(100% + 2rem);
+    border-left: 2px dashed var(--colorBorde);
+}
+
+/* Número: pegatina redonda con troquel, por encima de la línea */
+.pasos .numero {
+    position: relative;
+    z-index: 1;
+    grid-row: span 2;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 4rem;
+    height: 4rem;
+    border-radius: 50%;
+    background-color: var(--colorCoral);
+    color: var(--colorTexto);
+    font-family: var(--fuenteMarca);
+    font-size: 1.75rem;
+    font-weight: 700;
+    box-shadow: var(--troquel);
+}
+
+.pasos li:nth-child(2) .numero {
+    background-color: var(--colorCeleste);
+}
+
+.pasos li:nth-child(3) .numero {
+    background-color: var(--colorTinta);
+    color: #fff;
+}
+
+.pasos li p {
+    max-width: 20rem;
+    font-size: .92rem;
+    color: var(--colorTextoSuave);
+}
+
+@media (width >= 768px) {
+    .pasos ol {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .pasos li {
+        grid-template-columns: 1fr;
+        justify-items: center;
+        text-align: center;
+    }
+
+    .pasos .numero {
+        grid-row: auto;
+        margin-bottom: .85rem;
+    }
+
+    .pasos li:not(:last-child)::after {
+        left: 50%;
+        width: calc(100% + 2rem);
+        height: 0;
+        border-left: 0;
+        border-top: 2px dashed var(--colorBorde);
+    }
+}
+
+/* ---------- 3.4 Inicio: perfiles alumno / profesor ---------- */
+.perfiles .card {
+    gap: 1rem;
+    padding: clamp(1.5rem, 1rem + 2vw, 2.25rem);
+}
+
+.perfiles .card ul {
+    display: grid;
+    gap: .55rem;
+    margin-bottom: .5rem;
+}
+
+.perfiles .card li {
+    display: flex;
+    align-items: flex-start;
+    gap: .6rem;
+    font-size: .92rem;
+    font-weight: 600;
+}
+
+.perfiles .card li::before {
+    content: "✓";
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 1.35rem;
+    height: 1.35rem;
+    border-radius: 50%;
+    background-color: #fff;
+    color: var(--colorTinta);
+    font-size: .75rem;
+    font-weight: 800;
+}
+
+.perfiles .card.oscura li::before,
+.perfiles .card.oscura .icono {
+    background-color: var(--colorCeleste);
+}
+
+/* El botón blanco sobre coral va sin el borde gris */
+.perfiles .card .boton {
+    border-color: transparent;
+}
+
+.perfiles .card .icono {
+    background-color: #fff;
+    color: var(--colorTinta);
+}
+
+/* ---------- 3.5 Inicio: frases (plancha del Miro: dos notas planas coral y celeste, desplazadas) ---------- */
+.frases ul {
+    display: grid;
+    gap: 1.5rem;
+    max-width: 62rem;
+    margin-inline: auto;
+}
+
+.frases .pegatina {
+    padding: clamp(1.5rem, 1rem + 2vw, 2.5rem);
+    border-radius: var(--radioGrande);
+    font: 700 clamp(1.25rem, 1rem + 1.2vw, 1.75rem)/1.25 var(--fuenteMarca);
+}
+
+.frases .pegatina.coral {
+    margin-right: 1.5rem;
+}
+
+.frases .pegatina.celeste {
+    margin-left: 1.5rem;
+}
+
+@media (width >= 768px) {
+    .frases ul {
+        grid-template-columns: 1fr 1fr;
+        align-items: start;
+        gap: 2.5rem;
+    }
+
+    .frases .pegatina.celeste {
+        margin-top: 4rem;
+    }
+}
+
+/* ---------- 3.6 Inicio: profesores destacados ---------- */
+.destacados .colegios {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: .6rem;
+    margin-top: 1.5rem;
+}
+
+.destacados .colegios > span {
+    font-size: .85rem;
+    font-weight: 700;
+    color: var(--colorTextoSuave);
+}
+
+.destacados .colegios .badge {
+    min-height: 2.75rem;
+    padding: 0 1rem;
+    border: 1.5px solid var(--colorBorde);
+    background-color: var(--colorSuperficie);
+    color: var(--colorTinta);
+    font-size: .9375rem;
+    box-shadow: 0 4px 10px -8px rgba(17, 24, 39, .3);
+    transition: border-color var(--duracionRapida) ease, translate var(--duracionRapida) var(--curvaSuave);
+}
+
+@media (hover: hover) {
+    .destacados .colegios .badge:hover {
+        border-color: var(--colorTinta);
+        translate: 0 -2px;
+    }
+}
+
+/* Tarjeta de profesor: .profesor es la vertical (Inicio) y .profesorFila la horizontal (Catálogo); comparten estos estilos */
+.profesor {
+    gap: .9rem;
+}
+
+.profesor header {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: .75rem;
+}
+
+.profesor header > div {
+    flex: 1 1 8rem;
+    min-width: 0;
+}
+
+:is(.profesor, .profesorFila) h3 {
+    font-size: 1.05rem;
+}
+
+:is(.profesor, .profesorFila) h3 a {
+    color: inherit;
+    text-decoration: none;
+}
+
+@media (hover: hover) {
+    :is(.profesor, .profesorFila) h3 a:hover {
+        text-decoration: underline;
+    }
+}
+
+.profesor header p {
+    font-size: .8rem;
+}
+
+:is(.profesor, .profesorFila) .etiquetas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem;
+}
+
+.profesor > p {
+    flex-grow: 1;
+}
+
+:is(.profesor, .profesorFila) .datos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .35rem 1rem;
+    font-size: .8rem;
+    font-weight: 600;
+    color: var(--colorTexto);
+}
+
+:is(.profesor, .profesorFila) .datos .bi-star-fill {
+    color: var(--colorCoral);
+}
+
+:is(.profesor, .profesorFila) .datos .bi {
+    margin-right: .15rem;
+}
+
+.profesor footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+    padding-top: .9rem;
+    border-top: 2px dashed var(--colorBorde);
+}
+
+.profesor footer p {
+    font-size: .8rem;
+}
+
+.profesor footer strong,
+.profesorFila .importe strong {
+    font-family: var(--fuenteMarca);
+    font-size: 1.3rem;
+    color: var(--colorTinta);
+}
+
+/* ---------- 3.8 Preguntas frecuentes (acordeón de Bootstrap 6: details/summary) ---------- */
+.preguntas {
+    background-color: var(--colorSuperficie);
+}
+
+.preguntas .accordion {
+    --bs-accordion-gap: .85rem;
+    display: grid;
+    gap: .85rem;
+}
+
+.preguntas .accordion-item {
+    overflow: hidden;
+    border: 1.5px solid var(--colorBorde);
+    border-radius: var(--radioGrande);
+    background-color: var(--colorSuperficie);
+    box-shadow: var(--sombraSuave);
+    transition: border-color var(--duracionRapida) var(--curvaSuave);
+}
+
+@media (hover: hover) {
+    .preguntas .accordion-item:hover {
+        border-color: var(--colorTinta);
+    }
+}
+
+.preguntas .accordion-item[open] > .accordion-header {
+    background-color: var(--colorCelesteSuave);
+}
+
+.preguntas .accordion-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    border: 0;
+    background-color: transparent;
+    color: var(--colorTinta);
+    font-size: .98rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.preguntas .accordion-body {
+    padding: 0 1.25rem 1.25rem;
+    font-size: .92rem;
+    line-height: 1.7;
+    color: #374151;
+}
+
+.preguntas .accordion-icon {
+    width: 1.1rem;
+    height: 1.1rem;
+    stroke-width: 2.5;
+}
+
+/* ---------- 3.9 Llamado final (Inicio y Quiénes somos) ---------- */
+/* La sección es blanca: el panel tinta con el brillo coral queda separado del footer */
+.llamadoFinal {
+    padding: 0 1rem var(--espacioSeccion);
+}
+
+.llamadoFinal > .container {
+    padding: clamp(1.75rem, 4vw, 2.5rem) clamp(1.5rem, 4vw, 3rem);
+    border-radius: 2rem;
+    background: radial-gradient(36rem 24rem at 100% 50%, rgba(255, 87, 87, .45), transparent 65%), var(--colorTinta);
+    color: #fff;
+    box-shadow: 0 30px 56px -30px rgba(17, 24, 39, .6);
+}
+
+.llamadoFinal h2 {
+    color: #fff;
+}
+
+.llamadoFinal p {
+    max-width: 34rem;
+    margin: 1rem auto 0;
+    color: #D1D5DB;
+}
+
+.llamadoFinal .acciones {
+    justify-content: center;
+}
+
+@media (width >= 1024px) {
+    .llamadoFinal p {
+        margin-inline: 0;
+    }
+
+    .llamadoFinal .acciones {
+        justify-content: flex-end;
+    }
+}
+
+/* ---------- 3.10 Cabecera de página (Catálogo, Soporte y Privacidad; Quiénes somos usa .presentacion, en 3.15) ---------- */
+.cabecera {
+    overflow: hidden;
+    padding-block: clamp(2rem, 3.5vw, 3rem);
+    background: var(--fondoLavado);
+}
+
+.cabecera h1 {
+    margin-block: 1rem .75rem;
+}
+
+/* Sobre el lavado el gris no llega a 4,5:1 en el celular: el texto va en tinta */
+.cabecera p {
+    max-width: 38rem;
+}
+
+/* En el Catálogo la cabecera es más baja: se viene a buscar y el primer profesor tiene que verse sin scroll */
+.cabecera:has(+ .catalogo) {
+    padding-block: clamp(1.5rem, 2.5vw, 2rem);
+}
+
+.cabecera:has(+ .catalogo) h1 {
+    margin-top: 0;
+    font-size: clamp(2.25rem, 1.5rem + 2.4vw, 3rem);
+}
+
+.cabecera .buscador {
+    margin-top: 1.75rem;
+}
+
+.cabecera .buscador .bi {
+    margin-right: .9rem;
+    font-size: 1.1rem;
+    color: var(--colorTextoSuave);
+}
+
+/* Plancha del Catálogo: tres pegatinas sueltas. La columna se oculta antes de md (d-none md:d-block en la vista) */
+.cabecera .plancha {
+    position: relative;
+    display: block;
+    min-height: 11rem;
+}
+
+.cabecera .plancha .pegatina {
+    position: absolute;
+    padding: .6rem 1.25rem;
+    font-size: 1.25rem;
+    line-height: 1.2;
+}
+
+.cabecera .plancha .pegatina:nth-child(1) {
+    top: .5rem;
+    left: 1.5rem;
+}
+
+.cabecera .plancha .pegatina:nth-child(2) {
+    top: 4.25rem;
+    right: 1rem;
+}
+
+.cabecera .plancha .pegatina:nth-child(3) {
+    bottom: .5rem;
+    left: 4rem;
+}
+
+/* ---------- 3.11 Catálogo ---------- */
+.catalogo .cantidad {
+    margin-bottom: 1rem;
+    font-weight: 700;
+    color: var(--colorTextoSuave);
+}
+
+/* Filtros: drawer lateral antes de lg; desde lg Bootstrap lo deja en línea (lg:drawer) y
+   la tarjeta con borde la dibuja el formulario */
+.catalogo .filtros > .boton {
+    width: 100%;
+}
+
+.catalogo .lg\:drawer {
+    --bs-drawer-width: min(21rem, 90vw);
+    --bs-drawer-inset: 0;
+    --bs-drawer-border-radius: 0;
+    --bs-drawer-border-width: 0;
+    --bs-drawer-box-shadow: none;
+    --bs-drawer-backdrop-bg: rgba(17, 24, 39, .45);
+    --bs-drawer-backdrop-blur: 0;
+}
+
+.catalogo .drawer-title {
+    font-family: var(--fuenteMarca);
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--colorTinta);
+}
+
+.catalogo .drawer-body {
+    padding: 1.25rem;
+    overflow-y: auto;
+}
+
+.catalogo form {
+    display: grid;
+    align-content: start;
+    gap: 1.1rem;
+}
+
+.catalogo legend {
+    float: none;
+    margin-bottom: .1rem;
+}
+
+.catalogo form .boton.chico {
+    justify-self: start;
+}
+
+@media (width < 1024px) {
+    .catalogo .drawer-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid var(--colorBorde);
+    }
+}
+
+@media (width >= 1024px) {
+    .catalogo .filtros {
+        position: sticky;
+        top: calc(var(--alturaEncabezado) + 1.25rem);
+    }
+
+    .catalogo .filtros > .boton {
+        display: none;
+    }
+
+    .catalogo .drawer-body {
+        display: block;
+        padding: 0;
+    }
+
+    /* Misma tarjeta que los profesores. overflow visible: la lista de opciones de los selectores no se corta */
+    .catalogo :is(.lg\:drawer, .drawer-body) {
+        overflow: visible;
+    }
+
+    .catalogo form {
+        padding: 1.25rem;
+        border: 1.5px solid var(--colorBorde);
+        border-radius: var(--radioGrande);
+        background-color: var(--colorSuperficie);
+    }
+}
+
+.catalogo .sinResultados {
+    align-items: center;
+    height: auto;
+    padding: 2.5rem 1.5rem;
+    text-align: center;
+}
+
+.catalogo .sinResultados .boton {
+    align-self: center;
+}
+
+/* Lista del catálogo: una tarjeta horizontal por profesor (la arma catalogo.js) */
+.catalogo .listaProfesores {
+    display: grid;
+    gap: 1rem;
+}
+
+#listaProfesores[aria-busy="true"] {
+    opacity: .45;
+}
+
+.profesorFila {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1rem 1.25rem;
+    align-items: start;
+}
+
+.profesorFila .avatar {
+    --bs-avatar-size: 3.5rem;
+    --bs-avatar-border-radius: .9rem;
+    border-radius: .9rem;
+}
+
+.profesorFila .cuerpo {
+    display: grid;
+    gap: .55rem;
+    min-width: 0;
+}
+
+.profesorFila .nombre {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: .5rem;
+}
+
+.profesorFila .colegios {
+    font-size: .8rem;
+    color: var(--colorTextoSuave);
+}
+
+.profesorFila .resumen {
+    font-size: .85rem;
+}
+
+/* En el celular la foto va al lado del nombre y del colegio; materias, resumen y datos usan todo el ancho */
+@media (width < 768px) {
+    .profesorFila {
+        gap: .6rem .9rem;
+    }
+
+    .profesorFila .avatar {
+        grid-row: span 2;
+    }
+
+    .profesorFila .cuerpo {
+        display: contents;
+    }
+
+    .profesorFila .cuerpo > :not(.nombre, .colegios) {
+        grid-column: 1 / -1;
+    }
+}
+
+/* Columna derecha: precio y botones */
+.profesorFila .lateral {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .5rem .75rem;
+    align-items: center;
+    padding-top: .9rem;
+    border-top: 2px dashed var(--colorBorde);
+}
+
+.profesorFila .importe {
+    grid-column: 1 / -1;
+    font-size: .8rem;
+}
+
+@media (width >= 768px) {
+    .profesorFila {
+        grid-template-columns: auto 1fr 11rem;
+        align-items: start;
+    }
+
+    .profesorFila .lateral {
+        grid-column: auto;
+        grid-template-columns: 1fr;
+        justify-items: end;
+        padding: 0;
+        border-top: 0;
+        text-align: right;
+    }
+
+    .profesorFila .importe {
+        grid-column: auto;
+    }
+
+    .profesorFila .lateral .boton {
+        width: 100%;
+    }
+}
+
+/* Paginación del catálogo: flechas, número de página y tarjetas por página */
+/* Celular: números centrados arriba, Anterior y Siguiente en una fila, "Por página" centrado debajo.
+   Solo cambia el orden visual; en el DOM siguen Anterior, números, Siguiente */
+.catalogo .paginador {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.catalogo .paginador[hidden] {
+    display: none;
+}
+
+.catalogo .paginador :is(.paginas, .porPagina) {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: .75rem;
+    font-weight: 700;
+}
+
+.catalogo .paginador .paginas {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 100%;
+}
+
+.catalogo .paginador .paginas > .boton:first-child {
+    justify-self: start;
+}
+
+.catalogo .paginador .paginas > .boton:last-child {
+    justify-self: end;
+}
+
+.catalogo .paginador .numerosPagina {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    grid-column: 1 / -1;
+    order: -1;
+    gap: .35rem;
+}
+
+@media (width >= 768px) {
+    .catalogo .paginador {
+        flex-direction: row;
+        justify-content: space-between;
+        flex-wrap: wrap;
+    }
+
+    .catalogo .paginador .paginas {
+        display: flex;
+        width: auto;
+    }
+
+    .catalogo .paginador .numerosPagina {
+        order: 0;
+        flex-wrap: nowrap;
+    }
+
+    /* "Por página" va a la derecha también cuando baja de renglón (768 a 1279 con muchos números) */
+    .catalogo .paginador .porPagina {
+        margin-left: auto;
+    }
+}
+
+.catalogo .paginador .numero {
+    min-width: 2.75rem;
+    height: 2.75rem;
+    padding: 0 .5rem;
+    border: 2px solid var(--colorBorde);
+    border-radius: 999px;
+    background-color: var(--colorSuperficie);
+    font-family: var(--fuenteMarca);
+    font-weight: 600;
+    color: var(--colorTinta);
+}
+
+@media (hover: hover) {
+    .catalogo .paginador .numero:hover {
+        border-color: var(--colorTinta);
+    }
+}
+
+.catalogo .paginador .numero.activo {
+    border-color: var(--colorTinta);
+    background-color: var(--colorTinta);
+    color: #fff;
+}
+
+.catalogo .paginador .puntos {
+    color: var(--colorTextoSuave);
+}
+
+.catalogo .paginador button:disabled {
+    opacity: .4;
+    cursor: not-allowed;
+}
+
+.catalogo .paginador .porPagina label {
+    font-size: .85rem;
+    color: var(--colorTextoSuave);
+}
+
+.catalogo .paginador .porPagina select {
+    width: auto;
+}
+
+/* ---------- 3.12 Registro e inicio de sesión ---------- */
+.acceso {
+    padding-block: clamp(2rem, 3.5vw, 3rem);
+    background: var(--fondoLavado);
+}
+
+.acceso .card {
+    gap: 1.1rem;
+    padding: clamp(1.5rem, 1rem + 2vw, 2.25rem);
+}
+
+.acceso form {
+    display: grid;
+    gap: 1rem;
+}
+
+/* El panel queda arriba, al lado del comienzo del formulario (el de registro es largo) */
+.acceso .row {
+    align-items: flex-start;
+}
+
+.acceso h1 {
+    font-size: clamp(1.75rem, 1.4rem + 1.5vw, 2.25rem);
+}
+
+.acceso .alternativa {
+    text-align: center;
+    font-size: .9rem;
+}
+
+/* Encabezado de las pantallas de acceso */
+.acceso .encabezadoAcceso {
+    display: grid;
+    gap: .6rem;
+}
+
+.acceso .encabezadoAcceso p {
+    color: var(--colorTextoSuave);
+}
+
+/* Campo con ícono a la izquierda (y botón de ver contraseña a la derecha) */
+.acceso .campoConIcono {
+    position: relative;
+}
+
+.acceso .campoConIcono > .bi {
+    position: absolute;
+    top: 50%;
+    left: .95rem;
+    transform: translateY(-50%);
+    font-size: 1.05rem;
+    color: var(--colorTextoSuave);
+    pointer-events: none;
+}
+
+.acceso .campoConIcono .form-control {
+    padding-left: 2.6rem;
+}
+
+.acceso .campoConIcono:focus-within > .bi {
+    color: var(--colorMagenta);
+}
+
+/* 44px de toque; el fondo del hover se dibuja solo adentro del padding para no tapar el borde del campo */
+.acceso .campoConIcono .verContrasena {
+    position: absolute;
+    top: 50%;
+    right: 0;
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    padding: .3rem;
+    transform: translateY(-50%);
+    border: 0;
+    border-radius: var(--radioChico);
+    background: transparent;
+    background-clip: content-box;
+    color: var(--colorTextoSuave);
+    cursor: pointer;
+}
+
+@media (hover: hover) {
+    .acceso .campoConIcono .verContrasena:hover {
+        background-color: var(--colorCelesteSuave);
+        color: var(--colorTinta);
+    }
+}
+
+.acceso .campoConIcono:has(.verContrasena) .form-control {
+    padding-right: 2.9rem;
+}
+
+/* Nombre y apellido lado a lado */
+.acceso .filaDoble {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .75rem;
+}
+
+@media (width < 480px) {
+    .acceso .filaDoble {
+        grid-template-columns: 1fr;
+    }
+}
+
+.acceso .paso {
+    display: grid;
+    gap: .75rem;
+}
+
+.acceso .datosCuenta {
+    gap: .9rem;
+}
+
+.acceso .datosCuenta .tituloPaso {
+    margin-bottom: 0;
+}
+
+/* Botón de ancho completo */
+.acceso .boton.completo {
+    width: 100%;
+    padding-block: .8rem;
+    font-size: 1.05rem;
+}
+
+/* Pasos numerados del registro */
+.acceso .tituloPaso {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    font-family: var(--fuenteMarca);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--colorTinta);
+}
+
+.acceso .numeroPaso {
+    display: inline-grid;
+    place-items: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 50%;
+    background-color: var(--colorTinta);
+    color: #fff;
+    font-size: .875rem;
+    font-weight: 600;
+}
+
+.acceso .terminos {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+}
+
+.acceso .terminos label {
+    font-weight: 600;
+}
+
+/* Separador "¿Primera vez...?" y accesos al registro */
+.acceso .separador {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    font-size: .85rem;
+    font-weight: 600;
+    color: var(--colorTextoSuave);
+}
+
+.acceso .separador::before,
+.acceso .separador::after {
+    content: "";
+    flex: 1;
+    height: 2px;
+    background-color: var(--colorBorde);
+}
+
+/* Se apilan cuando "Soy profesor" (nowrap, ~11rem) no entra en media tarjeta */
+.acceso .opcionesRegistro {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(11.5rem, 1fr));
+    gap: .75rem;
+}
+
+/* Elección de rol: dos tarjetas grandes con el borde de los campos */
+.acceso .roles {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .75rem;
+}
+
+.acceso .roles label {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    gap: .2rem;
+    padding: 1.1rem .5rem;
+    border: 2px solid var(--colorTextoSuave);
+    border-radius: var(--radioMedio);
+    text-align: center;
+    cursor: pointer;
+    transition: border-color var(--duracionRapida) ease, background-color var(--duracionRapida) ease, box-shadow var(--duracionRapida) var(--curvaSuave), transform var(--duracionRapida) var(--curvaSuave);
+}
+
+.acceso .roles input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.acceso .roles .bi {
+    font-size: 1.75rem;
+    color: var(--colorMagenta);
+}
+
+.acceso .roles strong {
+    font-family: var(--fuenteMarca);
+    font-size: 1rem;
+}
+
+.acceso .roles span {
+    font-size: .8rem;
+    font-weight: 500;
+    color: var(--colorTextoSuave);
+}
+
+@media (hover: hover) {
+    .acceso .roles label:hover {
+        border-color: var(--colorTinta);
+        transform: translateY(-2px);
+    }
+}
+
+/* El rol elegido es la única excepción a "lo elegido": borde tinta con fondo celeste suave */
+.acceso .roles label:has(input:checked) {
+    border-color: var(--colorTinta);
+    background-color: var(--colorCelesteSuave);
+}
+
+/* Tilde en la tarjeta elegida */
+.acceso .roles label:has(input:checked)::after {
+    content: "✓";
+    position: absolute;
+    top: .5rem;
+    right: .5rem;
+    display: grid;
+    place-items: center;
+    width: 1.4rem;
+    height: 1.4rem;
+    border-radius: 50%;
+    background-color: var(--colorTinta);
+    font-size: .75rem;
+    font-weight: 800;
+    color: #fff;
+}
+
+.acceso .roles label:has(input:focus-visible) {
+    outline: 3px solid var(--colorTinta);
+    outline-offset: 3px;
+}
+
+/* Panel de color plano con pegatinas: coral con texto tinta; .oscura (profesor) en tinta con texto blanco.
+   Se oculta debajo de lg para ir directo al formulario */
+.acceso .ilustracion {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2rem;
+    padding: clamp(2rem, 1rem + 3vw, 3rem);
+    border-radius: 1.75rem;
+    background-color: var(--colorCoral);
+    color: var(--colorTexto);
+    box-shadow: var(--sombraCoral);
+}
+
+.acceso .ilustracion.oscura {
+    background-color: var(--colorTinta);
+    color: #fff;
+    box-shadow: var(--sombraTinta);
+}
+
+.acceso .ilustracion .pegatina.redonda {
+    width: 6.5rem;
+    height: 6.5rem;
+}
+
+/* El lema (o el título del rol) es una pegatina, pero en Eras como todo h2 */
+.acceso .ilustracion h2 {
+    max-width: 30rem;
+    padding: 1rem 1.5rem;
+    border-radius: 1.375rem;
+    font-family: var(--fuenteTitulos);
+    font-size: clamp(1.75rem, .9rem + 1.6vw, 2.5rem);
+    font-weight: 400;
+    line-height: 1.05;
+}
+
+/* La última pegatina (I ❤ MIP o el valor del Miro) cierra el panel a la derecha */
+.acceso .ilustracion > .pegatina:last-child {
+    align-self: flex-end;
+    max-width: 20rem;
+    padding: .75rem 1.25rem;
+    font-size: 1.125rem;
+    line-height: 1.3;
+}
+
+.acceso .ilustracion ul {
+    display: grid;
+    gap: .75rem;
+    font-size: 1.05rem;
+    font-weight: 700;
+}
+
+.acceso .ilustracion li::before {
+    content: "✓";
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.35rem;
+    height: 1.35rem;
+    margin-right: .6rem;
+    border-radius: 50%;
+    background-color: #fff;
+    color: var(--colorTinta);
+    font-size: .75rem;
+    font-weight: 800;
+}
+
+.acceso .ilustracion.oscura li::before {
+    background-color: var(--colorCeleste);
+}
+
+@media (width < 1024px) {
+    .acceso .ilustracion {
+        display: none;
+    }
+}
+
+/* ---------- 3.13 Soporte (resultado del buscador, accesos rápidos y contacto) y página de error ---------- */
+/* Cuántas preguntas encontró el buscador: es un dato, no un error */
+.cabecera .resultadoAyuda {
+    width: fit-content;
+    margin-top: 1rem;
+    border-radius: 999px;
+    color: var(--colorTinta);
+    font: 600 1rem var(--fuenteMarca);
+}
+
+.cabecera .resultadoAyuda:not(:empty) {
+    padding: .35rem 1rem;
+    background-color: var(--colorCelesteSuave);
+}
+
+.ayuda {
+    background-color: var(--colorSuperficie);
+}
+
+/* Preguntas y contacto siguen sobre blanco: un solo espacio entre las secciones */
+.ayuda ~ section {
+    padding-top: 0;
+}
+
+.ayuda a.card .enlace {
+    margin-top: auto;
+    font-weight: 700;
+    color: var(--colorMagenta);
+}
+
+.contacto {
+    background-color: var(--colorSuperficie);
+}
+
+.contacto form.card {
+    gap: 1.25rem;
+}
+
+.contacto .boton {
+    justify-self: start;
+}
+
+.contacto form.card .boton {
+    align-self: flex-start;
+}
+
+/* Página de error: lavado, centrada y con salidas a Inicio y a Soporte */
+.paginaError {
+    padding-block: clamp(3rem, 2rem + 5vw, 6rem);
+    background: var(--fondoLavado);
+    text-align: center;
+}
+
+.paginaError .container {
+    display: grid;
+    justify-items: center;
+    gap: 1rem;
+}
+
+.paginaError .pegatina.redonda {
+    width: 7rem;
+    height: 7rem;
+    margin-bottom: .75rem;
+    font-size: 3.5rem;
+}
+
+.paginaError p {
+    max-width: 36rem;
+}
+
+/* El código baja entero de renglón y, si no entra (celular), se corta adentro de su caja */
+.paginaError code {
+    display: inline-block;
+    max-width: 100%;
+    padding: .2rem .8rem;
+    border: 1.5px solid var(--colorBorde);
+    border-radius: var(--radioChico);
+    background-color: var(--colorSuperficie);
+    color: var(--colorTinta);
+    font: 500 .9rem var(--fuenteMarca);
+    overflow-wrap: anywhere;
+}
+
+.paginaError .acciones {
+    justify-content: center;
+    margin-top: .75rem;
+}
+
+/* ---------- 3.14 Panel de control ---------- */
+/* Saludo: caja con el lavado, el avatar (sin troquel), el rol y los dos contadores como pegatinas */
+.bienvenida {
+    padding-block: 1.5rem 0;
+}
+
+.saludo {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1.5rem 2rem;
+    padding: clamp(1.25rem, .8rem + 1.6vw, 1.875rem) clamp(1.25rem, .5rem + 2.6vw, 2.5rem);
+    border: 1.5px solid var(--colorBorde);
+    border-radius: 2rem;
+    background: var(--fondoLavado);
+    box-shadow: var(--sombraPanel);
+}
+
+.saludo .avatar {
+    --bs-avatar-size: clamp(4.5rem, 3.6rem + 2.6vw, 6.5rem);
+    rotate: -4deg;
+}
+
+.saludo .textoSaludo {
+    display: flex;
+    flex: 1 1 20rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: .6rem;
+    min-width: 0;
+}
+
+.saludo .textoSaludo .pegatina {
+    padding: .25rem .875rem;
+    border-radius: 999px;
+    font-size: .9375rem;
+}
+
+.saludo h1 {
+    margin-top: .25rem;
+    font-size: clamp(2rem, 1.3rem + 2.4vw, 3.25rem);
+    line-height: 1;
+}
+
+.saludo p {
+    font-size: 1.125rem;
+    line-height: 1.5;
+}
+
+.saludo .plancha {
+    gap: 1.5rem;
+    padding: .5rem;
+}
+
+.saludo .contador {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: .25rem;
+    min-width: 8rem;
+    padding: .875rem 1.25rem;
+}
+
+.saludo .contador strong {
+    font-size: 2.5rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.saludo .contador span {
+    font-size: .9375rem;
+}
+
+/* En el celular los dos contadores van lado a lado (apilados el saludo medía ~540px) */
+@media (width < 576px) {
+    .saludo .plancha {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem;
+        width: 100%;
+    }
+
+    .saludo .contador {
+        min-width: 0;
+        padding: .75rem 1rem;
+    }
+
+    .saludo .contador strong {
+        font-size: 2rem;
+    }
+
+    .saludo .contador span {
+        font-size: .8125rem;
+    }
+}
+
+/* Aviso "Configurá tu agenda" (solo profesores sin agenda): celeste plano */
+.avisoAgenda {
+    padding-block: 1.5rem 0;
+}
+
+.avisoAgenda .card {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .75rem 1rem;
+    border-color: transparent;
+    background-color: var(--colorCeleste);
+}
+
+.avisoAgenda .card p {
+    flex: 1 1 16rem;
+    margin: 0;
+    color: var(--colorTexto);
+}
+
+/* Notificaciones: "Requiere tu acción" (banda magenta) y "Novedades" en dos columnas, cada una con su lista */
+.notificaciones {
+    padding-block: 1.5rem 0;
+}
+
+.columnasNotificaciones {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 1.5rem;
+}
+
+.notificaciones .card {
+    flex: 2 1 30rem;
+    gap: 0;
+    min-width: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+.notificaciones .novedades {
+    flex: 1 1 18rem;
+}
+
+.notificaciones .card h2 {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    padding: 1rem 1.25rem .25rem;
+    font: 600 1.25rem/1.2 var(--fuenteMarca);
+}
+
+.notificaciones .pendientes h2 {
+    padding-block: .875rem;
+    background-color: var(--colorMagenta);
+    color: #fff;
+}
+
+.notificaciones .pendientes h2 .badge {
+    background-color: #fff;
+    color: var(--colorTinta);
+    font-size: .9375rem;
+}
+
+.notificaciones .sinNotificaciones {
+    padding: 1rem 1.25rem 1.25rem;
+    color: var(--colorTextoSuave);
+}
+
+/* La lista se desvanece abajo (máscara, sin color nuevo): la fila cortada se lee como "hay más". El padding de abajo
+   es la zona que se desvanece, así al final del scroll la última fila se ve entera */
+.notificaciones .listaNotificaciones {
+    max-height: 26rem;
+    padding: .125rem 1.25rem 1.75rem;
+    overflow-y: auto;
+    mask-image: linear-gradient(var(--colorTinta) calc(100% - 1.75rem), transparent);
+}
+
+/* En pantallas grandes la lista se corta antes: así el calendario asoma en la primera pantalla */
+@media (width >= 1024px) {
+    .notificaciones .listaNotificaciones {
+        max-height: 15rem;
+    }
+}
+
+.notificaciones .notificacion {
+    display: grid;
+    grid-template-columns: 2.75rem minmax(0, 1fr);
+    align-items: center;
+    gap: .75rem .875rem;
+    padding-block: .8rem;
+}
+
+.notificaciones .notificacion + .notificacion {
+    border-top: 1px solid var(--colorBorde);
+}
+
+.notificaciones .notificacion .icono {
+    width: 2.75rem;
+    height: 2.75rem;
+    font-size: 1.15rem;
+}
+
+.notificaciones .pendientes .notificacion > .boton,
+.notificaciones .accionesNotificacion {
+    grid-column: 1 / -1;
+    justify-self: start;
+}
+
+.notificaciones .accionesNotificacion {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+}
+
+@media (width >= 768px) {
+    .notificaciones .pendientes .notificacion {
+        grid-template-columns: 2.75rem minmax(0, 1fr) auto;
+    }
+
+    .notificaciones .pendientes .notificacion > .boton,
+    .notificaciones .accionesNotificacion {
+        grid-column: auto;
+        justify-self: end;
+    }
+}
+
+.notificaciones .textoNotificacion h3 {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .5rem;
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+.notificaciones .textoNotificacion p {
+    margin-top: .2rem;
+    font-size: .9375rem;
+    line-height: 1.45;
+}
+
+.notificaciones .textoNotificacion a:not(.boton) {
+    white-space: nowrap;
+}
+
+.notificaciones .textoNotificacion small {
+    font-size: .8125rem;
+    white-space: nowrap;
+}
+
+/* Novedades: el botón va debajo del texto */
+.notificaciones .noticia {
+    align-items: start;
+}
+
+.notificaciones .noticia .boton {
+    margin-top: .625rem;
+}
+
+/* Pestañas: la base de .nav-pills (bloque 2) ya pone la barra blanca y la activa en tinta */
+.panel {
+    padding-top: 2rem;
+}
+
+/* Sin overflow: la sombra suave de la barra se ve entera (con overflow-x quedaba cortada en una línea recta).
+   Desde md las pestañas del profesor miden 563px en un contenedor de 696px */
+.panel nav {
+    margin-bottom: 1.5rem;
+}
+
+.panel .nav-pills {
+    flex-wrap: nowrap;
+}
+
+.panel .nav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: .45rem;
+    padding: .55rem 1.1rem;
+    white-space: nowrap;
+}
+
+/* En pantallas chicas las pestañas pasan a una grilla de 2 columnas (sin scroll horizontal) */
+@media (width < 768px) {
+    .panel .nav-pills {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        border-radius: 1.5rem;
+    }
+
+    .panel .nav-link {
+        justify-content: center;
+        padding-inline: .5rem;
+    }
+}
+
+/* Mis clases: lo que requiere acción, el calendario del mes y la agenda del día (los dibuja calendario.js).
+   Colores: azul = está bien (tinta), rojo = necesita tu acción (magenta), gris = terminó sin darse. El estado nunca va
+   solo en el color: siempre hay texto, y lo que espera al otro lleva línea punteada.
+   Desde lg el calendario va a la izquierda y, a la derecha, lo que requiere acción y la agenda del día elegido. */
+.misClases {
+    display: grid;
+    gap: 1.25rem;
+}
+
+@media (width >= 1024px) {
+    .misClases {
+        grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+        grid-template-rows: auto 1fr;
+        grid-template-areas: "calendario requiere" "calendario agenda";
+        align-items: start;
+        gap: 1.25rem 1.5rem;
+    }
+
+    .misClases .requiereAccion {
+        grid-area: requiere;
+    }
+
+    .misClases .calendarioMes {
+        grid-area: calendario;
+    }
+
+    .misClases .agendaDia {
+        grid-area: agenda;
+    }
+}
+
+/* Coral suave, sin una segunda banda magenta (la de las notificaciones ya avisa) */
+.requiereAccion {
+    padding: 1rem 1.25rem 1.25rem;
+    border-radius: var(--radioGrande);
+    background-color: var(--colorCoralSuave);
+}
+
+.requiereAccion h3 {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    margin: 0 0 .75rem;
+    font: 600 1.125rem/1.2 var(--fuenteMarca);
+}
+
+.requiereAccion h3 .bi {
+    color: var(--colorMagenta);
+}
+
+.requiereAccion ul {
+    display: grid;
+    gap: .6rem;
+}
+
+/* Al costado del calendario la lista no empuja la agenda del día fuera de la vista; se desvanece abajo como las
+   notificaciones */
+@media (width >= 1024px) {
+    .requiereAccion ul {
+        max-height: 22rem;
+        padding-bottom: 1.75rem;
+        overflow-y: auto;
+        mask-image: linear-gradient(var(--colorTinta) calc(100% - 1.75rem), transparent);
+    }
+}
+
+.pedidoPendiente {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: .6rem 1rem;
+    padding: .75rem 1rem;
+    border-radius: var(--radioMedio);
+    background-color: var(--colorSuperficie);
+}
+
+.pedidoPendiente .textoPedido {
+    flex: 1 1 14rem;
+    font-size: .9375rem;
+    line-height: 1.45;
+}
+
+.pedidoPendiente .textoPedido strong {
+    font: 600 1rem var(--fuenteMarca);
+}
+
+.pedidoPendiente .textoPedido span {
+    display: block;
+    color: var(--colorTextoSuave);
+}
+
+.botonesClase {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+}
+
+/* Calendario del mes: lunes a domingo, una línea por clase (máximo 3 y "+N") */
+.calendarioMes {
+    padding: .75rem;
+}
+
+@media (width >= 768px) {
+    .calendarioMes {
+        padding: 1.25rem;
+    }
+}
+
+.calendarioMes header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+    margin-bottom: .875rem;
+}
+
+.calendarioMes header h3,
+.agendaDia > header h3 {
+    font: 600 clamp(1.25rem, 1.1rem + .5vw, 1.5rem)/1.2 var(--fuenteMarca);
+}
+
+.calendarioMes .controlesMes {
+    display: flex;
+    gap: .5rem;
+}
+
+.calendarioMes .controlesMes .boton {
+    min-width: 2.75rem;
+}
+
+.calendarioMes :is(.diasSemana, .diasMes) {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: .25rem;
+}
+
+@media (width >= 768px) {
+    .calendarioMes :is(.diasSemana, .diasMes) {
+        gap: .375rem;
+    }
+}
+
+.calendarioMes .diasSemana span {
+    padding-bottom: .375rem;
+    font: 600 .875rem var(--fuenteMarca);
+    text-align: center;
+    color: var(--colorTextoSuave);
+}
+
+.calendarioMes .diasMes :is(.cargandoHistorial, .mensajeErrorCalendario) {
+    grid-column: 1 / -1;
+}
+
+.diasMes .dia {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-width: 0;
+    min-height: 2.75rem;
+    padding: .25rem;
+    border: 1.5px solid var(--colorBorde);
+    border-radius: var(--radioChico);
+    background-color: var(--colorSuperficie);
+    font-family: var(--fuenteMarca);
+    text-align: left;
+    color: var(--colorTinta);
+    cursor: pointer;
+    transition: background-color .15s, border-color .15s;
+}
+
+@media (width >= 768px) {
+    .diasMes .dia {
+        gap: .375rem;
+        min-height: 4.125rem;
+        padding: .375rem .45rem .5rem;
+    }
+}
+
+@media (hover: hover) {
+    .diasMes .dia:hover {
+        border-color: var(--colorTinta);
+        background-color: var(--colorCelesteSuave);
+    }
+}
+
+.diasMes .dia .numero {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    align-self: flex-start;
+    flex-shrink: 0;
+    min-width: 1.25rem;
+    height: 1.25rem;
+    border-radius: 999px;
+    font-size: .8125rem;
+    font-weight: 600;
+    line-height: 1;
+}
+
+/* En el celular el día mide 44px y crece si tiene muchas clases: el número chico deja lugar a las líneas */
+@media (width >= 768px) {
+    .diasMes .dia .numero {
+        min-width: 1.625rem;
+        height: 1.625rem;
+        font-size: .875rem;
+    }
+}
+
+.diasMes .dia.hoy .numero {
+    background-color: var(--colorCoral);
+    color: var(--colorTinta);
+}
+
+.diasMes .dia.pasado {
+    background-color: var(--colorFondo);
+    color: var(--colorTextoSuave);
+}
+
+.diasMes .dia.otroMes .numero {
+    color: var(--colorTextoSuave);
+}
+
+@media (hover: hover) {
+    /* Sobre el celeste suave del hover el gris no llega a 4,5:1 */
+    .diasMes .dia.otroMes:not([aria-pressed="true"]):hover .numero {
+        color: var(--colorTinta);
+    }
+}
+
+/* Día elegido: como todo lo elegido, fondo tinta con texto blanco; las líneas tinta pasan a blanco */
+.diasMes .dia[aria-pressed="true"] {
+    border-color: var(--colorTinta);
+    background-color: var(--colorTinta);
+    color: #fff;
+}
+
+.diasMes .dia[aria-pressed="true"] :is(.numero, .mas) {
+    color: inherit;
+}
+
+.diasMes .dia.hoy[aria-pressed="true"] .numero {
+    color: var(--colorTinta);
+}
+
+.diasMes .dia[aria-pressed="true"] .linea.azul {
+    --colorLinea: #fff;
+}
+
+.diasMes .lineas {
+    display: grid;
+    gap: 3px;
+}
+
+.diasMes .lineas .mas {
+    font-size: .65rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--colorTextoSuave);
+}
+
+.linea {
+    --colorLinea: var(--colorTinta);
+    display: block;
+    height: 4px;
+    border-radius: 2px;
+    background-color: var(--colorLinea);
+}
+
+@media (width >= 768px) {
+    .diasMes .linea {
+        height: 6px;
+        border-radius: 3px;
+    }
+}
+
+.linea.rojo {
+    --colorLinea: var(--colorMagenta);
+}
+
+.linea.gris {
+    --colorLinea: var(--colorTextoSuave);
+}
+
+/* Esperando que responda el otro: rayada, para no depender solo del color */
+.linea.punteada {
+    background: linear-gradient(90deg, var(--colorLinea) 6px, transparent 0) 0 0 / 10px 100%;
+}
+
+.calendarioMes .leyenda {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem 1.375rem;
+    margin: 1rem 0 0;
+    padding-top: .875rem;
+    border-top: 1px solid var(--colorBorde);
+    font-size: .875rem;
+    font-weight: 600;
+    color: var(--colorTextoSuave);
+}
+
+.calendarioMes .leyenda li {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+
+.calendarioMes .leyenda .linea {
+    width: 1.625rem;
+    height: 6px;
+    border-radius: 3px;
+}
+
+/* Agenda del día elegido: una fila por clase, ordenada por hora (hora a la izquierda, tarjeta con el color del estado).
+   ">" porque cada .tarjetaTurno tiene su propio header */
+.agendaDia > header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: .25rem .75rem;
+    margin-bottom: 1rem;
+}
+
+.agendaDia .cantidadDelDia {
+    font-size: .875rem;
+    font-weight: 600;
+    color: var(--colorTextoSuave);
+}
+
+.agendaDia .estadoVacio .boton {
+    margin-top: .75rem;
+}
+
+.turnos {
+    display: grid;
+    gap: .875rem;
+}
+
+.turno {
+    display: grid;
+    grid-template-columns: 3.25rem minmax(0, 1fr);
+    gap: .75rem;
+    align-items: start;
+}
+
+.turno .horaTurno {
+    display: grid;
+    gap: .125rem;
+    padding-top: .9rem;
+    font-family: var(--fuenteMarca);
+    line-height: 1.1;
+    text-align: right;
+}
+
+.turno .horaTurno time {
+    font-size: 1.125rem;
+    font-weight: 700;
+}
+
+.turno .horaTurno span {
+    font-size: .8125rem;
+    color: var(--colorTextoSuave);
+}
+
+.turno .tarjetaTurno {
+    display: grid;
+    gap: .625rem;
+    min-width: 0;
+    padding: .875rem 1rem;
+    border: 1.5px solid var(--colorBorde);
+    border-radius: var(--radioMedio);
+    background-color: var(--colorSuperficie);
+    box-shadow: var(--sombraSuave);
+}
+
+/* Franjita del estado: la misma línea del calendario */
+.tarjetaTurno > .linea {
+    width: 2rem;
+}
+
+.tarjetaTurno header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .375rem .625rem;
+}
+
+.tarjetaTurno header h4 {
+    margin: 0;
+    font-size: 1.0625rem;
+}
+
+.tarjetaTurno header h4 a {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-color: var(--colorCoral);
+    text-decoration-thickness: 2px;
+    text-underline-offset: .2em;
+}
+
+.tarjetaTurno .rolTurno {
+    font-size: .8125rem;
+    font-weight: 600;
+    color: var(--colorTextoSuave);
+}
+
+/* Etiqueta plana y derecha (no es una pegatina) */
+.tarjetaTurno .etiquetaEstado {
+    display: inline-flex;
+    align-items: center;
+    gap: .375rem;
+    margin-left: auto;
+    padding: .25rem .75rem;
+    border-radius: 999px;
+    font: 600 .875rem var(--fuenteMarca);
+}
+
+.etiquetaEstado.azul {
+    background-color: var(--colorCeleste);
+    color: var(--colorTinta);
+}
+
+.etiquetaEstado.rojo {
+    background-color: var(--colorMagenta);
+    color: #fff;
+}
+
+.etiquetaEstado.gris {
+    background-color: var(--colorFondo);
+    color: var(--colorTextoSuave);
+}
+
+.tarjetaTurno .detalleTurno {
+    display: grid;
+    gap: .25rem;
+    font-size: .875rem;
+    font-weight: 600;
+}
+
+.tarjetaTurno .detalleTurno .bi {
+    margin-right: .4rem;
+    color: var(--colorMagenta);
+}
+
+/* La clase a la que lleva una notificación se resalta un momento */
+.turno.resaltada .tarjetaTurno,
+tr.resaltada td {
+    animation: resaltarClase 2.4s var(--curvaSuave) 2;
+}
+
+@keyframes resaltarClase {
+    50% {
+        background-color: var(--colorCelesteSuave);
+        box-shadow: var(--sombraFlotante);
+    }
+}
+
+/* Mi agenda (profesores): horario semanal y días bloqueados */
+.miAgenda .card h3 {
+    margin-bottom: .35rem;
+    font-size: 1.15rem;
+}
+
+.miAgenda .card > p {
+    font-size: .9rem;
+    color: var(--colorTextoSuave);
+}
+
+/* Celeste plano, como el aviso de arriba */
+.avisoSinAgenda {
+    margin-bottom: 1rem;
+    padding: .75rem 1rem;
+    border-radius: var(--radioMedio);
+    background-color: var(--colorCeleste);
+    font-weight: 600;
+}
+
+.diasDeAgenda {
+    display: grid;
+    gap: .6rem;
+    margin: 1rem 0;
+    padding: 0;
+    list-style: none;
+}
+
+.diaDeAgenda {
+    padding: .7rem .85rem;
+    border: 1.5px solid var(--colorBorde);
+    border-radius: var(--radioMedio);
+}
+
+.diaDeAgenda .encabezadoDia {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .4rem .6rem;
+}
+
+.diaDeAgenda .encabezadoDia strong {
+    min-width: 6.5rem;
+}
+
+.diaDeAgenda .encabezadoDia label {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    cursor: pointer;
+}
+
+.diaDeAgenda .franjasDelDia {
+    display: grid;
+    justify-items: start;
+    gap: .6rem;
+    margin-top: .4rem;
+}
+
+.diaDeAgenda .franjaDeAgenda {
+    display: grid;
+    gap: .25rem;
+}
+
+.diaDeAgenda .selectoresDeFranja {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .5rem;
+}
+
+.diaDeAgenda .selectoresDeFranja .form-control {
+    width: auto;
+    min-width: 6.5rem;
+}
+
+.diaDeAgenda .selectoresDeFranja .boton {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    justify-content: center;
+}
+
+.diaDeAgenda .franjasDelDia > .boton {
+    min-height: 2.75rem;
+}
+
+.miAgenda .bloquearDia {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: .75rem;
+}
+
+.miAgenda .bloquearDia .boton {
+    min-height: 2.75rem;
+}
+
+.listaBloqueados {
+    display: grid;
+    gap: .5rem;
+    margin: 1rem 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.listaBloqueados li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: .5rem .75rem;
+    padding: .6rem .8rem;
+    border: 1.5px solid var(--colorBorde);
+    border-radius: var(--radioChico);
+    font-size: .9rem;
+}
+
+.listaBloqueados li small {
+    display: block;
+    font-weight: 600;
+    color: var(--colorMagenta);
+}
+
+.listaBloqueados .sinBloqueos {
+    border-style: dashed;
+    color: var(--colorTextoSuave);
+}
+
+.listaBloqueados .boton {
+    min-height: 2.75rem;
+}
+
+
+/* Historial: tabla (la dibuja historial.js en la pestaña del Panel y en el modal del Perfil);
+   en pantallas chicas cada fila se apila usando data-etiqueta */
+.card.tabla {
+    height: auto;
+    padding: 0;
+    overflow: hidden;
+}
+
+.tabla .table {
+    --bs-table-bg: transparent;
+    --bs-table-cell-padding-x: 1.1rem;
+    --bs-table-cell-padding-y: .85rem;
+    --bs-table-cell-vertical-align: middle;
+    margin: 0;
+    font-size: .9rem;
+}
+
+.tabla .table th {
+    border-bottom: 1.5px solid var(--colorBorde);
+    background-color: var(--colorFondo);
+    font-size: .72rem;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--colorTextoSuave);
+}
+
+@media (width < 768px) {
+    .tabla .table thead {
+        display: none;
+    }
+
+    .tabla .table tr {
+        display: grid;
+        gap: .35rem;
+        padding: 1rem 1.1rem;
+        border-bottom: 1px solid var(--colorBorde);
+    }
+
+    .tabla .table td {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0;
+        border: 0;
+        text-align: right;
+    }
+
+    .tabla .table td::before {
+        content: attr(data-etiqueta);
+        font-size: .72rem;
+        font-weight: 700;
+        letter-spacing: .06em;
+        text-transform: uppercase;
+        color: var(--colorTextoSuave);
+    }
+}
+
+/* Puntuación: las estrellas de la última reseña que se dejó a esa persona */
+.tabla .estrellas {
+    display: inline-flex;
+    gap: .1rem;
+    color: var(--colorCoral);
+}
+
+.tabla .table td .boton {
+    white-space: nowrap;
+}
+
+/* El nombre lleva al perfil: 44px de toque sin agrandar la fila */
+.tabla .table td strong a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+}
+
+/* Debajo de la tabla: "Mostrando 20 de 143 clases" y el botón "Ver más" */
+.pieHistorial {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem 1rem;
+    margin-top: .75rem;
+}
+
+.notaHistorial {
+    margin: 0;
+    font-size: .82rem;
+    text-align: center;
+    color: var(--colorTextoSuave);
+}
+
+.pieHistorial .boton {
+    min-height: 2.75rem;
+}
+
+/* Motivo de una clase no concretada, debajo del día */
+.tabla .motivoHistorial {
+    display: block;
+    font-size: .75rem;
+    color: var(--colorTextoSuave);
+}
+
+/* "Cargando tu historial…" mientras llega el fetch */
+.cargandoHistorial {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    padding-block: 1.5rem;
+    font-weight: 600;
+    color: var(--colorTextoSuave);
+}
+
+/* Ícono de carga: gira */
+.cargandoHistorial .bi,
+.perfil .estadoPerfil .bi,
+.dialogoEdicion .estadoPerfil .bi,
+.dialogoHistorial .estadoHistorial.cargando .bi {
+    animation: girarCarga 1s linear infinite;
+}
+
+/* Chat directo */
+.panel .chat {
+    display: grid;
+    grid-template-columns: 1fr;
+    padding: 0;
+    overflow: hidden;
+}
+
+.chat .conversaciones {
+    display: flex;
+    margin: 0;
+    padding: 0;
+    overflow-x: auto;
+    border-bottom: 1.5px solid var(--colorBorde);
+    background-color: var(--colorFondo);
+    list-style: none;
+}
+
+.chat .conversaciones li {
+    flex-shrink: 0;
+}
+
+.chat .conversaciones .conversacion {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    width: 100%;
+    padding: .9rem 1.1rem;
+    border: 0;
+    border-bottom: 3px solid transparent;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+@media (hover: hover) {
+    .chat .conversaciones .conversacion:hover {
+        background-color: var(--colorSuperficie);
+    }
+}
+
+.chat .conversaciones .conversacion.activa {
+    border-bottom-color: var(--colorTinta);
+    background-color: var(--colorCelesteSuave);
+}
+
+.chat .conversaciones .conversacion .badge {
+    margin-left: auto;
+}
+
+.chat .conversaciones div {
+    display: grid;
+    min-width: 0;
+    line-height: 1.3;
+}
+
+.chat .conversaciones div span {
+    max-width: 9.5rem; /* en celular la lista es horizontal: así asoma la conversación siguiente */
+    overflow: hidden;
+    font-size: .78rem;
+    color: var(--colorTextoSuave);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Sobre el celeste suave de la conversación abierta el gris no llega a 4,5:1 */
+.chat .conversaciones .conversacion.activa div span {
+    color: var(--colorTexto);
+}
+
+.chat .hilo {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    min-height: 24rem;
+}
+
+.chat .hilo header {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    padding: .9rem 1.25rem;
+    border-bottom: 1.5px solid var(--colorBorde);
+}
+
+.chat .hilo header div {
+    display: grid;
+    line-height: 1.3;
+}
+
+.chat .hilo header strong a {
+    color: inherit;
+}
+
+.chat .hilo header span:not(.avatar) {
+    font-size: .78rem;
+    color: var(--colorTextoSuave);
+}
+
+.chat .mensajes {
+    display: flex;
+    flex-direction: column;
+    gap: .6rem;
+    min-height: 16rem;
+    padding: 1.25rem;
+    overflow-y: auto;
+    max-height: 22rem;
+}
+
+/* Avisos del chat: cargando, sin conversaciones, sin mensajes, error */
+.chat .avisoChat {
+    margin: auto 0;
+    padding: 1rem 1.1rem;
+    color: var(--colorTextoSuave);
+    font-size: .9rem;
+    text-align: center;
+}
+
+.chat .conversaciones .avisoChat {
+    flex: 1 1 auto;
+}
+
+.chat .avisoChat .bi-arrow-repeat {
+    display: inline-block;
+    animation: girarCarga 1s linear infinite;
+}
+
+/* Separador de día entre los mensajes ("Hoy", "Ayer", "Lunes 12 de octubre") */
+.chat .diaChat {
+    align-self: center;
+    margin: .4rem 0 0;
+    padding: .15rem .7rem;
+    border-radius: 999px;
+    background-color: var(--colorFondo);
+    color: var(--colorTextoSuave);
+    font-size: .72rem;
+    font-weight: 700;
+}
+
+.chat .burbuja {
+    overflow-wrap: anywhere;
+}
+
+/* Hora del mensaje y, en los propios, una tilde (enviado) o dos (visto); hereda el color porque el gris no se lee sobre coral.
+   Con opacidad .85 la tinta sobre coral queda a 4,8:1 (con .75 era 4,1:1) */
+.chat .burbuja .detalleMensaje {
+    display: block;
+    margin-top: .2rem;
+    color: inherit;
+    opacity: .85;
+    font-size: .68rem;
+    font-weight: 400;
+    text-align: right;
+}
+
+.chat .redactar {
+    display: flex;
+    gap: .6rem;
+    padding: .9rem 1.25rem;
+    border-top: 1.5px solid var(--colorBorde);
+}
+
+.chat .redactar .form-control {
+    flex: 1;
+    min-width: 0;
+}
+
+@media (width >= 1024px) {
+    .panel .chat {
+        grid-template-columns: 17rem 1fr;
+    }
+
+    .chat .conversaciones {
+        display: grid;
+        align-content: start;
+        max-height: 30rem;
+        overflow-x: hidden;
+        overflow-y: auto;
+        border-right: 1.5px solid var(--colorBorde);
+        border-bottom: 0;
+    }
+
+    .chat .conversaciones .conversacion {
+        border-bottom: 0;
+        border-left: 3px solid transparent;
+    }
+
+    .chat .conversaciones .conversacion.activa {
+        border-left-color: var(--colorTinta);
+    }
+
+    .chat .conversaciones div span {
+        max-width: none;
+    }
+}
+
+/* ---------- 3.15 Quiénes somos ---------- */
+/* Presentación: lavado, texto a la izquierda y la plancha (el único momento animado) a la derecha */
+.presentacion {
+    background: var(--fondoLavado);
+}
+
+.presentacion h1 + p {
+    max-width: 34rem;
+    margin-top: 1.25rem;
+    font-size: clamp(1.05rem, .95rem + .4vw, 1.3rem);
+}
+
+.presentacion ul {
+    display: grid;
+    gap: .85rem;
+    margin-top: 2rem;
+}
+
+.presentacion li {
+    display: flex;
+    align-items: center;
+    gap: .9rem;
+    font-weight: 700;
+}
+
+.presentacion .plancha {
+    font-size: clamp(1.15rem, 1rem + .6vw, 1.6rem);
+}
+
+.presentacion .plancha .pegatina:not(.redonda) {
+    padding: .7rem 1.4rem;
+    border-radius: 999px;
+}
+
+.presentacion .pegatina.redonda {
+    width: 8.5rem;
+    height: 8.5rem;
+}
+
+/* Desde lg las pegatinas se reparten por la columna; antes van sueltas en fila */
+@media (width >= 1024px) {
+    .presentacion .plancha {
+        position: relative;
+        display: block;
+        min-height: 25rem;
+    }
+
+    .presentacion .plancha .pegatina {
+        position: absolute;
+    }
+
+    .presentacion .plancha .pegatina:nth-child(1) {
+        top: 1.5rem;
+        left: 1.5rem;
+    }
+
+    .presentacion .plancha .pegatina:nth-child(2) {
+        top: 2.75rem;
+        right: 1.25rem;
+    }
+
+    .presentacion .plancha .pegatina:nth-child(3) {
+        top: 10.5rem;
+        right: 2rem;
+    }
+
+    .presentacion .plancha .pegatina:nth-child(4) {
+        top: 15rem;
+        left: 1.25rem;
+    }
+
+    .presentacion .plancha .pegatina:nth-child(5) {
+        bottom: 1.25rem;
+        right: 4rem;
+    }
+}
+
+/* Manifiesto: tarjeta blanca sobre coral plano */
+.manifiesto {
+    background-color: var(--colorCoral);
+}
+
+.manifiesto .card {
+    gap: 1.25rem;
+    max-width: 55rem;
+    margin-inline: auto;
+    padding: clamp(1.75rem, 1rem + 4vw, 3.5rem);
+    border-color: transparent;
+    box-shadow: var(--sombraFlotante);
+}
+
+.manifiesto .card p {
+    font-size: clamp(1rem, .95rem + .3vw, 1.2rem);
+}
+
+.manifiesto .card .remate {
+    padding-top: 1.5rem;
+    border-top: 1.5px dashed var(--colorBorde);
+    color: var(--colorTinta);
+    font-weight: 800;
+    line-height: 1.5;
+}
+
+.mision .card {
+    gap: 1rem;
+    padding: clamp(1.5rem, 1rem + 2vw, 2.25rem);
+}
+
+.mision .card p {
+    font-size: 1rem;
+}
+
+/* Cómo somos: celeste plano (el texto va en tinta) con los atributos en pegatinas quietas */
+.atributos {
+    background-color: var(--colorCeleste);
+}
+
+.atributos p {
+    margin-top: .75rem;
+    color: var(--colorTinta);
+}
+
+.atributos h3 {
+    font: 600 1.0625rem var(--fuenteMarca);
+}
+
+.atributos .plancha {
+    justify-content: flex-start;
+    margin-bottom: .75rem;
+    font-size: clamp(1.05rem, 1rem + .3vw, 1.3rem);
+}
+
+.atributos .pegatina {
+    padding: .65rem 1.3rem;
+    border-radius: 999px;
+}
+
+/* Por qué nace: al pie de cada tarjeta, quién del equipo lo detectó */
+.problemas .card .detectado {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    margin-top: auto;
+    padding-top: .9rem;
+    border-top: 1.5px dashed var(--colorBorde);
+    color: var(--colorTinta);
+    font-family: var(--fuenteMarca);
+    font-size: 1rem;
+}
+
+.problemas .detectado strong {
+    font-weight: 600;
+}
+
+/* Equipo sigue a Por qué nace sobre blanco: un solo espacio entre las dos */
+.problemas + .equipo {
+    padding-top: 0;
+}
+
+.equipo .card {
+    align-items: center;
+    text-align: center;
+}
+
+/* Avatares de iniciales sin troquel: aro interior y sombra suave */
+.equipo .avatar {
+    --bs-avatar-size: 5.5rem;
+    box-shadow: inset 0 0 0 .25rem var(--colorCeleste), var(--sombraAvatar);
+}
+
+.equipo .avatar.theme-accent {
+    box-shadow: inset 0 0 0 .25rem var(--colorCoral), var(--sombraAvatar);
+}
+
+/* Centrada como el resto de la tarjeta (.card > .badge la manda a la izquierda) */
+.equipo .badge {
+    align-self: center;
+    margin-bottom: .25rem;
+}
+
+
+/* ---------- 3.16 Perfil (propio y de otros usuarios) ---------- */
+.perfil {
+    position: relative;
+    padding-top: 0;
+    background-color: var(--colorFondo);
+}
+
+/* Franja de color arriba: la tarjeta del encabezado se monta encima */
+.perfil .portadaPerfil {
+    height: clamp(6.5rem, 4rem + 8vw, 10rem);
+    background-color: var(--colorCoral);
+    background-image:
+        radial-gradient(circle at 1px 1px, rgba(255, 255, 255, .28) 1.5px, transparent 0),
+        linear-gradient(120deg, var(--colorCoral) 0%, #FF7A7A 45%, var(--colorCeleste) 140%);
+    background-size: 22px 22px, 100% 100%;
+}
+
+.perfil > .container {
+    position: relative;
+    margin-top: clamp(-5rem, -2.5rem - 4vw, -3rem);
+}
+
+.perfil .estadoPerfil {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    padding-block: 3rem;
+    font-weight: 600;
+    color: var(--colorTextoSuave);
+}
+
+/* El primer estado ("Cargando…") queda sobre la franja de color: va en tinta, el blanco sobre coral no se lee */
+.perfil > .container > .estadoPerfil {
+    color: var(--colorTinta);
+}
+
+.perfil .contenidoPerfil {
+    display: grid;
+    gap: 1rem;
+}
+
+@media (width >= 1024px) {
+    .perfil .contenidoPerfil {
+        gap: 1.5rem;
+    }
+}
+
+/* Perfil inexistente (la tarjeta es .estadoVacio) */
+
+.perfil .sinPerfil h1 {
+    font-size: clamp(1.5rem, 1.2rem + 1.2vw, 2rem);
+}
+
+
+/* Aviso de verificación del perfil propio */
+.perfil .avisoPerfil {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: start;
+    gap: .9rem 1rem;
+    background-color: var(--colorAlertaSuave);
+    box-shadow: var(--sombraSuave);
+}
+
+.perfil .avisoPerfil .icono {
+    background-color: #FDE68A;
+    color: var(--colorAlerta);
+}
+
+.perfil .avisoPerfil h2 {
+    font-size: clamp(1.1rem, 1rem + .5vw, 1.3rem);
+}
+
+.perfil .avisoPerfil p {
+    margin-top: .3rem;
+    color: var(--colorTinta);
+}
+
+.perfil .avisoPerfil .boton {
+    grid-column: 1 / -1;
+    justify-self: start;
+}
+
+@media (width >= 768px) {
+    .perfil .avisoPerfil {
+        grid-template-columns: auto 1fr auto;
+        align-items: center;
+    }
+
+    .perfil .avisoPerfil .boton {
+        grid-column: auto;
+    }
+}
+
+/* Lo que falta: etiquetas chicas */
+.perfil .faltantes,
+.dialogoEdicion .progresoVerificacion ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .35rem;
+    margin-top: .65rem;
+    padding: 0;
+    list-style: none;
+}
+
+.perfil .faltantes li,
+.dialogoEdicion .progresoVerificacion li {
+    padding: .2rem .65rem;
+    border: 1.5px solid var(--colorAlerta);
+    border-radius: 999px;
+    background-color: var(--colorSuperficie);
+    color: var(--colorAlerta);
+    font-size: .78rem;
+    font-weight: 700;
+}
+
+/* Tarjeta del titular (foto, nombre, acciones y cifras): sin borde, flota sobre la franja */
+.perfil .cabeceraPerfil {
+    gap: 1.25rem;
+    border: 0;
+    box-shadow: var(--sombraFlotante);
+}
+
+.perfil .filaCabecera {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+@media (width >= 768px) {
+    .perfil .filaCabecera {
+        flex-direction: row;
+        align-items: center;
+        gap: 1.5rem;
+    }
+}
+
+.perfil .cabeceraPerfil .avatar {
+    --bs-avatar-size: clamp(5.5rem, 4.5rem + 3vw, 7.5rem);
+}
+
+.perfil .titularPerfil {
+    flex-grow: 1;
+    min-width: 0;
+}
+
+.perfil .etiquetasTitular {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .5rem;
+}
+
+.perfil .titularPerfil h1 {
+    margin-block: .5rem .35rem;
+    font-size: clamp(1.7rem, 1.2rem + 2vw, 2.6rem);
+    overflow-wrap: anywhere;
+}
+
+.perfil .titularPerfil h1 .tickVerificado {
+    margin-left: .15em;
+    font-size: .7em;
+    vertical-align: .1em;
+}
+
+.perfil .datosTitular {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .25rem 1rem;
+    font-size: .88rem;
+}
+
+.perfil .accionesPerfil {
+    gap: .6rem;
+}
+
+.perfil .accionesPerfil form {
+    display: contents;
+}
+
+/* En celulares el botón principal ocupa toda la fila y el resto se reparte abajo */
+@media (width < 768px) {
+    .perfil .accionesPerfil .boton {
+        flex: 1 1 auto;
+        justify-content: center;
+    }
+
+    .perfil .accionesPerfil .boton.principal {
+        flex-basis: 100%;
+    }
+
+    /* Los botones de ícono se quedan en 44 px, solos o con otra acción al lado */
+    .perfil .accionesPerfil .boton.botonIcono {
+        flex: 0 0 2.75rem;
+    }
+}
+
+/* Me gusta: corazón que salta, explosión de corazoncitos y contador que rebota (site.js: animarMeGusta) */
+.boton.botonMeGusta {
+    position: relative;
+    overflow: visible;
+}
+
+.boton.botonMeGusta.activo {
+    background-color: var(--colorMagenta);
+    border-color: transparent;
+    color: #fff;
+}
+
+.boton.botonMeGusta .saltoCorazon {
+    animation: saltoCorazon .6s var(--curvaSuave);
+}
+
+.boton.botonMeGusta .corazonVolador {
+    position: absolute;
+    inset: 50% auto auto 50%;
+    pointer-events: none;
+    animation: volarCorazon .8s ease-out forwards;
+}
+
+.perfil .cifras strong.rebote {
+    display: inline-block;
+    animation: reboteCifra .5s var(--curvaSuave);
+}
+
+@keyframes saltoCorazon {
+    0% { transform: scale(1); }
+    30% { transform: scale(1.55) rotate(-8deg); }
+    60% { transform: scale(.9) rotate(4deg); }
+    100% { transform: scale(1); }
+}
+
+@keyframes volarCorazon {
+    from { transform: translate(-50%, -50%) scale(.4); opacity: 1; }
+    to { transform: translate(calc(-50% + var(--destinoX)), calc(-50% + var(--destinoY))) scale(1); opacity: 0; }
+}
+
+@keyframes reboteCifra {
+    0%, 100% { transform: translateY(0) scale(1); }
+    40% { transform: translateY(-6px) scale(1.3); color: var(--colorCoral); }
+}
+
+/* Fila de cifras: las cifras a la izquierda y el botón Historial a la derecha */
+.perfil .filaCifras {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem 1rem;
+    padding-top: 1.25rem;
+    border-top: 2px dashed var(--colorBorde);
+}
+
+/* Cifras en fichas: calificación y me gusta en coral suave, amigos y precio en celeste suave */
+.perfil .cifras {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .75rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.perfil .cifras li {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    min-height: 3.25rem;
+    padding: 0 1.1rem;
+    border-radius: var(--radioMedio);
+    background-color: var(--colorCoralSuave);
+    font-family: var(--fuenteMarca);
+}
+
+.perfil .cifras li:nth-child(n + 3) {
+    background-color: var(--colorCelesteSuave);
+}
+
+.perfil .cifras .bi {
+    color: var(--colorCoral);
+}
+
+.perfil .cifras .bi-heart-fill {
+    color: var(--colorMagenta);
+}
+
+.perfil .cifras li:nth-child(n + 3) .bi {
+    color: var(--colorTinta);
+}
+
+.perfil .cifras strong {
+    font-size: 1.375rem;
+    font-weight: 600;
+}
+
+.perfil .cifras span {
+    font-size: .9375rem;
+    font-weight: 500;
+    color: var(--colorTexto);
+}
+
+/* La cifra de amigos es un botón que abre la lista */
+.perfil .cifras li:has(.botonCifra) {
+    padding: 0;
+}
+
+.perfil .cifras .botonCifra {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    min-height: 3.25rem;
+    padding: 0 1.1rem;
+    border: 1.5px solid transparent;
+    border-radius: inherit;
+    background: none;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+    transition: border-color var(--duracionRapida) var(--curvaSuave);
+}
+
+@media (hover: hover) {
+    .perfil .cifras .botonCifra:hover {
+        border-color: var(--colorTinta);
+    }
+}
+
+/* En celulares las fichas van en 2 columnas, con el ícono al costado y el rótulo debajo del número */
+@media (width < 768px) {
+    .perfil .cifras {
+        flex: 1 1 100%;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .perfil .cifras li:not(:has(.botonCifra)),
+    .perfil .cifras .botonCifra {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        column-gap: .6rem;
+        align-content: center;
+        padding-block: .5rem;
+        text-align: start;
+    }
+
+    .perfil .cifras li:has(.botonCifra) .botonCifra {
+        flex: 1;
+    }
+
+    .perfil .cifras .bi {
+        grid-row: 1 / 3;
+        align-self: center;
+    }
+
+    .perfil .cifras :is(strong, span) {
+        line-height: 1.15;
+    }
+
+    /* Si queda una ficha sola en la última fila, ocupa el ancho entero */
+    .perfil .cifras li:last-child:nth-child(odd) {
+        grid-column: 1 / -1;
+    }
+}
+
+/* Tarjetas de contenido: Sobre mí, Reseñas y Datos */
+.perfil .card h2 {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    font-size: 1.25rem;
+}
+
+.perfil :is(.card h2, .datosPerfil h3) .bi {
+    color: var(--colorCoral);
+}
+
+/* "Sobre mí" es HTML del editor: se le da formato a lo que permite Quill */
+.perfil .descripcion {
+    font-size: .95rem;
+    line-height: 1.7;
+    color: var(--colorTexto);
+    overflow-wrap: anywhere;
+}
+
+.perfil .descripcion > * + * {
+    margin-top: .6rem;
+}
+
+/* ".card p" pone gris y achica los párrafos: la descripción conserva su texto */
+.perfil .descripcion p {
+    font-size: inherit;
+    color: inherit;
+}
+
+.perfil .descripcion :is(ul, ol) {
+    padding-left: 1.4rem;
+}
+
+.perfil .descripcion ul {
+    list-style: disc;
+}
+
+.perfil .descripcion ol {
+    list-style: decimal;
+}
+
+.perfil .descripcion.vacio {
+    font-size: .92rem;
+}
+
+.perfil .descripcion blockquote {
+    padding: .4rem .9rem;
+    background-color: var(--colorCelesteSuave);
+    border-radius: .5rem;
+}
+
+.perfil .descripcion a {
+    color: var(--colorMagenta);
+    font-weight: 600;
+}
+
+/* Texto de "todavía no hay nada" en descripción, reseñas y datos */
+.perfil .vacio {
+    font-style: italic;
+    color: var(--colorTextoSuave);
+}
+
+.perfil .resenas {
+    display: grid;
+    gap: .75rem;
+}
+
+.perfil .resena {
+    padding: .9rem 1rem;
+    border: 1.5px solid var(--colorBorde);
+    border-radius: var(--radioMedio);
+}
+
+.perfil .resena header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: .35rem .75rem;
+}
+
+.perfil .resena a {
+    font-weight: 700;
+    color: var(--colorTinta);
+}
+
+@media (hover: hover) {
+    .perfil .resena a:hover {
+        color: var(--colorMagenta);
+    }
+}
+
+.perfil .estrellas {
+    display: inline-flex;
+    gap: .1rem;
+    color: var(--colorCoral);
+}
+
+.perfil .resena p {
+    margin-top: .4rem;
+    overflow-wrap: anywhere;
+}
+
+.perfil .datosPerfil .grupo + .grupo {
+    margin-top: 1rem;
+}
+
+/* Rótulos de Datos: Fredoka como las etiquetas, sin mayúsculas */
+.perfil .datosPerfil h3 {
+    margin-bottom: .45rem;
+    font: 600 1.0625rem/1.3 var(--fuenteMarca);
+}
+
+.perfil .datosPerfil .etiquetas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem;
+}
+
+.perfil .reportarPerfil {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    min-height: 2.75rem;
+    align-self: center;
+    font-size: .85rem;
+    color: var(--colorTextoSuave);
+}
+
+@media (hover: hover) {
+    .perfil .reportarPerfil:hover {
+        color: var(--colorMagenta);
+    }
+}
+
+/* ---------- Modal "Editar perfil" ---------- */
+.dialog.dialogoEdicion {
+    --bs-dialog-width: min(42rem, 94vw);
+}
+
+/* El cuerpo scrollea y el encabezado y los botones quedan fijos */
+.dialogoEdicion form {
+    display: flex;
+    flex-direction: column;
+    max-height: min(88vh, 54rem);
+}
+
+.dialogoEdicion .dialog-body {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+.dialogoEdicion .estadoPerfil {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    padding-block: 1.5rem;
+    color: var(--colorTextoSuave);
+}
+
+.dialogoEdicion .contenidoEdicion {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.1rem;
+}
+
+/* Progreso de la verificación: amarillo si falta algo, verde si ya está */
+.dialogoEdicion .progresoVerificacion {
+    padding: .8rem 1rem;
+    border: 2px solid var(--colorAlerta);
+    border-radius: var(--radioMedio);
+    background-color: var(--colorAlertaSuave);
+}
+
+.dialogoEdicion .progresoVerificacion p {
+    font-size: .88rem;
+    font-weight: 700;
+    color: var(--colorTinta);
+}
+
+.dialogoEdicion .progresoVerificacion ul {
+    margin-top: .5rem;
+}
+
+.dialogoEdicion .progresoVerificacion.verificada {
+    border-color: var(--colorExito);
+    background-color: var(--colorExitoSuave);
+}
+
+/* Pestañas: Modificar perfil / Modificar cuenta (los colores son los de .nav-pills) */
+.dialogoEdicion .pestanasEdicion {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.dialogoEdicion .pestanasEdicion .nav-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .4rem;
+    min-width: 0;
+    padding: .55rem .5rem;
+    font-size: clamp(.82rem, .75rem + .4vw, .95rem);
+    line-height: 1.2;
+}
+
+/* En celulares el ícono de la pestaña sobra: queda solo el texto */
+@media (width < 480px) {
+    .dialogoEdicion .pestanasEdicion .nav-link .bi {
+        display: none;
+    }
+}
+
+/* Campos en vertical */
+.dialogoEdicion .tab-pane {
+    display: none;
+    gap: 1rem;
+}
+
+.dialogoEdicion .tab-pane.active {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+}
+
+.dialogoEdicion .form-field {
+    display: grid;
+    gap: .35rem;
+}
+
+.dialogoEdicion .form-field small.excedido {
+    font-weight: 700;
+    color: var(--colorMagenta);
+}
+
+/* Editor de texto enriquecido (Quill) con el borde del sitio */
+.dialogoEdicion .ql-toolbar.ql-snow {
+    border: 1.5px solid var(--colorTextoSuave);
+    border-bottom-color: var(--colorBorde);
+    border-radius: var(--radioChico) var(--radioChico) 0 0;
+    background-color: var(--colorFondo);
+    font-family: var(--fuenteTexto);
+}
+
+/* Botones de la barra de 44px (quill.snow.css carga después: hace falta un selector más fuerte) */
+.dialogoEdicion .ql-toolbar.ql-snow button {
+    width: 2.75rem;
+    height: 2.75rem;
+    padding: .7rem;
+    border-radius: var(--radioChico);
+}
+
+/* Hover y foco en celeste oscuro, activo en tinta con ícono blanco (Quill los pinta de azul; con puntero táctil,
+   de gris: .dialog suma una clase para ganarle a esa regla) */
+.dialog.dialogoEdicion .ql-toolbar.ql-snow button:is(:hover, :focus) {
+    background-color: var(--colorCelesteSuave);
+    color: var(--colorCelesteOscuro);
+}
+
+.dialog.dialogoEdicion .ql-toolbar.ql-snow button.ql-active {
+    background-color: var(--colorTinta);
+    color: var(--colorSuperficie);
+}
+
+.dialog.dialogoEdicion .ql-toolbar.ql-snow button:is(:hover, :focus, .ql-active) :is(.ql-stroke, .ql-stroke-miter) {
+    stroke: currentColor;
+}
+
+.dialog.dialogoEdicion .ql-toolbar.ql-snow button:is(:hover, :focus, .ql-active) :is(.ql-fill, .ql-stroke.ql-fill) {
+    fill: currentColor;
+}
+
+.dialogoEdicion .ql-container.ql-snow {
+    border: 1.5px solid var(--colorTextoSuave);
+    border-top: 0;
+    border-radius: 0 0 var(--radioChico) var(--radioChico);
+    font-family: var(--fuenteTexto);
+    font-size: .95rem;
+}
+
+/* Barra y editor son hijos de la grilla .form-field: se tapa su separación de .35rem para que el marco sea uno solo */
+.dialogoEdicion .ql-toolbar.ql-snow + .ql-container.ql-snow {
+    margin-top: -.35rem;
+}
+
+.dialogoEdicion .editorTexto .ql-editor {
+    min-height: 9rem;
+    max-height: 18rem;
+}
+
+/* Foco como el de los campos: borde tinta y anillo celeste */
+.dialogoEdicion .editorTexto:focus-within,
+.dialogoEdicion .ql-toolbar.ql-snow:has(+ .editorTexto:focus-within) {
+    border-color: var(--colorTinta);
+}
+
+.dialogoEdicion .editorTexto:focus-within {
+    box-shadow: var(--anilloFoco);
+}
+
+/* Foto de perfil: vista previa en círculo (componente "Change profile picture" del UI Kit) */
+.dialogoEdicion .vistaPreviaFoto {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.dialogoEdicion .vistaPreviaFoto .avatar {
+    --bs-avatar-size: 5.5rem;
+}
+
+.dialogoEdicion .vistaPreviaFoto > div {
+    display: grid;
+    justify-items: start;
+    gap: .4rem;
+}
+
+.dialogoEdicion .vistaPreviaFoto label.boton {
+    cursor: pointer;
+}
+
+/* El input está oculto: el foco se dibuja en el botón, en tinta como el foco global */
+.dialogoEdicion .vistaPreviaFoto:has(input:focus-visible) label.boton {
+    outline: 3px solid var(--colorFoco, var(--colorTinta));
+    outline-offset: 3px;
+}
+
+.dialogoEdicion .estadoFotoDni {
+    font-size: .85rem;
+    color: var(--colorTextoSuave);
+}
+
+.dialogoEdicion .estadoFotoDni.cargada {
+    font-weight: 600;
+    color: var(--colorExito);
+}
+
+/* ---------- Modal "Ajustá tu foto" (Cropper.js 1.6, se abre arriba de "Editar perfil") ---------- */
+.dialog.dialogoRecorte {
+    --bs-dialog-width: min(40rem, 94vw);
+}
+
+.dialogoRecorte .dialog-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 11rem;
+    gap: 1.25rem;
+    align-items: start;
+}
+
+/* Escenario oscuro donde se mueve la foto */
+.dialogoRecorte .areaRecorte {
+    height: min(52vh, 22rem);
+    overflow: hidden;
+    border: 1.5px solid var(--colorBorde);
+    border-radius: var(--radioMedio);
+    background-color: var(--colorTinta);
+}
+
+/* Cropper.js pide max-width: 100% en la imagen para que entre en el escenario */
+.dialogoRecorte .areaRecorte img {
+    display: block;
+    max-width: 100%;
+}
+
+/* Recuadro cuadrado con esquinas marcadas y borde celeste */
+.dialogoRecorte .cropper-view-box {
+    outline: 2px solid var(--colorCeleste);
+}
+
+.dialogoRecorte .cropper-modal {
+    background-color: var(--colorTinta);
+    opacity: .6;
+}
+
+.dialogoRecorte :is(.cropper-line, .cropper-point) {
+    background-color: transparent;
+}
+
+.dialogoRecorte .cropper-point {
+    display: none;
+}
+
+.dialogoRecorte .cropper-point:is(.point-nw, .point-ne, .point-sw, .point-se) {
+    display: block;
+    width: 1.4rem;
+    height: 1.4rem;
+    border: 4px solid #fff;
+    opacity: 1;
+}
+
+.dialogoRecorte .cropper-point.point-nw { top: -4px; left: -4px; border-right: 0; border-bottom: 0; }
+.dialogoRecorte .cropper-point.point-ne { top: -4px; right: -4px; border-left: 0; border-bottom: 0; }
+.dialogoRecorte .cropper-point.point-sw { bottom: -4px; left: -4px; border-right: 0; border-top: 0; }
+.dialogoRecorte .cropper-point.point-se { bottom: -4px; right: -4px; border-left: 0; border-top: 0; }
+
+.dialogoRecorte .cropper-point.point-se::before {
+    display: none;
+}
+
+/* Columna derecha: cómo va a quedar (círculo, como el avatar del sitio) y los ajustes */
+.dialogoRecorte .controlesRecorte {
+    display: grid;
+    justify-items: center;
+    gap: .9rem;
+    text-align: center;
+}
+
+.dialogoRecorte .vistaPreviaRecorte {
+    width: 9rem;
+    height: 9rem;
+    overflow: hidden;
+    border-radius: 50%;
+    background-color: var(--colorCelesteSuave);
+    box-shadow: var(--sombraSuave);
+}
+
+.dialogoRecorte .controlesRecorte p {
+    margin: 0;
+    font-size: .82rem;
+}
+
+.dialogoRecorte .botonesRecorte {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: .5rem;
+}
+
+.dialogoRecorte .botonesRecorte .boton {
+    width: 2.75rem;
+    height: 2.75rem;
+    padding: 0;
+}
+
+@media (max-width: 575.98px) {
+    .dialogoRecorte .dialog-body {
+        grid-template-columns: 1fr;
+    }
+
+    .dialogoRecorte .areaRecorte {
+        height: min(45vh, 18rem);
+    }
+
+    .dialogoRecorte .vistaPreviaRecorte {
+        width: 6rem;
+        height: 6rem;
+    }
+}
+
+/* Títulos del profesor */
+.dialogoEdicion .listaTitulos {
+    display: grid;
+    gap: .35rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.dialogoEdicion .listaTitulos:empty {
+    display: none;
+}
+
+.dialogoEdicion .listaTitulos li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .5rem;
+    padding: .45rem .5rem .45rem .8rem;
+    border: 1.5px solid var(--colorBorde);
+    border-radius: var(--radioChico);
+    font-size: .9rem;
+}
+
+.dialogoEdicion .agregarTitulo {
+    display: flex;
+    gap: .5rem;
+}
+
+.dialogoEdicion .agregarTitulo .form-control {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Profesores: desde qué año da clase en cada colegio elegido (un campo de año por colegio) */
+.dialogoEdicion .aniosEscuelas {
+    display: grid;
+    gap: .5rem;
+    margin-top: .35rem;
+    padding: .75rem .85rem;
+    border: 1.5px solid var(--colorBorde);
+    border-radius: var(--radioChico);
+    background-color: var(--colorFondo);
+}
+
+.dialogoEdicion .aniosEscuelas[hidden] {
+    display: none;
+}
+
+.dialogoEdicion .aniosEscuelas p {
+    margin: 0;
+    font-size: .85rem;
+    font-weight: 700;
+}
+
+.dialogoEdicion .aniosEscuelas #listaAniosEscuelas {
+    display: grid;
+    gap: .45rem;
+}
+
+.dialogoEdicion .anioEscuela {
+    display: grid;
+    grid-template-columns: 1fr 7.5rem;
+    align-items: center;
+    gap: .75rem;
+}
+
+.dialogoEdicion .anioEscuela label {
+    font-size: .88rem;
+    font-weight: 600;
+}
+
+
+/* ---------- Modal "Historial" del Perfil (la tabla es la misma del Panel: ver 3.14) ---------- */
+.dialog.dialogoHistorial {
+    --bs-dialog-width: min(60rem, 96vw);
+}
+
+/* El cuerpo scrollea y el encabezado y el botón Cerrar quedan fijos */
+.dialogoHistorial .dialog-body {
+    max-height: min(70vh, 38rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+.dialogoHistorial .estadoHistorial {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    padding-block: 1.5rem;
+    font-weight: 600;
+}
+
+.dialogoHistorial .estadoHistorial:empty {
+    display: none;
+}
+
+.dialogoHistorial .card.tabla {
+    box-shadow: none;
+}
+
+/* Aviso dentro del modal, como "reseña publicada" (el snackbar quedaría detrás del modal) */
+.dialogoHistorial .avisoHistorial {
+    margin-top: .75rem;
+    font-size: .88rem;
+    font-weight: 600;
+    text-align: center;
+}
+
+/* ---------- Modal "Amigos" del Perfil ---------- */
+.dialogoAmigos .dialog-body {
+    max-height: min(65vh, 32rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+.dialogoAmigos .estadoAmigos {
+    padding-block: 1rem;
+    font-weight: 600;
+}
+
+.dialogoAmigos .listaAmigos {
+    display: grid;
+    gap: .5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.dialogoAmigos .listaAmigos a {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    padding: .5rem .75rem;
+    border: 1.5px solid var(--colorBorde);
+    border-radius: var(--radioMedio);
+    color: var(--colorTinta);
+    text-decoration: none;
+    transition: border-color var(--duracionRapida) var(--curvaSuave), background-color var(--duracionRapida) var(--curvaSuave);
+}
+
+@media (hover: hover) {
+    .dialogoAmigos .listaAmigos a:hover {
+        border-color: var(--colorTinta);
+        background-color: var(--colorCelesteSuave);
+    }
+}
+
+.dialogoAmigos .listaAmigos .avatar {
+    --bs-avatar-size: 2.5rem;
+    flex-shrink: 0;
+}
+
+.dialogoAmigos .listaAmigos strong {
+    flex: 1;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+/* =========================================================
+   4) FOOTER
+   ========================================================= */
+.pie {
+    position: relative;
+    overflow: hidden;
+    padding-block: clamp(1.75rem, 3vw, 2.5rem) 1rem;
+    border-top: 4px solid var(--colorCoral);
+    background-color: var(--colorTinta);
+    color: #D1D5DB;
+}
+
+/* Sigla gigante de fondo, solo como firma de la marca */
+.pie::after {
+    content: "MIP";
+    position: absolute;
+    right: -1rem;
+    bottom: -.28em;
+    font-family: var(--fuenteTitulos);
+    font-size: clamp(6rem, 18vw, 16rem);
+    font-weight: 400;
+    line-height: 1;
+    color: transparent;
+    -webkit-text-stroke: 2px rgba(255, 255, 255, .07);
+    pointer-events: none;
+}
+
+.pie .container {
+    position: relative;
+    z-index: 1;
+}
+
+.pie .row {
+    row-gap: 1.25rem;
+}
+
+.pie p {
+    margin-top: .65rem;
+    font-size: .88rem;
+}
+
+.pie .marcaLogo > span {
+    color: #fff;
+}
+
+.pie .eslogan {
+    font-family: var(--fuenteTitulos);
+    font-size: 1.1rem;
+    font-weight: 400;
+    color: var(--colorCeleste);
+}
+
+.pie h5 {
+    margin-bottom: .65rem;
+    font: 600 1.0625rem var(--fuenteMarca);
+    letter-spacing: normal;
+    color: #fff;
+}
+
+.pie ul {
+    display: grid;
+    gap: .4rem;
+    font-size: .88rem;
+}
+
+.pie ul a {
+    color: #D1D5DB;
+    transition: color var(--duracionRapida) ease, padding-left var(--duracionRapida) var(--curvaSuave);
+}
+
+@media (hover: hover) {
+    .pie ul a:hover {
+        padding-left: .35rem;
+        color: var(--colorCeleste);
+    }
+}
+
+.pie ul a.destacado {
+    font-weight: 700;
+    color: var(--colorCoral);
+}
+
+.pie ul strong {
+    margin-right: .4rem;
+    color: #fff;
+}
+
+.pie ul span {
+    font-size: .8rem;
+    color: #9CA3AF;
+}
+
+.pie .derechos {
+    margin-top: 1.25rem;
+    padding-top: .85rem;
+    border-top: 1px solid rgba(255, 255, 255, .15);
+    text-align: center;
+    font-size: .8rem;
+    color: #9CA3AF;
+}
+
+
+/* =========================================================
+   5) ACCESIBILIDAD DE MOVIMIENTO
+   ========================================================= */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: .01ms !important;
+        animation-delay: 0s !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+        scroll-behavior: auto !important;
+    }
+
+    .boton.botonMeGusta .saltoCorazon,
+    .perfil .cifras strong.rebote,
+    .cargandoHistorial .bi,
+    .dialogoHistorial .estadoHistorial.cargando .bi {
+        animation: none;
+    }
+
+    .dialogoResena .filaEstrellas label:hover {
+        transform: none;
+    }
+}

@@ -1,0 +1,28 @@
+@* Diálogo "Pedir clase" para alumnos con sesión. Se abre con cualquier botón [data-pedir-clase]
+   (data-id-profesor y data-nombre-profesor) del Catálogo y del Perfil. Lo maneja site.js (abrirPedidoDeClase)
+   y envía el pedido con fetch a /Clases/EnviarPedido. *@
+<dialog class="dialog dialogoClase" id="dialogoPedirClase" aria-labelledby="tituloPedirClase">
+    <form id="formularioPedirClase" onsubmit="return enviarPedidoDeClase()" novalidate>
+        @Html.AntiForgeryToken()
+        <div class="dialog-header">
+            <h2 class="dialog-title" id="tituloPedirClase">Pedir una clase</h2>
+            <button type="button" class="btn-close" data-bs-dismiss="dialog" aria-label="Cerrar"></button>
+        </div>
+
+        <div class="dialog-body">
+            <p>Elegí cuándo querés tener la clase con <strong id="nombreProfesorPedido"></strong>. Te avisamos apenas responda.</p>
+            <partial name="_selectorHorario" model='"pedido"' />
+            <div class="form-field">
+                <label for="mensajePedido">Mensaje para el profesor (opcional)</label>
+                <textarea class="form-control" id="mensajePedido" maxlength="500" rows="2" placeholder="Ej.: Tengo prueba de derivadas"></textarea>
+                <small>Le llega por el chat junto con el pedido.</small>
+            </div>
+            <p class="mensajeError" id="mensajePedirClase" role="alert"></p>
+        </div>
+
+        <div class="dialog-footer">
+            <button type="button" class="boton contorno chico" data-bs-dismiss="dialog">Cancelar</button>
+            <button type="submit" class="boton principal chico" id="botonEnviarPedido"><i class="bi bi-send" aria-hidden="true"></i> Enviar pedido</button>
+        </div>
+    </form>
+</dialog>

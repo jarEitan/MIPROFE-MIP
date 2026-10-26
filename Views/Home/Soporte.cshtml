@@ -1,0 +1,119 @@
+@{
+    ViewData["Title"] = "Soporte";
+}
+
+<!-- ================= CABECERA CON BUSCADOR DE AYUDA ================= -->
+<section class="cabecera">
+    <div class="container">
+        <h1>¿En qué te podemos ayudar hoy?</h1>
+        <p>Buscá tu duda entre las preguntas frecuentes o escribinos: respondemos lo antes posible.</p>
+
+        <form class="buscador" id="formularioAyuda" onsubmit="return false" role="search">
+            <label for="campoAyuda" class="visually-hidden">Buscar en las preguntas frecuentes</label>
+            <input type="search" id="campoAyuda" placeholder="Ej: cancelar una clase..." autocomplete="off" />
+            <i class="bi bi-search" aria-hidden="true"></i>
+        </form>
+        <p class="resultadoAyuda" id="mensajeAyuda" role="status"></p>
+    </div>
+</section>
+
+<!-- ================= ACCESOS RÁPIDOS ================= -->
+<section class="ayuda">
+    <div class="container">
+        <div class="row row-cols-1 md:row-cols-3 g-3 lg:g-4">
+            <div class="col">
+                <a class="card" href="#seccionPreguntas">
+                    <span class="icono"><i class="bi bi-calendar-check" aria-hidden="true"></i></span>
+                    <h3>Gestión de clases</h3>
+                    <p>Cancelaciones, reubicaciones y cómo coordinar con tu profesor.</p>
+                    <span class="enlace">Ver preguntas</span>
+                </a>
+            </div>
+            <div class="col">
+                <a class="card" href="#seccionPreguntas">
+                    <span class="icono celeste"><i class="bi bi-search" aria-hidden="true"></i></span>
+                    <h3>Búsqueda y registro</h3>
+                    <p>Cómo crear tu cuenta y filtrar profesores por colegio, materia y modalidad.</p>
+                    <span class="enlace">Ver preguntas</span>
+                </a>
+            </div>
+            <div class="col">
+                <a class="card" href="#seccionContacto">
+                    <span class="icono oscuro"><i class="bi bi-headset" aria-hidden="true"></i></span>
+                    <h3>Hablar con soporte</h3>
+                    <p>¿Algo no funciona? Contanos qué pasó y te ayudamos.</p>
+                    <span class="enlace">Escribirnos</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ================= PREGUNTAS FRECUENTES ================= -->
+<section class="preguntas" id="seccionPreguntas">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 lg:col-9 xl:col-8">
+                <div class="encabezadoSeccion">
+                    <h2>Preguntas frecuentes</h2>
+                    <p>Pagos, perfiles y dinámica de las clases.</p>
+                </div>
+
+                <partial name="_preguntasFrecuentes" />
+
+                <p class="ayudaExtra" id="sinCoincidencias" hidden>
+                    No hay preguntas que coincidan con tu búsqueda. Probá con otras palabras o <a href="#seccionContacto">escribinos</a>.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ================= CONTACTO ================= -->
+<section class="contacto" id="seccionContacto">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 md:col-10 lg:col-7">
+                <div class="encabezadoSeccion">
+                    <h2>¿No resolviste tu duda?</h2>
+                    <p>Completá el formulario y el equipo de MIP te responde por correo.</p>
+                </div>
+
+                @* TODO BD: guardar la consulta (BD.guardarConsulta) o enviarla por correo desde el servidor *@
+                <form class="card" id="formularioContacto" onsubmit="return validarContacto()" novalidate>
+                    <div class="row g-3">
+                        <div class="col-12 md:col-6 form-field">
+                            <label for="contactoNombre">Nombre completo</label>
+                            <input class="form-control" type="text" id="contactoNombre" name="nombre" maxlength="100" autocomplete="name" />
+                        </div>
+                        <div class="col-12 md:col-6 form-field">
+                            <label for="contactoCorreo">Correo electrónico</label>
+                            <input class="form-control" type="email" id="contactoCorreo" name="correo" maxlength="150" autocomplete="email" />
+                        </div>
+                        <div class="col-12 form-field">
+                            <label for="contactoTipo">Tipo de consulta</label>
+                            <select class="form-control" id="contactoTipo" name="tipo" data-buscable data-placeholder="Elegí el tipo de consulta">
+                                <option value="">Elegí una opción</option>
+                                <option value="clases">Problema con una clase</option>
+                                <option value="cuenta">Cuenta y registro</option>
+                                <option value="sugerencia">Sugerencia</option>
+                                <option value="otro">Otro</option>
+                            </select>
+                        </div>
+                        <div class="col-12 form-field">
+                            <label for="contactoMensaje">Contanos qué pasó</label>
+                            <textarea class="form-control" id="contactoMensaje" name="mensaje" rows="5" maxlength="1000"></textarea>
+                        </div>
+                    </div>
+
+                    <p class="mensajeError" id="mensajeContacto" role="alert"></p>
+                    <p class="mensajeExito" id="exitoContacto" role="status" hidden>
+                        <i class="bi bi-check-circle-fill" aria-hidden="true"></i> ¡Gracias! Recibimos tu consulta y te vamos a responder pronto.
+                    </p>
+
+                    <button class="boton principal" type="submit">Enviar consulta</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>

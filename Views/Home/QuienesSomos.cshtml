@@ -1,0 +1,198 @@
+@{
+    ViewData["Title"] = "Quiénes somos";
+}
+
+<!-- ================= PRESENTACIÓN ================= -->
+<section class="presentacion">
+    <div class="container">
+        <div class="row align-items-center gy-5">
+            <div class="col-12 lg:col-7">
+                <h1>Quiénes <mark>somos</mark></h1>
+                <p>Esta es nuestra start-up, dedicada a ayudar a profesores y alumnos a conectarse</p>
+                <ul>
+                    <li><span class="icono"><i class="bi bi-backpack" aria-hidden="true"></i></span> Ayudar a los estudiantes a encontrar profesores particulares</li>
+                    <li><span class="icono celeste"><i class="bi bi-person-video3" aria-hidden="true"></i></span> Ayudar a los profesores particulares a encontrar estudiantes</li>
+                </ul>
+            </div>
+
+            @* Plancha decorativa de pegatinas *@
+            <div class="col-12 lg:col-5" aria-hidden="true">
+                <div class="plancha">
+                    <span class="pegatina redonda" style="--giro:-8deg"><img src="~/img/logoChico.png" alt="" width="136" height="136" /></span>
+                    <span class="pegatina" style="--giro:7deg">I <i class="bi bi-heart-fill"></i> MIP</span>
+                    <span class="pegatina celeste" style="--giro:-4deg">Conexión</span>
+                    <span class="pegatina coral" style="--giro:3deg">Aprendizaje</span>
+                    <span class="pegatina" style="--giro:-6deg">Diversión</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ================= MANIFIESTO (textual del Miro) ================= -->
+<section class="manifiesto">
+    <div class="container">
+        <article class="card">
+            <h2>En miProfesor creemos que aprender nunca debería depender de la suerte.</h2>
+            <p>Por eso conectamos a estudiantes con profesores particulares de forma simple, rápida y confiable, para que cada persona encuentre el apoyo que necesita y cada docente pueda compartir su conocimiento con quienes más lo valoran.</p>
+            <p>Creemos en una educación más cercana, personalizada y accesible. En el poder de una buena explicación, de una clase que inspira y de un profesor que hace la diferencia.</p>
+            <p class="remate">Porque detrás de cada duda hay una oportunidad de aprender.<br />Y detrás de cada alumno, un futuro por construir.</p>
+        </article>
+    </div>
+</section>
+
+<!-- ================= MISIÓN Y VISIÓN ================= -->
+<section class="mision">
+    <div class="container">
+        <div class="encabezadoSeccion">
+            <h2>Misión y visión</h2>
+        </div>
+
+        <div class="row g-3 lg:g-4">
+            <div class="col-12 md:col-6">
+                <div class="card">
+                    <span class="icono"><i class="bi bi-bullseye" aria-hidden="true"></i></span>
+                    <h3>Misión</h3>
+                    <p>Garantizar que todo alumno consiga un profesor particular sin complicaciones y que cada docente pueda enseñar a quien lo necesite.</p>
+                </div>
+            </div>
+            <div class="col-12 md:col-6">
+                <div class="card">
+                    <span class="icono celeste"><i class="bi bi-eye" aria-hidden="true"></i></span>
+                    <h3>Visión</h3>
+                    <p>Crear un espacio universal de enseñanza y aprendizaje accesible, independientemente de la situación, el contexto, el precio o la disponibilidad horaria.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ================= CÓMO SOMOS (atributos de marca del Miro) ================= -->
+<section class="atributos">
+    <div class="container">
+        <div class="row align-items-center gy-4">
+            <div class="col-12 lg:col-4">
+                <h2>Cómo somos</h2>
+                <p>Divertidos, flexibles e innovadores. Así nos ven y así nos queremos ver.</p>
+            </div>
+            <div class="col-12 lg:col-8">
+                <h3>Genéricos</h3>
+                <ul class="plancha">
+                    <li class="pegatina" style="--giro:-3deg"><i class="bi bi-universal-access" aria-hidden="true"></i> Accesibilidad</li>
+                    <li class="pegatina" style="--giro:2deg"><i class="bi bi-people" aria-hidden="true"></i> Comunidad</li>
+                    <li class="pegatina" style="--giro:-2deg"><i class="bi bi-patch-check" aria-hidden="true"></i> Profesionalismo</li>
+                </ul>
+                <h3>Específicos</h3>
+                <ul class="plancha">
+                    <li class="pegatina coral" style="--giro:3deg"><i class="bi bi-emoji-laughing" aria-hidden="true"></i> Divertido</li>
+                    <li class="pegatina coral" style="--giro:-3deg"><i class="bi bi-arrows-move" aria-hidden="true"></i> Flexible</li>
+                    <li class="pegatina coral" style="--giro:2deg"><i class="bi bi-lightbulb" aria-hidden="true"></i> Innovativo</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ================= POR QUÉ NACE MIP (quién lo detectó: Resumen MIP) ================= -->
+<section class="problemas">
+    <div class="container">
+        <div class="encabezadoSeccion">
+            <h2>Por qué nace MiProfesor</h2>
+            <p>Cuatro problemas reales que vivimos en primera persona.</p>
+        </div>
+
+        <div class="row row-cols-1 md:row-cols-2 g-3 lg:g-4">
+            <div class="col">
+                <div class="card">
+                    <span class="icono"><i class="bi bi-person-hearts" aria-hidden="true"></i></span>
+                    <h3>Menores de edad y tarifas rígidas</h3>
+                    <p>Es difícil conseguir apoyo escolar adaptado para menores, con precios flexibles. MIP ofrece un entorno seguro y tarifas transparentes.</p>
+                    <p class="detectado"><span class="avatar avatar-sm theme-danger" aria-hidden="true">EG</span> Lo detectó <strong>Eitan</strong></p>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card">
+                    <span class="icono celeste"><i class="bi bi-building" aria-hidden="true"></i></span>
+                    <h3>Programas específicos de cada colegio</h3>
+                    <p>Cuesta encontrar docentes que conozcan tu programa, y a ellos captar alumnos de su zona. El catálogo se indexa por colegio.</p>
+                    <p class="detectado"><span class="avatar avatar-sm theme-primary" aria-hidden="true">FM</span> Lo detectó <strong>Fran</strong></p>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card">
+                    <span class="icono oscuro"><i class="bi bi-chat-quote" aria-hidden="true"></i></span>
+                    <h3>Todo por el boca a boca</h3>
+                    <p>Hoy se contrata a un profesor por contactos informales. MIP centraliza la oferta con perfiles claros y reputación comprobable.</p>
+                    <p class="detectado"><span class="avatar avatar-sm theme-inverse" aria-hidden="true">AC</span> Lo detectó <strong>Ari</strong></p>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card">
+                    <span class="icono"><i class="bi bi-piggy-bank" aria-hidden="true"></i></span>
+                    <h3>Refuerzo escolar caro</h3>
+                    <p>Reforzar contenidos no debería costar de más. Mostramos precios por hora y coincidencias por zona y modalidad.</p>
+                    <p class="detectado"><span class="avatar avatar-sm theme-accent" aria-hidden="true">TS</span> Lo detectó <strong>Tobi</strong></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ================= EQUIPO (el footer enlaza a #equipo) ================= -->
+<section class="equipo" id="equipo">
+    <div class="container">
+        <div class="encabezadoSeccion">
+            <h2>Las personas detrás de MIP</h2>
+        </div>
+
+        <div class="row row-cols-1 sm:row-cols-2 lg:row-cols-4 g-3 lg:g-4">
+            <div class="col">
+                <div class="card">
+                    <span class="avatar avatar-xl theme-primary">FM</span>
+                    <h3>Francisco Martínez</h3>
+                    <span class="badge theme-inverse">Project Leader</span>
+                    <p>Dirección del proyecto y coordinación de los sprints de desarrollo.</p>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card">
+                    <span class="avatar avatar-xl theme-accent">TS</span>
+                    <h3>Tobias Schatzyki</h3>
+                    <span class="badge theme-inverse">Database Engineer</span>
+                    <p>Modelado de datos, consultas SQL y estructuras de almacenamiento.</p>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card">
+                    <span class="avatar avatar-xl theme-danger">EG</span>
+                    <h3>Eitan Ariel Glaz</h3>
+                    <span class="badge theme-inverse">Front-end Developer</span>
+                    <p>Interfaces responsivas, componentes visuales y microinteracciones.</p>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card">
+                    <span class="avatar avatar-xl theme-inverse">AC</span>
+                    <h3>Ariel Chocron</h3>
+                    <span class="badge theme-inverse">Back-end Developer</span>
+                    <p>Lógica de negocio, procesamiento de solicitudes y seguridad en el servidor.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ================= LLAMADO FINAL ================= -->
+<section class="llamadoFinal">
+    <div class="container">
+        <div class="row align-items-center gy-4">
+            <div class="col-12 lg:col-8 text-center lg:text-start">
+                <h2>¿Tenés una <mark>idea</mark> o una duda?</h2>
+                <p>Escribinos desde el centro de ayuda: leemos todos los mensajes.</p>
+            </div>
+            <div class="col-12 lg:col-4 acciones">
+                <a class="boton secundario" asp-controller="Home" asp-action="Soporte">Ir a Soporte</a>
+            </div>
+        </div>
+    </div>
+</section>

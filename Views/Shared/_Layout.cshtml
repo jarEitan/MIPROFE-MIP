@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es" data-bs-theme="light">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="MiProfesor (MIP): una plataforma donde cada docente puede compartir su conocimiento y cada alumno encontrar la ayuda que necesita." />
+    <meta name="theme-color" content="#FF5757" />
+    <title>@ViewData["Title"] | MiProfesor (MIP)</title>
+
+    @* Open Graph: vista previa al compartir el link *@
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="MiProfesor (MIP)" />
+    <meta property="og:title" content="@ViewData["Title"] | MiProfesor (MIP)" />
+    <meta property="og:description" content="Encontrá al profesor ideal para tu colegio." />
+    <meta property="og:image" content="@($"{Context.Request.Scheme}://{Context.Request.Host}/img/logoChico.png")" />
+
+    <link rel="icon" type="image/png" href="~/img/logoChico.png" />
+    <link rel="preload" href="~/fonts/plusJakartaSansLatin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="~/fonts/erasBoldItc.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="~/fonts/fredokaLatin.woff2" as="font" type="font/woff2" crossorigin />
+
+    @* Bootstrap 6 (alpha): CSS con @layer, por eso site.css (sin layer) siempre gana sin !important *@
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap-icons/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body data-tipo-usuario="@Context.Session.GetString("tipoUsuario")">
+    <a class="saltarContenido" href="#contenido">Saltar al contenido</a>
+
+    <!-- ================= HEADER ================= -->
+    @* El header depende del tipo de usuario de la sesión ("tipoUsuario"): sin sesión → invitado. *@
+    @{
+        string tipoUsuarioSesion = Context.Session.GetString("tipoUsuario") ?? "";
+    }
+    @if (tipoUsuarioSesion == "alumno")
+    {
+        <partial name="_encabezadoAlumno" />
+    }
+    else if (tipoUsuarioSesion == "profesor")
+    {
+        <partial name="_encabezadoProfesor" />
+    }
+    else if (tipoUsuarioSesion == "admin")
+    {
+        <partial name="_encabezadoAdmin" />
+    }
+    else
+    {
+        <partial name="_encabezadoInvitado" />
+    }
+
+    <partial name="_avisoVerificacion" />
+
+    <!-- ================= MAIN ================= -->
+    <main role="main" id="contenido">
+        @RenderBody()
+    </main>
+
+    <!-- ================= FOOTER ================= -->
+    <partial name="_piePagina" />
+
+    @* Pedir clase: el diálogo está en todas las páginas para los alumnos (lo abren los botones [data-pedir-clase]
+       del Catálogo y del Perfil). Para otros usuarios el botón avisa o lleva a Iniciar sesión. *@
+    @if (tipoUsuarioSesion == "alumno")
+    {
+        <partial name="_dialogoPedirClase" />
+    }
+    @* Dar reseña: alumnos y profesores con sesión (la estrella del Perfil y "Dar reseña" del Historial) *@
+    @if (tipoUsuarioSesion == "alumno" || tipoUsuarioSesion == "profesor")
+    {
+        <partial name="_dialogoDarResena" />
+    }
+
+    @* Snackbar del UI Kit: avisos cortos abajo de la pantalla (mostrarSnackbar en site.js) *@
+    <div class="snackbar" id="snackbar" role="status" aria-live="polite" hidden></div>
+
+    @* Bootstrap 6 es ESM: se carga como módulo (ya no existe window.bootstrap). jQuery no se usa. *@
+    <script type="module" src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @* Clases y notificaciones: botones Pedir clase, insignia del header y Panel de Control *@
+    <script src="~/js/clases.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

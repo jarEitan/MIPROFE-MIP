@@ -1,0 +1,152 @@
+@{
+    ViewData["Title"] = "Catálogo";
+    List<string> materias = ViewBag.materias;
+    List<string> colegios = ViewBag.colegios;
+    List<string> niveles = ViewBag.niveles;
+    List<string> modalidades = ViewBag.modalidades;
+    string busqueda = ViewBag.busqueda;
+    string materiaElegida = ViewBag.materia;
+    string colegioElegido = ViewBag.colegio;
+    string modalidadElegida = ViewBag.modalidad;
+    List<string> nivelesElegidos = ViewBag.nivelesElegidos;
+}
+
+<!-- ================= CABECERA ================= -->
+<section class="cabecera">
+    <div class="container">
+        <div class="row align-items-center g-4">
+            <div class="col-12 md:col-7">
+                <h1>Encontrá a tu <mark>profesor</mark></h1>
+                <p>Filtrá por materia, colegio, modalidad y nivel. Todos los precios son por hora y los ves antes de contactar.</p>
+            </div>
+
+            @* Pegatinas decorativas: la visibilidad responsive va en la columna, nunca sobre .pegatina *@
+            <div class="col-12 md:col-5 d-none md:d-block" aria-hidden="true">
+                <div class="plancha">
+                    <span class="pegatina coral" style="--giro:-5deg">Flexible</span>
+                    <span class="pegatina" style="--giro:4deg">Comunidad</span>
+                    <span class="pegatina celeste" style="--giro:-2deg">Accesibilidad</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ================= FILTROS + RESULTADOS ================= -->
+<section class="catalogo">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-12 lg:col-4 xl:col-3">
+                <aside class="filtros">
+                    <button class="boton contorno" type="button" data-bs-toggle="drawer" data-bs-target="#panelFiltros" aria-controls="panelFiltros">
+                        <i class="bi bi-funnel" aria-hidden="true"></i> Filtros
+                    </button>
+
+                    @* En pantallas < lg los filtros son un drawer lateral; desde lg quedan en línea (lg:drawer) *@
+                    <dialog class="lg:drawer drawer-start" tabindex="-1" id="panelFiltros" aria-labelledby="tituloFiltros">
+                        <div class="drawer-header">
+                            <span class="drawer-title" id="tituloFiltros">Filtros</span>
+                            <button type="button" class="btn-close" data-bs-dismiss="drawer" aria-label="Cerrar"></button>
+                        </div>
+
+                        <div class="drawer-body">
+                            @* Sin envío: catalogo.js lee los campos y pide los resultados con fetch a Catalogo/Buscar *@
+                            <form id="formularioFiltros" onsubmit="return false" data-pagina="@ViewBag.pagina" data-por-pagina="@ViewBag.porPagina">
+                                <div class="form-field">
+                                    <label for="filtroTexto">Buscar</label>
+                                    <input class="form-control" type="search" id="filtroTexto" name="busqueda" value="@busqueda" placeholder="Nombre, materia o tema..." autocomplete="off" />
+                                </div>
+
+                                <div class="form-field">
+                                    <label for="filtroMateria">Materia</label>
+                                    <select class="form-control" id="filtroMateria" name="materia" data-buscable data-placeholder="Buscá una materia">
+                                        <option value="">Todas las materias</option>
+                                        @foreach (string materia in materias)
+                                        {
+                                            <option value="@materia" selected="@(materia == materiaElegida ? "selected" : null)">@materia</option>
+                                        }
+                                    </select>
+                                </div>
+
+                                <div class="form-field">
+                                    <label for="filtroColegio">Colegio</label>
+                                    <select class="form-control" id="filtroColegio" name="colegio" data-buscable data-placeholder="Buscá un colegio">
+                                        <option value="">Todos los colegios</option>
+                                        @foreach (string colegio in colegios)
+                                        {
+                                            <option value="@colegio" selected="@(colegio == colegioElegido ? "selected" : null)">@colegio</option>
+                                        }
+                                    </select>
+                                </div>
+
+                                <div class="form-field">
+                                    <label for="filtroModalidad">Modalidad</label>
+                                    <select class="form-control" id="filtroModalidad" name="modalidad" data-buscable data-placeholder="Presencial o virtual">
+                                        <option value="">Todas las modalidades</option>
+                                        @foreach (string modalidad in modalidades)
+                                        {
+                                            <option value="@modalidad" selected="@(modalidad == modalidadElegida ? "selected" : null)">@modalidad</option>
+                                        }
+                                    </select>
+                                </div>
+
+                                <div class="form-field">
+                                    <label for="filtroNivel">Nivel escolar</label>
+                                    <select class="form-control" id="filtroNivel" name="nivel" data-buscable data-placeholder="Todos los niveles" multiple>
+                                        @foreach (string nivel in niveles)
+                                        {
+                                            <option value="@nivel" selected="@(nivelesElegidos.Contains(nivel) ? "selected" : null)">@nivel</option>
+                                        }
+                                    </select>
+                                </div>
+
+                                <button class="boton contorno chico" type="reset" id="botonLimpiarFiltros">Limpiar filtros</button>
+                            </form>
+                        </div>
+                    </dialog>
+                </aside>
+            </div>
+
+            <div class="col-12 lg:col-8 xl:col-9">
+                <p class="cantidad" id="cantidadResultados" aria-live="polite">Cargando profesores...</p>
+
+                <div class="listaProfesores" id="listaProfesores"></div>
+
+                <div class="card sinResultados" id="sinResultados" hidden>
+                    <span class="icono"><i class="bi bi-emoji-neutral" aria-hidden="true"></i></span>
+                    <h3>No encontramos profesores con esos filtros</h3>
+                    <p>Probá quitando algún filtro o buscando otra materia.</p>
+                    <button class="boton contorno chico" type="reset" form="formularioFiltros">Limpiar filtros</button>
+                </div>
+
+                <div class="card sinResultados" id="errorCatalogo" hidden>
+                    <span class="icono"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i></span>
+                    <h3>Algo salió mal</h3>
+                    <p>No pudimos cargar el catálogo. Probá de nuevo en un rato.</p>
+                </div>
+
+                @* Paginación: flechas, número de página y cantidad de tarjetas por página *@
+                <nav class="paginador" id="paginador" aria-label="Páginas del catálogo" hidden>
+                    <div class="paginas">
+                        <button class="boton contorno chico" type="button" id="paginaAnterior" aria-label="Página anterior"><i class="bi bi-chevron-left" aria-hidden="true"></i> Anterior</button>
+                        <span class="numerosPagina" id="numerosPagina"></span>
+                        <button class="boton contorno chico" type="button" id="paginaSiguiente" aria-label="Página siguiente">Siguiente <i class="bi bi-chevron-right" aria-hidden="true"></i></button>
+                    </div>
+                    <div class="porPagina">
+                        <label for="tarjetasPorPagina">Por página</label>
+                        <select class="form-control" id="tarjetasPorPagina">
+                            <option value="5">5</option>
+                            <option value="10" selected>10</option>
+                            <option value="15">15</option>
+                            <option value="20">20</option>
+                        </select>
+                    </div>
+                </nav>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script src="~/js/catalogo.js" asp-append-version="true"></script>
+}

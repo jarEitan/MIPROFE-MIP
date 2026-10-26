@@ -1,0 +1,235 @@
+@{
+    ViewData["Title"] = "Inicio";
+    string[] palabrasCinta = { "Flexible", "Comunidad", "Aprendizaje", "Conexión", "Diversión", "Innovación", "Accesibilidad" };
+    List<Profesor> profesoresDestacados = ViewBag.profesoresDestacados ?? new List<Profesor>();
+}
+
+<!-- ================= PORTADA / BUSCADOR ================= -->
+<section class="portada">
+    <div class="container">
+        <div class="row align-items-center gy-5">
+            <div class="col-12 lg:col-6 text-center lg:text-start">
+                <h1>El conocimiento <mark>nos conecta.</mark></h1>
+
+                <p>En miProfesor creemos que aprender nunca debería depender de la suerte.</p>
+
+                @* El formulario envía a Catalogo?busqueda= *@
+                <form class="buscador" id="formularioBuscador"
+                      method="get" asp-controller="Catalogo" asp-action="Index" onsubmit="return validarBusqueda()" novalidate>
+                    <label for="campoBusqueda" class="visually-hidden">Buscar materia, profesor o colegio</label>
+                    <input type="text" id="campoBusqueda" name="busqueda" placeholder="Materia, profesor o colegio..." autocomplete="off" />
+                    <button type="submit" class="boton principal">
+                        <span class="d-none sm:d-inline">Buscar</span>
+                        <i class="bi bi-search sm:d-none" aria-hidden="true"></i>
+                    </button>
+                </form>
+                <p class="mensajeError" id="mensajeErrorBusqueda" role="alert"></p>
+
+                <div class="acciones">
+                    <a class="boton secundario" asp-controller="Sesion" asp-action="Registrarse" asp-route-rol="alumno">Soy alumno</a>
+                    <a class="boton contorno" asp-controller="Sesion" asp-action="Registrarse" asp-route-rol="profesor">Quiero enseñar</a>
+                </div>
+            </div>
+
+            @* Plancha de pegatinas de ejemplo, solo decorativa. La clase de cada una la ubica *@
+            <div class="col-12 md:col-10 lg:col-6 mx-auto" aria-hidden="true">
+                <div class="plancha">
+                    <span class="pegatina celeste tutorias" style="--giro:-4deg"><i class="bi bi-mortarboard" aria-hidden="true"></i> Tutorías entre colegios</span>
+
+                    <div class="pegatina profe" style="--giro:-4deg">
+                        <div class="d-flex align-items-center gap-3">
+                            <span class="avatar theme-primary">SM</span>
+                            <div>
+                                <strong>Prof. Sofía Martínez</strong>
+                                <p>Matemática · Belgrano Day School</p>
+                            </div>
+                        </div>
+                        <div class="d-flex flex-wrap gap-2">
+                            <span class="badge badge-subtle theme-accent">Matemática</span>
+                            <span class="badge badge-subtle theme-accent">Álgebra y Análisis</span>
+                        </div>
+                    </div>
+
+                    <div class="pegatina celeste confirmada" style="--giro:5deg">
+                        <span>Clase confirmada</span>
+                        <strong>Física I: Dinámica</strong>
+                        <p>Viernes, 18:30 hs</p>
+                    </div>
+
+                    <div class="pegatina charla" style="--giro:-1.5deg">
+                        <p class="burbuja">¿Tenés el programa del colegio a mano?</p>
+                        <p class="burbuja propia">¡Sí! Te lo adjunto <i class="bi bi-paperclip"></i></p>
+                    </div>
+
+                    <span class="pegatina redonda isotipo" style="--giro:-12deg"><img src="~/img/logoChico.png" alt="" width="96" height="96" /></span>
+
+                    <span class="pegatina corazon" style="--giro:8deg">I <i class="bi bi-heart-fill"></i> MIP</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ================= CINTA DE PALABRAS (decorativa) ================= -->
+<section class="cinta" aria-hidden="true">
+    <div>
+        @* Se repite cuatro veces y se desplaza una copia: las otras tres cubren hasta las pantallas más anchas sin cortes *@
+        @for (int repeticion = 0; repeticion < 4; repeticion++)
+        {
+            <ul>
+                @foreach (string palabra in palabrasCinta)
+                {
+                    <li>@palabra</li>
+                }
+            </ul>
+        }
+    </div>
+</section>
+
+<!-- ================= CÓMO FUNCIONA ================= -->
+<section class="pasos" id="seccionComoFunciona">
+    <div class="container">
+        <div class="encabezadoSeccion">
+            <h2>¿Cómo funciona MiProfesor?</h2>
+            <p>En tres pasos pasás de tener una duda a tener una clase agendada.</p>
+        </div>
+
+        <ol>
+            <li>
+                <span class="numero">1</span>
+                <h3>Creá tu cuenta</h3>
+                <p>Registrate como alumno o como profesor y vinculá tu colegio para recibir recomendaciones personalizadas.</p>
+            </li>
+            <li>
+                <span class="numero">2</span>
+                <h3>Buscá y filtrá</h3>
+                <p>Explorá el catálogo por materia, nivel o institución y encontrá docentes que ya conocen tu programa.</p>
+            </li>
+            <li>
+                <span class="numero">3</span>
+                <h3>Coordiná y aprendé</h3>
+                <p>Reservá la clase, hablá con el profesor por chat directo y gestioná todo desde tu Panel de Control.</p>
+            </li>
+        </ol>
+    </div>
+</section>
+
+<!-- ================= PERFILES: ALUMNO / PROFESOR ================= -->
+<section class="perfiles">
+    <div class="container">
+        <div class="encabezadoSeccion">
+            <h2>Un lugar para aprender y para enseñar</h2>
+        </div>
+
+        <div class="row g-3 lg:g-4">
+            <div class="col-12 lg:col-6">
+                <div class="card coral">
+                    <span class="icono"><i class="bi bi-backpack" aria-hidden="true"></i></span>
+                    <h3>¿Buscás apoyo para el colegio?</h3>
+                    <p>Encontrá la ayuda que necesitás, con profesores que entienden cómo se trabaja en tu colegio.</p>
+                    <ul>
+                        <li>Profesores filtrados por tu institución</li>
+                        <li>Clases presenciales o virtuales</li>
+                        <li>Chat directo para coordinar horarios</li>
+                        <li>Historial de todas tus clases</li>
+                    </ul>
+                    <a class="boton" asp-controller="Sesion" asp-action="Registrarse" asp-route-rol="alumno">Registrarme como alumno</a>
+                </div>
+            </div>
+            <div class="col-12 lg:col-6">
+                <div class="card oscura">
+                    <span class="icono"><i class="bi bi-person-video3" aria-hidden="true"></i></span>
+                    <h3>¿Sos profesor particular?</h3>
+                    <p>Compartí tu conocimiento y llegá a los alumnos de los colegios donde ya enseñás.</p>
+                    <ul>
+                        <li>Cargá tus materias y credenciales</li>
+                        <li>Definí tus colegios y horarios</li>
+                        <li>Administrá clases, cancelaciones y reubicaciones</li>
+                        <li>Recibí reseñas de tus alumnos</li>
+                    </ul>
+                    <a class="boton secundario" asp-controller="Sesion" asp-action="Registrarse" asp-route-rol="profesor">Registrarme como profesor</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ================= FRASES (plancha de notas del Miro) ================= -->
+<section class="frases">
+    <div class="container">
+        <ul>
+            <li class="pegatina coral" style="--giro:-2deg">Que puedas buscar un profesor que te guste sin costo.</li>
+            <li class="pegatina celeste" style="--giro:2deg">Que tengas la libertad de decidir si cambiarte de profesor o no tener clases cuando quieras.</li>
+        </ul>
+    </div>
+</section>
+
+<!-- ================= PROFESORES DESTACADOS ================= -->
+<section class="destacados">
+    <div class="container">
+        <div class="encabezadoSeccion">
+            <h2>Profesores destacados</h2>
+            <p>Docentes verificados y bien valorados por los alumnos de tu comunidad.</p>
+        </div>
+
+        @if (profesoresDestacados.Count == 0)
+        {
+            <div class="card estadoVacio"><p>No pudimos cargar el catálogo. Probá de nuevo en un rato.</p></div>
+        }
+        else
+        {
+            <div class="row row-cols-1 md:row-cols-2 lg:row-cols-3 g-3 lg:g-4">
+                @foreach (var profesor in profesoresDestacados)
+                {
+                    <div class="col">
+                        <partial name="_tarjetaProfesor" model="profesor" />
+                    </div>
+                }
+            </div>
+        }
+
+        <div class="colegios">
+            <span>Explorá por colegio:</span>
+            <a class="badge badge-outline theme-inverse" asp-controller="Catalogo" asp-action="Index" asp-route-colegio="Belgrano Day School"><i class="bi bi-building"></i> Belgrano Day School</a>
+            <a class="badge badge-outline theme-inverse" asp-controller="Catalogo" asp-action="Index" asp-route-colegio="Colegio San Martín"><i class="bi bi-building"></i> Colegio San Martín</a>
+            <a class="badge badge-outline theme-inverse" asp-controller="Catalogo" asp-action="Index" asp-route-colegio="Nacional Buenos Aires"><i class="bi bi-building"></i> Nacional Buenos Aires</a>
+            <a class="boton oscuro chico" asp-controller="Catalogo" asp-action="Index">Ver todos</a>
+        </div>
+    </div>
+</section>
+
+<!-- ================= PREGUNTAS FRECUENTES ================= -->
+<section class="preguntas">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 lg:col-9 xl:col-8">
+                <div class="encabezadoSeccion">
+                    <h2>Preguntas frecuentes</h2>
+                    <p>Las dudas más habituales, resueltas.</p>
+                </div>
+
+                <partial name="_preguntasFrecuentes" />
+
+                <p class="ayudaExtra">
+                    ¿No encontraste lo que buscabas? <a asp-controller="Home" asp-action="Soporte">Ir al centro de soporte</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ================= LLAMADO FINAL ================= -->
+<section class="llamadoFinal">
+    <div class="container">
+        <div class="row align-items-center gy-3">
+            <div class="col-12 lg:col-7 text-center lg:text-start">
+                <h2>Porque detrás de cada duda hay una <mark>oportunidad de aprender</mark>.</h2>
+                <p>Sumate a MiProfesor y empezá a aprender con docentes de tu propia comunidad educativa.</p>
+            </div>
+            <div class="col-12 lg:col-5 acciones">
+                <a class="boton secundario" asp-controller="Sesion" asp-action="Registrarse">Crear cuenta gratis</a>
+                <a class="boton claro" asp-controller="Catalogo" asp-action="Index">Ver catálogo</a>
+            </div>
+        </div>
+    </div>
+</section>

@@ -1,0 +1,125 @@
+@{
+    ViewData["Title"] = "Crear cuenta";
+    string mensaje = ViewBag.mensaje ?? "";
+    RegistroUsuario registro = ViewBag.registro ?? new RegistroUsuario();
+    string fechaNacimiento = registro.fechaNacimiento?.ToString("yyyy-MM-dd") ?? "";
+    string fechaMaxima = DateTime.Today.ToString("yyyy-MM-dd");
+    string rolSolicitado = ViewBag.rol ?? "";
+    string rol = registro.tipoUsuario == "profesor" || (registro.tipoUsuario == "" && rolSolicitado == "profesor") ? "profesor" : "alumno";
+}
+
+<!-- ================= REGISTRO ================= -->
+<section class="acceso">
+    <div class="container">
+        <div class="row align-items-center g-4 lg:g-5">
+            <div class="col-12 lg:col-6 xl:col-5 lg:order-2">
+                <div class="card">
+                    <header class="encabezadoAcceso">
+                        <h1>Creá tu cuenta</h1>
+                        <p>Solo pedimos lo básico. El resto lo completás después, cuando quieras verificar tu cuenta.</p>
+                    </header>
+
+                    <form id="formularioRegistro" method="post" asp-controller="Sesion" asp-action="Registrarse" onsubmit="return validarRegistro()" novalidate>
+                        <div class="paso">
+                            <p class="tituloPaso" id="tituloRol"><span class="numeroPaso">1</span> ¿Cómo vas a usar MiProfesor?</p>
+                            <div class="roles" role="radiogroup" aria-labelledby="tituloRol">
+                            <label>
+                                <input type="radio" name="tipoUsuario" value="alumno" checked="@(rol == "alumno" ? "checked" : null)" />
+                                <i class="bi bi-backpack" aria-hidden="true"></i>
+                                <strong>Soy alumno</strong>
+                                <span>Busco un profesor</span>
+                            </label>
+                            <label>
+                                <input type="radio" name="tipoUsuario" value="profesor" checked="@(rol == "profesor" ? "checked" : null)" />
+                                <i class="bi bi-person-video3" aria-hidden="true"></i>
+                                <strong>Soy profesor</strong>
+                                <span>Quiero dar clases</span>
+                            </label>
+                            </div>
+                        </div>
+
+                        <div class="paso datosCuenta">
+                            <p class="tituloPaso"><span class="numeroPaso">2</span> Tus datos</p>
+
+                            <div class="filaDoble">
+                                <div class="form-field">
+                                    <label for="registroNombre">Nombre</label>
+                                    <input class="form-control" type="text" id="registroNombre" name="nombre" value="@registro.nombre" maxlength="50" placeholder="Sofía" autocomplete="given-name" />
+                                </div>
+
+                                <div class="form-field">
+                                    <label for="registroApellido">Apellido</label>
+                                    <input class="form-control" type="text" id="registroApellido" name="apellido" value="@registro.apellido" maxlength="50" placeholder="Martínez" autocomplete="family-name" />
+                                </div>
+                            </div>
+
+                            <div class="form-field">
+                                <label for="registroCorreo">Correo electrónico</label>
+                                <div class="campoConIcono">
+                                    <i class="bi bi-envelope" aria-hidden="true"></i>
+                                    <input class="form-control" type="email" id="registroCorreo" name="mail" value="@registro.mail" maxlength="150" placeholder="nombre@ejemplo.com" autocomplete="email" />
+                                </div>
+                            </div>
+
+                            <div class="form-field">
+                                <label for="registroContrasena">Contraseña</label>
+                                <div class="campoConIcono">
+                                    <i class="bi bi-lock" aria-hidden="true"></i>
+                                    <input class="form-control" type="password" id="registroContrasena" name="contrasena" placeholder="Creá una contraseña" autocomplete="new-password" aria-describedby="ayudaContrasena" />
+                                    <button class="verContrasena" type="button" data-ver-contrasena="registroContrasena" aria-label="Mostrar contraseña" aria-pressed="false">
+                                        <i class="bi bi-eye" aria-hidden="true"></i>
+                                    </button>
+                                </div>
+                                <small id="ayudaContrasena">Usá al menos 8 caracteres.</small>
+                            </div>
+
+                            <div class="form-field">
+                                <label for="registroFechaNacimiento">Fecha de nacimiento</label>
+                                <input class="form-control" type="date" id="registroFechaNacimiento" name="fechaNacimiento" value="@fechaNacimiento" min="1900-01-01" max="@fechaMaxima" autocomplete="bday" aria-describedby="ayudaFecha" />
+                                <small id="ayudaFecha">La usamos para confirmar tu edad. No se muestra en tu perfil.</small>
+                            </div>
+                        </div>
+
+                        <div class="form-field terminos">
+                            <input class="check" type="checkbox" id="registroTerminos" name="terminos" />
+                            <label for="registroTerminos">Acepto los términos y la <a asp-controller="Home" asp-action="Privacy" target="_blank" rel="noopener">política de privacidad</a></label>
+                        </div>
+
+                        <p class="mensajeError" id="mensajeRegistro" role="alert">@mensaje</p>
+
+                        <button class="boton principal completo" type="submit">Crear mi cuenta</button>
+                    </form>
+
+                    <p class="alternativa">¿Ya tenés cuenta? <a asp-controller="Sesion" asp-action="IniciarSesion">Iniciá sesión</a></p>
+                </div>
+            </div>
+
+            <div class="col-12 lg:col-6 xl:col-7 lg:order-1">
+                @* El panel cambia según el rol elegido (data-solo-rol) *@
+                <div class="ilustracion" data-solo-rol="alumno" hidden="@(rol == "alumno" ? null : "hidden")">
+                    <span class="pegatina redonda" aria-hidden="true" style="--giro:-8deg"><img src="~/img/logoChico.png" alt="" width="104" height="104" /></span>
+                    <h2 class="pegatina" style="--giro:-2deg">En miProfesor creemos que aprender nunca debería depender de la suerte.</h2>
+                    <ul>
+                        <li>Profesores de tu propio colegio</li>
+                        <li>Clases presenciales o virtuales</li>
+                        <li>Chat directo para coordinar</li>
+                        <li>Sin intermediarios opacos</li>
+                    </ul>
+                    <span class="pegatina celeste" style="--giro:3deg">Ayudar a los estudiantes a encontrar profesores particulares</span>
+                </div>
+
+                <div class="ilustracion oscura" data-solo-rol="profesor" hidden="@(rol == "profesor" ? null : "hidden")">
+                    <span class="pegatina redonda" aria-hidden="true" style="--giro:-8deg"><img src="~/img/logoChico.png" alt="" width="104" height="104" /></span>
+                    <h2 class="pegatina" style="--giro:-2deg">Compartí lo que sabés con quien lo necesita</h2>
+                    <ul>
+                        <li>Armá tu perfil con tus materias y precios</li>
+                        <li>Elegí tus días y horarios</li>
+                        <li>Hablá directo con tus alumnos</li>
+                        <li>Verificá tu cuenta y ganá confianza</li>
+                    </ul>
+                    <span class="pegatina celeste" style="--giro:3deg">Ayudar a los profesores particulares a encontrar estudiantes</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

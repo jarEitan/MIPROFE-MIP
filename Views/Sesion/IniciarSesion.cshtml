@@ -1,0 +1,67 @@
+@{
+    ViewData["Title"] = "Iniciar sesión";
+    string mensaje = ViewBag.mensaje ?? "";
+    string mail = ViewBag.mail ?? "";
+}
+
+<!-- ================= LOGIN ================= -->
+<section class="acceso">
+    <div class="container">
+        <div class="row align-items-center g-4 lg:g-5">
+            <div class="col-12 lg:col-6 xl:col-5 lg:order-2">
+                <div class="card">
+                    <header class="encabezadoAcceso">
+                        <h1>¡Hola de nuevo!</h1>
+                        <p>Ingresá con tu correo y tu contraseña para ver tus clases, mensajes y profesores favoritos.</p>
+                    </header>
+
+                    <form id="formularioIngreso" method="post" asp-controller="Sesion" asp-action="IniciarSesion" onsubmit="return validarIngreso()" novalidate>
+                        <div class="form-field">
+                            <label for="ingresoCorreo">Correo electrónico</label>
+                            <div class="campoConIcono">
+                                <i class="bi bi-envelope" aria-hidden="true"></i>
+                                <input class="form-control" type="email" id="ingresoCorreo" name="mail" value="@mail" placeholder="nombre@ejemplo.com" autocomplete="email" />
+                            </div>
+                        </div>
+
+                        <div class="form-field">
+                            <label for="ingresoContrasena">Contraseña</label>
+                            <div class="campoConIcono">
+                                <i class="bi bi-lock" aria-hidden="true"></i>
+                                <input class="form-control" type="password" id="ingresoContrasena" name="contrasena" placeholder="Tu contraseña" autocomplete="current-password" />
+                                <button class="verContrasena" type="button" data-ver-contrasena="ingresoContrasena" aria-label="Mostrar contraseña" aria-pressed="false">
+                                    <i class="bi bi-eye" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <p class="mensajeError" id="mensajeIngreso" role="alert">@mensaje</p>
+
+                        <button class="boton principal completo" type="submit">Iniciar sesión</button>
+                    </form>
+
+                    <div class="separador"><span>¿Primera vez en MiProfesor?</span></div>
+
+                    <div class="opcionesRegistro">
+                        <a class="boton contorno" asp-controller="Sesion" asp-action="Registrarse" asp-route-rol="alumno"><i class="bi bi-backpack" aria-hidden="true"></i> Soy alumno</a>
+                        <a class="boton contorno" asp-controller="Sesion" asp-action="Registrarse" asp-route-rol="profesor"><i class="bi bi-person-video3" aria-hidden="true"></i> Soy profesor</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 lg:col-6 xl:col-7 lg:order-1">
+                @* Panel coral con pegatinas *@
+                <div class="ilustracion">
+                    <span class="pegatina redonda" aria-hidden="true" style="--giro:-8deg"><img src="~/img/logoChico.png" alt="" width="104" height="104" /></span>
+                    <h2 class="pegatina" style="--giro:-2deg">El conocimiento nos conecta.</h2>
+                    <ul>
+                        <li>Seguí tus clases activas</li>
+                        <li>Reubicá o cancelá sin vueltas</li>
+                        <li>Hablá con tus profesores</li>
+                    </ul>
+                    <span class="pegatina" aria-hidden="true" style="--giro:6deg">I <i class="bi bi-heart-fill"></i> MIP</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

@@ -1,0 +1,30 @@
+@* Selector de día y hora de inicio de una clase. Lo arma crearSelectorHorario() (clases.js): una tira con los próximos
+   28 días (los que el profesor no da clases quedan deshabilitados) y, al elegir un día, las franjas de 30 minutos que
+   caben dentro de su agenda. Las ocupadas o que ya pasaron quedan tachadas (/Clases/HorariosOcupados).
+   Modelo: prefijo para los id (el mismo selector se usa en "Pedir clase" y en "Cambiar horario"). *@
+@model string
+@{
+    string prefijo = string.IsNullOrWhiteSpace(Model) ? "horario" : Model;
+}
+
+<div class="selectorHorario" data-selector-horario>
+    <p class="resumenAgenda" data-resumen-agenda hidden></p>
+
+    <div class="form-field">
+        <label id="@(prefijo)EtiquetaDia">Día</label>
+        @* data-campo-dia: el contenedor de la tira es el "campo" (recibe el foco si falta elegir el día) *@
+        <div class="tiraDias" data-campo-dia tabindex="-1" role="group" aria-labelledby="@(prefijo)EtiquetaDia">
+            <button class="flecha" type="button" data-mover-tira="-1" aria-label="Días anteriores"><i class="bi bi-chevron-left" aria-hidden="true"></i></button>
+            <div class="dias" data-dias></div>
+            <button class="flecha" type="button" data-mover-tira="1" aria-label="Días siguientes"><i class="bi bi-chevron-right" aria-hidden="true"></i></button>
+        </div>
+    </div>
+
+    <div class="form-field">
+        <label id="@(prefijo)EtiquetaHora">Hora de inicio</label>
+        <div class="franjas" data-franjas role="group" aria-labelledby="@(prefijo)EtiquetaHora" aria-live="polite">
+            <p class="ayudaFranjas">Elegí primero un día.</p>
+        </div>
+        <small>Cada clase dura 60 minutos. Las horas tachadas ya están ocupadas.</small>
+    </div>
+</div>
