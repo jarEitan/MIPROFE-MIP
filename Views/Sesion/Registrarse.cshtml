@@ -44,12 +44,12 @@
                             <div class="filaDoble">
                                 <div class="form-field">
                                     <label for="registroNombre">Nombre</label>
-                                    <input class="form-control" type="text" id="registroNombre" name="nombre" value="@registro.nombre" maxlength="50" placeholder="Sofía" autocomplete="given-name" />
+                                    <input class="form-control" type="text" id="registroNombre" name="nombre" value="@registro.nombre" maxlength="50" placeholder="Sofía" autocomplete="given-name" required />
                                 </div>
 
                                 <div class="form-field">
                                     <label for="registroApellido">Apellido</label>
-                                    <input class="form-control" type="text" id="registroApellido" name="apellido" value="@registro.apellido" maxlength="50" placeholder="Martínez" autocomplete="family-name" />
+                                    <input class="form-control" type="text" id="registroApellido" name="apellido" value="@registro.apellido" maxlength="50" placeholder="Martínez" autocomplete="family-name" required />
                                 </div>
                             </div>
 
@@ -57,7 +57,7 @@
                                 <label for="registroCorreo">Correo electrónico</label>
                                 <div class="campoConIcono">
                                     <i class="bi bi-envelope" aria-hidden="true"></i>
-                                    <input class="form-control" type="email" id="registroCorreo" name="mail" value="@registro.mail" maxlength="150" placeholder="nombre@ejemplo.com" autocomplete="email" />
+                                    <input class="form-control" type="email" id="registroCorreo" name="mail" value="@registro.mail" maxlength="150" placeholder="nombre@ejemplo.com" autocomplete="email" required />
                                 </div>
                             </div>
 
@@ -65,7 +65,7 @@
                                 <label for="registroContrasena">Contraseña</label>
                                 <div class="campoConIcono">
                                     <i class="bi bi-lock" aria-hidden="true"></i>
-                                    <input class="form-control" type="password" id="registroContrasena" name="contrasena" placeholder="Creá una contraseña" autocomplete="new-password" aria-describedby="ayudaContrasena" />
+                                    <input class="form-control" type="password" id="registroContrasena" name="contrasena" required minlength="8" placeholder="Creá una contraseña" autocomplete="new-password" aria-describedby="ayudaContrasena" />
                                     <button class="verContrasena" type="button" data-ver-contrasena="registroContrasena" aria-label="Mostrar contraseña" aria-pressed="false">
                                         <i class="bi bi-eye" aria-hidden="true"></i>
                                     </button>
@@ -75,7 +75,7 @@
 
                             <div class="form-field">
                                 <label for="registroFechaNacimiento">Fecha de nacimiento</label>
-                                <input class="form-control" type="date" id="registroFechaNacimiento" name="fechaNacimiento" value="@fechaNacimiento" min="1900-01-01" max="@fechaMaxima" autocomplete="bday" aria-describedby="ayudaFecha" />
+                                <input class="form-control" type="date" id="registroFechaNacimiento" name="fechaNacimiento" value="@fechaNacimiento" min="1900-01-01" max="@fechaMaxima" autocomplete="bday" aria-describedby="ayudaFecha" required />
                                 <small id="ayudaFecha">La usamos para confirmar tu edad. No se muestra en tu perfil.</small>
                             </div>
                         </div>
