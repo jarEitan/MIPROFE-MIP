@@ -140,7 +140,7 @@ function inicializarSolicitudesDeAmistad() {
     });
 }
 
-// ----- Selector de día y hora (partial _selectorHorario) -----
+// ----- Selector de día y hora (.selectorHorario: "Pedir clase" en _Layout y "Cambiar horario" en el Panel) -----
 function minutosDeHora(texto) {
     const [horas, minutos] = texto.split(":").map(Number);
     return horas * 60 + minutos;

@@ -7,5 +7,5 @@ public class ResultadoCatalogo
     public int pagina { get; set; }
     public int porPagina { get; set; }
     public int totalPaginas { get; set; }
-    public List<Profesor> profesores { get; set; } = new List<Profesor>();
+    public List<Usuario> profesores { get; set; } = new List<Usuario>();
 }

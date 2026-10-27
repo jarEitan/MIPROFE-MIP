@@ -22,6 +22,7 @@ Objetivo: todo **refactorizado**. Cómo se hace: [guía](guiaDeEstilo.md), secci
 - Agenda: refactorizado
 - Clases: refactorizado
 - Navegación: refactorizado
+- Buscador de usuarios (header): refactorizado
 - Consulta de Soporte: sin hacer
 - Sugerencias del buscador: sin hacer
 - Moderación de reseñas: sin hacer
@@ -58,8 +59,8 @@ Son ideas, todavía no se hizo ninguna.
 
 ### Models
 
-1. Borrar `Usuario.cs`: no lo usa nadie.
-2. Un solo `Usuario` en lugar de `ResultadoSesion`, `AmigoPerfil`, `RegistroUsuario` y `DatosEdicion`, que repiten los mismos campos. Hay que ponerles `[JsonIgnore]` a `contrasena` y `fotoDni` para que nunca lleguen al navegador.
+1. ~~Borrar `Usuario.cs`~~: ahora es el modelo de todas las personas.
+2. Hecho: un solo `Usuario` en lugar de `ResultadoSesion`, `AmigoPerfil`, `RegistroUsuario`, `DatosEdicion`, `EdicionPerfil`, `PerfilUsuario`, `ResultadoGuardado` y `Profesor`, solo con `get; set;` (`contrasena` y `fotoDni` con `[JsonIgnore]`). Lo calculado (`nombreCompleto`, `iniciales`, `resumen`, `tieneAgenda`) se arma en la vista, el JS o el controlador.
 3. Devolver `int` cuando el SP solo manda `codigo`, como ya hace `darResena`. Sacaría `ResultadoAgenda`, y también `ResultadoMensaje` si el chat no usa su `id`.
 4. Un archivo por módulo: `Usuario.cs`, `Clase.cs`, `Agenda.cs`, `Chat.cs` y `Perfil.cs`. Hoy `ClaseCalendario.cs` tiene 8 clases y `ResultadoLike.cs` tiene 1.
 5. Meter las clases chicas de la agenda (`HorarioOcupado`, `FranjaSemanal` y `DiaBloqueado`) dentro de `AgendaProfesor`, y que el JS arme cada día con eso.

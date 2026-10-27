@@ -8,19 +8,15 @@ public class BD
 {
     private static string connectionString = @"Server=localhost;Database=MIP;Integrated Security=True;TrustServerCertificate=True;";
 
-    public PerfilUsuario obtenerPerfil(int idUsuario)
+    public Usuario obtenerPerfil(int idUsuario)
     {
         using (var connection = new SqlConnection(connectionString))
         {
             using (var tablas = connection.QueryMultiple("EXEC obtenerPerfil @idUsuario", new { idUsuario = idUsuario }))
             {
-                PerfilUsuario perfil = tablas.ReadFirst<PerfilUsuario>();
+                Usuario perfil = tablas.ReadFirst<Usuario>();
                 if (perfil.codigo == 0)
                 {
-                    perfil.materias = tablas.Read<string>().ToList();
-                    perfil.niveles = tablas.Read<string>().ToList();
-                    perfil.modalidades = tablas.Read<string>().ToList();
-                    perfil.colegios = tablas.Read<string>().ToList();
                     perfil.titulos = tablas.Read<string>().ToList();
                     perfil.resenas = tablas.Read<ResenaPerfil>().ToList();
                 }
@@ -71,11 +67,20 @@ public class BD
         }
     }
 
-    public List<AmigoPerfil> obtenerAmigos(int idUsuario)
+    public List<Usuario> obtenerAmigos(int idUsuario)
     {
         using (var connection = new SqlConnection(connectionString))
         {
-            return connection.Query<AmigoPerfil>("EXEC obtenerAmigos @idUsuario", new { idUsuario = idUsuario }).ToList();
+            return connection.Query<Usuario>("EXEC obtenerAmigos @idUsuario", new { idUsuario = idUsuario }).ToList();
+        }
+    }
+
+    // Por nombre o ID exacto, de a 20 (texto vacío = los primeros 20)
+    public List<Usuario> buscarUsuarios(string texto)
+    {
+        using (var connection = new SqlConnection(connectionString))
+        {
+            return connection.Query<Usuario>("EXEC buscarUsuarios @texto", new { texto = texto }).ToList();
         }
     }
 
@@ -104,17 +109,13 @@ public class BD
         }
     }
 
-    public DatosEdicion obtenerDatosEdicion(int idUsuario)
+    public Usuario obtenerDatosEdicion(int idUsuario)
     {
         using (var connection = new SqlConnection(connectionString))
         {
             using (var tablas = connection.QueryMultiple("EXEC obtenerDatosEdicion @idUsuario", new { idUsuario = idUsuario }))
             {
-                DatosEdicion datos = tablas.ReadFirst<DatosEdicion>();
-                datos.idsMaterias = tablas.Read<int>().ToList();
-                datos.idsNiveles = tablas.Read<int>().ToList();
-                datos.idsModalidades = tablas.Read<int>().ToList();
-                datos.escuelas = tablas.Read<EscuelaUsuario>().ToList();
+                Usuario datos = tablas.ReadFirst<Usuario>();
                 datos.titulos = tablas.Read<string>().ToList();
                 return datos;
             }
@@ -130,11 +131,11 @@ public class BD
     }
 
     // fotoPerfil / fotoDni en null conservan las fotos que ya tenía
-    public ResultadoGuardado guardarPerfilCompleto(int idUsuario, EdicionPerfil edicion, string? fotoPerfil, string? fotoDni)
+    public Usuario guardarPerfilCompleto(int idUsuario, Usuario edicion, string? fotoPerfil, string? fotoDni)
     {
         using (var connection = new SqlConnection(connectionString))
         {
-            return connection.QueryFirst<ResultadoGuardado>(
+            return connection.QueryFirst<Usuario>(
                 "EXEC guardarPerfilCompleto @idUsuario, @nombre, @apellido, @mail, @fechaNacimiento, @dni, @direccion, @fotoPerfil, @fotoDni, @descripcion, @precioHora, @idsMaterias, @idsNiveles, @idsModalidades, @idsEscuelas, @titulos",
                 new
                 {
@@ -166,7 +167,7 @@ public class BD
             using (var tablas = connection.QueryMultiple("EXEC obtenerCatalogo @busqueda, @materia, @colegio, @modalidad, @niveles, @pagina, @porPagina, @idVisitante", new { busqueda = busqueda, materia = materia, colegio = colegio, modalidad = modalidad, niveles = niveles, pagina = pagina, porPagina = porPagina, idVisitante = idVisitante }))
             {
                 ResultadoCatalogo catalogo = tablas.ReadFirst<ResultadoCatalogo>();
-                catalogo.profesores = tablas.Read<Profesor>().ToList();
+                catalogo.profesores = tablas.Read<Usuario>().ToList();
                 return catalogo;
             }
         }

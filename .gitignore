@@ -272,9 +272,6 @@ __pycache__/
 # Cake - Uncomment if you are using it
 # tools/
 
-# End of https://www.toptal.com/developers/gitignore/api/aspnetcore
-# Archivos que suben los usuarios (fotos de perfil y fotos del DNI): las carpetas existen en el repo (.gitkeep) pero sus archivos no
-wwwroot/userData/*/*
-!wwwroot/userData/*/.gitkeep
+.claude/
 
-.claude
+.playwright-mcp/

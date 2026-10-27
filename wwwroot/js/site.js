@@ -484,6 +484,14 @@ function inicializarBuscadorDeAyuda() {
     });
 }
 
+// Enter o la lupa: baja a las preguntas y abre la primera que coincide
+function verPreguntasDeAyuda() {
+    const primeraVisible = document.querySelector("#acordeonPreguntas details:not([hidden])");
+    if (primeraVisible) primeraVisible.open = true;
+    document.getElementById("seccionPreguntas").scrollIntoView();
+    return false;
+}
+
 function validarContacto() {
     const mensajeContacto = document.getElementById("mensajeContacto");
     const exitoContacto = document.getElementById("exitoContacto");
@@ -539,6 +547,10 @@ const pesoMaximoFoto = 5 * 1024 * 1024;
 const ladoFotoPerfil = 256;
 const tiposDeFotoPermitidos = ["image/jpeg", "image/png", "image/webp"];
 const anioMinimoEscuela = 1950;
+// Lo mismo que revisa el SP guardarPerfilCompleto (código 3)
+const materiasMaximas = 10;
+const colegiosMaximos = 5;
+const edadMinimaParaEnsenar = 16;
 
 let editorDescripcion = null;
 let opcionesPerfilCargadas = null;
@@ -638,8 +650,9 @@ function pintarAvatar(avatar, nombre, apellido, fotoPerfil) {
 // "Colegio Nacional de Buenos Aires y 2 más · Miembro desde octubre de 2026"
 function crearDatosTitular(perfil) {
     const partes = [];
-    if (perfil.colegios.length > 0) {
-        const colegios = perfil.colegios.length > 1 ? `${perfil.colegios[0]} y ${perfil.colegios.length - 1} más` : perfil.colegios[0];
+    if (perfil.colegios) {
+        const lista = perfil.colegios.split(", ");
+        const colegios = lista.length > 1 ? `${lista[0]} y ${lista.length - 1} más` : lista[0];
         partes.push(crearDatoConIcono("bi-building", colegios));
     }
     const fechaInscripcion = new Date(perfil.fechaInscripcion).toLocaleDateString("es-AR", { month: "long", year: "numeric" });
@@ -774,9 +787,11 @@ function mostrarDatosPerfil(perfil) {
     const datosPerfil = document.getElementById("datosPerfil");
     datosPerfil.replaceChildren();
 
+    // Las listas llegan como texto: "Física, Química"
+    const lista = texto => texto ? texto.split(", ") : [];
     const gruposDeDatos = perfil.tipoUsuario === "profesor"
-        ? [["Materias", "bi-book", perfil.materias], ["Niveles", "bi-mortarboard", perfil.niveles], ["Modalidad", "bi-laptop", perfil.modalidades], ["Colegios", "bi-building", perfil.colegios], ["Títulos", "bi-award", perfil.titulos]]
-        : [["Colegio", "bi-building", perfil.colegios], ["Nivel", "bi-mortarboard", perfil.niveles]];
+        ? [["Materias", "bi-book", lista(perfil.materias)], ["Niveles", "bi-mortarboard", lista(perfil.niveles)], ["Modalidad", "bi-laptop", lista(perfil.modalidades)], ["Colegios", "bi-building", lista(perfil.colegios)], ["Títulos", "bi-award", perfil.titulos]]
+        : [["Colegio", "bi-building", lista(perfil.colegios)], ["Nivel", "bi-mortarboard", lista(perfil.niveles)]];
 
     const gruposConDatos = gruposDeDatos.filter(([, , valores]) => valores.length > 0);
     if (gruposConDatos.length === 0) {
@@ -1140,12 +1155,15 @@ function completarFormularioEdicion(opciones, datos) {
         if (datos.descripcion) editorDescripcion.clipboard.dangerouslyPasteHTML(datos.descripcion);
         actualizarContadorDescripcion();
     }
-    aniosDeEscuelas = Object.fromEntries(datos.escuelas.map(escuela => [escuela.id, escuela.anioDesde ?? ""]));
-    llenarSelectDeOpciones(campo("edicionEscuelas"), opciones.escuelas, datos.idsEscuelas);
+    // Los IDs llegan como texto: "37,38". Los colegios con su año: "20:2015,21:2019"
+    const ids = texto => texto ? texto.split(",").map(id => parseInt(id)) : [];
+    const escuelas = datos.idsEscuelas ? datos.idsEscuelas.split(",") : [];
+    aniosDeEscuelas = Object.fromEntries(escuelas.map(escuela => [parseInt(escuela), escuela.split(":")[1] ?? ""]));
+    llenarSelectDeOpciones(campo("edicionEscuelas"), opciones.escuelas, ids(datos.idsEscuelas));
     dibujarAniosDeEscuelas();
-    llenarSelectDeOpciones(campo("edicionNiveles"), opciones.niveles, datos.idsNiveles);
-    llenarSelectDeOpciones(campo("edicionMaterias"), opciones.materias, datos.idsMaterias);
-    llenarSelectDeOpciones(campo("edicionModalidades"), opciones.modalidades, datos.idsModalidades);
+    llenarSelectDeOpciones(campo("edicionNiveles"), opciones.niveles, ids(datos.idsNiveles));
+    llenarSelectDeOpciones(campo("edicionMaterias"), opciones.materias, ids(datos.idsMaterias));
+    llenarSelectDeOpciones(campo("edicionModalidades"), opciones.modalidades, ids(datos.idsModalidades));
     if (campo("edicionPrecioHora")) campo("edicionPrecioHora").value = datos.precioHora > 0 ? datos.precioHora : "";
     if (campo("listaTitulos")) {
         campo("listaTitulos").replaceChildren();
@@ -1465,11 +1483,21 @@ function guardarPerfil() {
     if (campoPrecioHora && campoPrecioHora.value !== "" && !(Number.isInteger(Number(campoPrecioHora.value)) && Number(campoPrecioHora.value) >= 0)) {
         return errorEnCampoDeEdicion(campoPrecioHora, "Ingresá un precio por hora válido (solo números).");
     }
+    if (campo("edicionMaterias") && campo("edicionMaterias").selectedOptions.length > materiasMaximas) {
+        return errorEnCampoDeEdicion(campo("edicionMaterias"), `Podés elegir hasta ${materiasMaximas} materias.`);
+    }
+    if (campo("edicionEscuelas").multiple && campo("edicionEscuelas").selectedOptions.length > colegiosMaximos) {
+        return errorEnCampoDeEdicion(campo("edicionEscuelas"), `Podés elegir hasta ${colegiosMaximos} colegios.`);
+    }
+    // Se puede dar clase en un colegio desde el año en que cumpliste 16 (sin fecha de nacimiento, desde 1950)
     const anioActual = new Date().getFullYear();
+    const fechaNacimiento = campo("edicionFechaNacimiento").value;
+    const anioDesde = fechaNacimiento === "" ? anioMinimoEscuela : Number(fechaNacimiento.slice(0, 4)) + edadMinimaParaEnsenar;
     for (const campoAnio of document.querySelectorAll("#listaAniosEscuelas input")) {
         const anio = Number(campoAnio.value);
         if (campoAnio.value === "") return errorEnCampoDeEdicion(campoAnio, `Escribí desde qué año das clase en ${campoAnio.dataset.nombreEscuela}.`);
-        if (!Number.isInteger(anio) || anio < anioMinimoEscuela || anio > anioActual) return errorEnCampoDeEdicion(campoAnio, `El año de ${campoAnio.dataset.nombreEscuela} tiene que estar entre ${anioMinimoEscuela} y ${anioActual}.`);
+        if (anioDesde > anioActual) return errorEnCampoDeEdicion(campoAnio, `Para dar clase en un colegio tenés que tener al menos ${edadMinimaParaEnsenar} años.`);
+        if (!Number.isInteger(anio) || anio < anioDesde || anio > anioActual) return errorEnCampoDeEdicion(campoAnio, `El año de ${campoAnio.dataset.nombreEscuela} tiene que estar entre ${anioDesde} y ${anioActual}.`);
     }
 
     // HTML del editor (vacío si no se escribió nada) y listas de IDs separadas por coma.
@@ -1502,7 +1530,7 @@ function guardarPerfil() {
             } else if (respuesta.codigo == 2) {
                 errorEnCampoDeEdicion(campo("edicionDni"), "Ese DNI ya está registrado en otra cuenta.");
             } else if (respuesta.codigo == 3) {
-                mostrarMensaje(mensajeEditarPerfil, "Revisá los datos: nombre y apellido de hasta 50 caracteres, dirección de hasta 200, hasta 10 títulos y el año de cada colegio.");
+                mostrarMensaje(mensajeEditarPerfil, "Revisá los datos: nombre y apellido de hasta 50 caracteres, dirección de hasta 200, hasta 10 títulos, hasta 10 materias y 5 colegios, y el año de cada colegio.");
             } else {
                 mostrarMensaje(mensajeEditarPerfil, "Las fotos tienen que ser imágenes JPG, PNG o WEBP de hasta 5 MB.");
             }
@@ -1534,7 +1562,7 @@ function actualizarUsuarioEnEncabezado(usuario) {
 
 // ================= INICIALIZACIÓN =================
 // ================= RESEÑAS =================
-// "Dar reseña" (_dialogoDarResena): la estrella del Perfil y el botón del Historial ([data-dar-resena] con
+// "Dar reseña" (diálogo en _Layout): la estrella del Perfil y el botón del Historial ([data-dar-resena] con
 // data-id-usuario y data-nombre-usuario). El servidor (SP darResena) revisa que hayan tenido una clase completada.
 const textosPuntuacion = ["", "Muy mala", "Mala", "Regular", "Buena", "Excelente"];
 
@@ -1616,6 +1644,143 @@ function enviarResena() {
 }
 
 
+// ================= HEADER: buscador de usuarios =================
+// Los usuarios se piden recién al abrir la lupa y de a 20 (el TOP del SP buscarUsuarios).
+// Cada respuesta se guarda por texto: al borrar letras no se vuelve a pedir. Si una búsqueda trajo menos de 20,
+// ahí están todos los que coinciden, así que al agregar letras se filtra acá (salvo un ID, que se busca exacto).
+const usuariosPorBusqueda = 20;
+const busquedasDeUsuarios = new Map();
+let temporizadorBusquedaUsuarios = null;
+
+function inicializarBuscadorDeUsuarios() {
+    const buscador = document.getElementById("buscadorUsuarios");
+    if (!buscador) return;
+
+    const botonLupa = document.getElementById("botonBuscarUsuarios");
+    const campo = document.getElementById("campoBuscarUsuarios");
+
+    botonLupa.addEventListener("click", () => {
+        buscador.classList.add("abierto");
+        botonLupa.setAttribute("aria-expanded", "true");
+        campo.focus();
+        buscarUsuarios(campo.value);
+    });
+
+    // Espera a que se deje de escribir un momento para no pedir una vez por letra
+    campo.addEventListener("input", () => {
+        clearTimeout(temporizadorBusquedaUsuarios);
+        temporizadorBusquedaUsuarios = setTimeout(() => buscarUsuarios(campo.value), 200);
+    });
+
+    // Flechas para recorrer los resultados, Enter abre el primero y Escape cierra
+    buscador.addEventListener("keydown", evento => {
+        const enlaces = [...document.querySelectorAll("#resultadosUsuarios a")];
+        const posicion = enlaces.indexOf(document.activeElement);
+        if (evento.key === "ArrowDown" || evento.key === "ArrowUp") {
+            evento.preventDefault();
+            const siguiente = posicion + (evento.key === "ArrowDown" ? 1 : -1);
+            if (siguiente < 0) campo.focus();
+            else if (siguiente < enlaces.length) enlaces[siguiente].focus();
+        } else if (evento.key === "Enter" && document.activeElement === campo && enlaces.length > 0) {
+            evento.preventDefault();
+            window.location.href = enlaces[0].href;
+        } else if (evento.key === "Escape" && buscador.classList.contains("abierto")) {
+            // En el celular, que no se cierre también el menú
+            evento.preventDefault();
+            cerrarBuscadorDeUsuarios();
+            botonLupa.focus();
+        }
+    });
+
+    document.addEventListener("click", evento => {
+        if (!buscador.contains(evento.target)) cerrarBuscadorDeUsuarios();
+    });
+}
+
+function cerrarBuscadorDeUsuarios() {
+    document.getElementById("buscadorUsuarios").classList.remove("abierto");
+    document.getElementById("botonBuscarUsuarios").setAttribute("aria-expanded", "false");
+    document.getElementById("resultadosUsuarios").hidden = true;
+}
+
+function buscarUsuarios(textoEscrito) {
+    const texto = textoEscrito.trim();
+    const clave = normalizarTexto(texto);
+    const guardados = busquedasDeUsuarios.get(clave) ?? buscarEntreLosGuardados(clave);
+    if (guardados) {
+        busquedasDeUsuarios.set(clave, guardados);
+        mostrarUsuariosEncontrados(guardados);
+        return;
+    }
+
+    pedirJson(`/Perfiles/Buscar?texto=${encodeURIComponent(texto)}`)
+        .then(usuarios => {
+            busquedasDeUsuarios.set(clave, usuarios);
+            // Si mientras tanto se siguió escribiendo, esta respuesta ya quedó vieja
+            if (normalizarTexto(document.getElementById("campoBuscarUsuarios").value) === clave) mostrarUsuariosEncontrados(usuarios);
+        })
+        .catch(error => {
+            console.error(error);
+            mostrarAvisoDeBusqueda("No pudimos buscar. Probá de nuevo en unos minutos.");
+        });
+}
+
+// Una búsqueda más corta que ya trajo a todos (menos de 20) alcanza para filtrar sin pedir de nuevo
+function buscarEntreLosGuardados(clave) {
+    if (/^\d+$/.test(clave)) return null;
+    for (const [claveGuardada, usuarios] of busquedasDeUsuarios) {
+        if (usuarios.length < usuariosPorBusqueda && clave.includes(claveGuardada)) {
+            return usuarios.filter(usuario => coincideUsuario(usuario, clave));
+        }
+    }
+    return null;
+}
+
+// La misma regla que el SP: nombre y apellido en cualquier orden, sin tildes ni mayúsculas
+function coincideUsuario(usuario, clave) {
+    return normalizarTexto(`${usuario.nombre} ${usuario.apellido}`).includes(clave)
+        || normalizarTexto(`${usuario.apellido} ${usuario.nombre}`).includes(clave);
+}
+
+function mostrarUsuariosEncontrados(usuarios) {
+    if (usuarios.length === 0) return mostrarAvisoDeBusqueda("No encontramos a nadie con ese nombre o ID.");
+    const lista = document.getElementById("resultadosUsuarios");
+    lista.replaceChildren(...usuarios.map(crearResultadoDeUsuario));
+    lista.hidden = false;
+}
+
+function mostrarAvisoDeBusqueda(texto) {
+    const lista = document.getElementById("resultadosUsuarios");
+    lista.replaceChildren(crearElemento("li", "vacio", texto));
+    lista.hidden = false;
+}
+
+// Foto (o iniciales), nombre con el tick si está verificado, y rol con el ID. Lleva al perfil
+function crearResultadoDeUsuario(usuario) {
+    const enlace = crearElemento("a");
+    enlace.href = `/Home/Perfil/${usuario.id}`;
+
+    const avatar = crearElemento("span", usuario.fotoPerfil ? "avatar" : "avatar theme-primary");
+    avatar.setAttribute("aria-hidden", "true");
+    pintarAvatar(avatar, usuario.nombre, usuario.apellido, usuario.fotoPerfil);
+
+    const nombre = crearElemento("strong", "", `${usuario.nombre} ${usuario.apellido} `);
+    if (usuario.verificado) {
+        const tick = crearElemento("i", "bi bi-patch-check-fill tickVerificado");
+        tick.title = "Cuenta verificada";
+        tick.setAttribute("aria-label", "Cuenta verificada");
+        nombre.append(tick);
+    }
+    const datos = crearElemento("span", "datos");
+    datos.append(nombre, crearElemento("small", "", `${usuario.tipoUsuario === "profesor" ? "Profesor" : "Alumno"} · ID ${usuario.id}`));
+
+    enlace.append(avatar, datos);
+    const item = crearElemento("li");
+    item.append(enlace);
+    return item;
+}
+
+
 function inicializarSitio() {
     inicializarAvisoVerificacion();
     inicializarSelectoresBuscables();
@@ -1627,6 +1792,7 @@ function inicializarSitio() {
     inicializarCierreDeDialogos();
     inicializarResenas();
     inicializarPerfil();
+    inicializarBuscadorDeUsuarios();
 }
 
 document.addEventListener("DOMContentLoaded", inicializarSitio);

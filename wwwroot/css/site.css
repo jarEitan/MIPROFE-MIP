@@ -426,6 +426,149 @@ main {
     }
 }
 
+/* Buscador de usuarios: una lupa que al abrirse se agranda hacia la izquierda y se hace un campo.
+   Siempre ocupa el lugar de la lupa: la caja abierta y los resultados flotan por encima y no empujan nada */
+.buscadorUsuarios {
+    position: relative;
+    flex-shrink: 0;
+    width: 2.75rem;
+    height: 2.75rem;
+}
+
+.cajaBuscadorUsuarios {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 999px;
+    background-color: var(--colorSuperficie);
+    transition: width var(--duracionMedia) var(--curvaSuave);
+}
+
+.buscadorUsuarios.abierto .cajaBuscadorUsuarios {
+    width: min(20rem, 80vw);
+    box-shadow: 0 0 0 1.5px var(--colorBorde), var(--sombraSuave);
+}
+
+.buscadorUsuarios.abierto .cajaBuscadorUsuarios:focus-within {
+    box-shadow: 0 0 0 2px var(--colorTinta), 0 0 0 6px rgba(92, 225, 230, .6);
+}
+
+.buscadorUsuarios .botonLupa {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 2.75rem;
+    height: 2.75rem;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background-color: transparent;
+    color: var(--colorTinta);
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: background-color var(--duracionRapida) ease;
+}
+
+@media (hover: hover) {
+    .buscadorUsuarios:not(.abierto) .botonLupa:hover {
+        background-color: var(--colorCelesteSuave);
+    }
+}
+
+/* Cerrado el campo está oculto (visibility: tampoco se puede enfocar con Tab) */
+.buscadorUsuarios input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    padding: 0 1rem 0 0;
+    border: 0;
+    background: transparent;
+    font: inherit;
+    color: var(--colorTexto);
+    visibility: hidden;
+}
+
+.buscadorUsuarios.abierto input {
+    visibility: visible;
+}
+
+.buscadorUsuarios input:focus {
+    outline: none;
+}
+
+.resultadosUsuarios {
+    position: absolute;
+    top: calc(100% + .5rem);
+    right: 0;
+    z-index: 2;
+    width: min(20rem, 80vw);
+    max-height: min(24rem, 60vh);
+    margin: 0;
+    padding: .4rem;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    list-style: none;
+    border-radius: var(--radioMedio);
+    background-color: var(--colorSuperficie);
+    box-shadow: var(--sombraFlotante);
+}
+
+.resultadosUsuarios a {
+    display: flex;
+    align-items: center;
+    gap: .65rem;
+    padding: .45rem .6rem;
+    border-radius: var(--radioChico);
+    color: var(--colorTexto);
+    text-decoration: none;
+}
+
+.resultadosUsuarios a:focus-visible {
+    outline: none;
+    background-color: var(--colorCelesteSuave);
+    box-shadow: inset 0 0 0 2px var(--colorTinta);
+}
+
+@media (hover: hover) {
+    .resultadosUsuarios a:hover {
+        background-color: var(--colorCelesteSuave);
+    }
+}
+
+.resultadosUsuarios .avatar {
+    --bs-avatar-size: 2.25rem;
+}
+
+.resultadosUsuarios .datos {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    line-height: 1.25;
+}
+
+.resultadosUsuarios strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.resultadosUsuarios small {
+    font-size: .8rem;
+    color: var(--colorTextoSuave);
+}
+
+.resultadosUsuarios .vacio {
+    padding: .75rem;
+    font-size: .9rem;
+    text-align: center;
+    color: var(--colorTextoSuave);
+}
+
 /* Antes de lg el menú es un drawer lateral.
    (@container y no @media: el navbar de Bootstrap 6 se expande según el ancho de su propio contenedor,
    que no cuenta la barra de scroll, así que el corte puede diferir unos píxeles del viewport) */
@@ -469,6 +612,27 @@ main {
 
     .encabezado .usuario {
         align-self: flex-start;
+    }
+
+    /* En el drawer el buscador abierto ocupa todo el ancho y los resultados van debajo, sin flotar */
+    .encabezado .buscadorUsuarios {
+        width: 100%;
+        height: auto;
+    }
+
+    .encabezado .cajaBuscadorUsuarios {
+        position: static;
+    }
+
+    .encabezado .buscadorUsuarios.abierto .cajaBuscadorUsuarios,
+    .encabezado .resultadosUsuarios {
+        width: 100%;
+    }
+
+    .encabezado .resultadosUsuarios {
+        position: static;
+        margin-top: .5rem;
+        box-shadow: 0 0 0 1.5px var(--colorBorde);
     }
 }
 
@@ -897,7 +1061,7 @@ mark {
    el aro va por fuera, porque un inset queda tapado por la <img> */
 .saludo .avatar,
 .perfil .cabeceraPerfil .avatar,
-.dialogoEdicion .vistaPreviaFoto .avatar {
+#dialogoEditarPerfil .vistaPreviaFoto .avatar {
     box-shadow: 0 0 0 .375rem var(--colorCeleste), var(--sombraAvatar);
 }
 
@@ -1254,8 +1418,10 @@ fieldset {
 }
 
 /* ---------- Diálogo de Bootstrap 6: header blanco, sin borde y sin giro al abrir ---------- */
+/* Todos los modales usan la misma caja: <dialog class="dialog"> con dialog-header, dialog-body y dialog-footer
+   (adentro de un <form> si hace falta). Lo propio de cada modal se escribe con su id: #dialogoDarResena .filaEstrellas */
 .dialog {
-    --bs-dialog-width: min(28rem, 92vw);
+    --bs-dialog-width: min(36rem, 94vw);
     --bs-dialog-color: var(--colorTexto);
     --bs-dialog-border-width: 0;
     --bs-dialog-border-radius: var(--radioGrande);
@@ -1270,6 +1436,21 @@ fieldset {
     display: none;
 }
 
+/* El cuerpo scrollea y el encabezado y los botones quedan fijos */
+.dialog > form {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.dialog .dialog-body {
+    display: grid;
+    gap: 1rem;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
 .dialog .dialog-title {
     font: 600 1.375rem/1.25 var(--fuenteMarca);
 }
@@ -1277,25 +1458,6 @@ fieldset {
 /* La cruz de cerrar (diálogos, drawers y avisos) mide 24px como mínimo */
 .btn-close {
     --bs-btn-close-size: 1.5rem;
-}
-
-/* Pedir y reubicar una clase: día + grilla de horas (las arma crearSelectorHorario en site.js) */
-.dialogoClase {
-    --bs-dialog-width: min(34rem, 94vw);
-}
-
-.dialogoClase form {
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-    max-height: calc(100dvh - 56px);
-}
-
-.dialogoClase .dialog-body {
-    display: grid;
-    gap: 1rem;
-    min-height: 0;
-    overflow-y: auto;
 }
 
 .selectorHorario {
@@ -1448,32 +1610,27 @@ fieldset {
     font-weight: 600;
 }
 
-/* Diálogo "Dar reseña" (_dialogoDarResena) */
-.dialogoResena .dialog-body {
-    display: grid;
-    gap: 1rem;
-}
-
-.dialogoResena .estrellasResena {
+/* Diálogo "Dar reseña" (_Layout) */
+#dialogoDarResena .estrellasResena {
     margin: 0;
     padding: 0;
     border: 0;
 }
 
-.dialogoResena .estrellasResena legend {
+#dialogoDarResena .estrellasResena legend {
     margin-bottom: .4rem;
     font-size: .95rem;
     font-weight: 600;
 }
 
-.dialogoResena .filaEstrellas {
+#dialogoDarResena .filaEstrellas {
     display: flex;
     align-items: center;
     gap: .2rem;
 }
 
 /* Se pintan las estrellas hasta la elegida (o hasta la que está bajo el mouse); las vacías en #6B7280 llegan a 3:1 */
-.dialogoResena .filaEstrellas label {
+#dialogoDarResena .filaEstrellas label {
     display: inline-grid;
     place-items: center;
     width: 2.75rem;
@@ -1485,44 +1642,44 @@ fieldset {
     transition: color var(--duracionRapida) var(--curvaSuave), transform var(--duracionRapida) var(--curvaSuave);
 }
 
-.dialogoResena .filaEstrellas:not(:has(label:hover)):has(input:checked) label,
-.dialogoResena .filaEstrellas:has(label:hover) label {
+#dialogoDarResena .filaEstrellas:not(:has(label:hover)):has(input:checked) label,
+#dialogoDarResena .filaEstrellas:has(label:hover) label {
     color: var(--colorCoral);
 }
 
-.dialogoResena .filaEstrellas:not(:has(label:hover)) label:has(input:checked) ~ label,
-.dialogoResena .filaEstrellas:has(label:hover) label:hover ~ label {
+#dialogoDarResena .filaEstrellas:not(:has(label:hover)) label:has(input:checked) ~ label,
+#dialogoDarResena .filaEstrellas:has(label:hover) label:hover ~ label {
     color: var(--colorTextoSuave);
 }
 
-.dialogoResena .filaEstrellas label:hover {
+#dialogoDarResena .filaEstrellas label:hover {
     transform: scale(1.15);
 }
 
 /* El radio está oculto: el foco se dibuja en la estrella, con el mismo color que el foco global */
-.dialogoResena .filaEstrellas label:has(input:focus-visible) {
+#dialogoDarResena .filaEstrellas label:has(input:focus-visible) {
     outline: 3px solid var(--colorFoco, var(--colorTinta));
     outline-offset: 2px;
     border-radius: var(--radioChico);
 }
 
-.dialogoResena .textoPuntuacion {
+#dialogoDarResena .textoPuntuacion {
     margin-left: .5rem;
     font-family: var(--fuenteMarca);
     font-weight: 600;
     color: var(--colorMagenta);
 }
 
-.dialogoResena .form-field {
+#dialogoDarResena .form-field {
     display: grid;
     gap: .35rem;
 }
 
-.dialogoResena textarea {
+#dialogoDarResena textarea {
     resize: vertical;
 }
 
-.dialogoResena small {
+#dialogoDarResena small {
     justify-self: end;
     color: var(--colorTextoSuave);
 }
@@ -2277,9 +2434,21 @@ fieldset {
 }
 
 .cabecera .buscador .bi {
-    margin-right: .9rem;
     font-size: 1.1rem;
     color: var(--colorTextoSuave);
+}
+
+/* La lupa de Soporte es un botón: baja a las preguntas */
+.cabecera .buscador .botonLupa {
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    cursor: pointer;
 }
 
 /* Plancha del Catálogo: tres pegatinas sueltas. La columna se oculta antes de md (d-none md:d-block en la vista) */
@@ -4011,8 +4180,8 @@ tr.resaltada td {
 /* Ícono de carga: gira */
 .cargandoHistorial .bi,
 .perfil .estadoPerfil .bi,
-.dialogoEdicion .estadoPerfil .bi,
-.dialogoHistorial .estadoHistorial.cargando .bi {
+#dialogoEditarPerfil .estadoPerfil .bi,
+#dialogoHistorial .estadoHistorial.cargando .bi {
     animation: girarCarga 1s linear infinite;
 }
 
@@ -4491,7 +4660,7 @@ tr.resaltada td {
 
 /* Lo que falta: etiquetas chicas */
 .perfil .faltantes,
-.dialogoEdicion .progresoVerificacion ul {
+#dialogoEditarPerfil .progresoVerificacion ul {
     display: flex;
     flex-wrap: wrap;
     gap: .35rem;
@@ -4501,7 +4670,7 @@ tr.resaltada td {
 }
 
 .perfil .faltantes li,
-.dialogoEdicion .progresoVerificacion li {
+#dialogoEditarPerfil .progresoVerificacion li {
     padding: .2rem .65rem;
     border: 1.5px solid var(--colorAlerta);
     border-radius: 999px;
@@ -4896,23 +5065,7 @@ tr.resaltada td {
 }
 
 /* ---------- Modal "Editar perfil" ---------- */
-.dialog.dialogoEdicion {
-    --bs-dialog-width: min(42rem, 94vw);
-}
-
-/* El cuerpo scrollea y el encabezado y los botones quedan fijos */
-.dialogoEdicion form {
-    display: flex;
-    flex-direction: column;
-    max-height: min(88vh, 54rem);
-}
-
-.dialogoEdicion .dialog-body {
-    overflow-y: auto;
-    overscroll-behavior: contain;
-}
-
-.dialogoEdicion .estadoPerfil {
+#dialogoEditarPerfil .estadoPerfil {
     display: flex;
     align-items: center;
     gap: .5rem;
@@ -4920,42 +5073,42 @@ tr.resaltada td {
     color: var(--colorTextoSuave);
 }
 
-.dialogoEdicion .contenidoEdicion {
+#dialogoEditarPerfil .contenidoEdicion {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: 1.1rem;
 }
 
 /* Progreso de la verificación: amarillo si falta algo, verde si ya está */
-.dialogoEdicion .progresoVerificacion {
+#dialogoEditarPerfil .progresoVerificacion {
     padding: .8rem 1rem;
     border: 2px solid var(--colorAlerta);
     border-radius: var(--radioMedio);
     background-color: var(--colorAlertaSuave);
 }
 
-.dialogoEdicion .progresoVerificacion p {
+#dialogoEditarPerfil .progresoVerificacion p {
     font-size: .88rem;
     font-weight: 700;
     color: var(--colorTinta);
 }
 
-.dialogoEdicion .progresoVerificacion ul {
+#dialogoEditarPerfil .progresoVerificacion ul {
     margin-top: .5rem;
 }
 
-.dialogoEdicion .progresoVerificacion.verificada {
+#dialogoEditarPerfil .progresoVerificacion.verificada {
     border-color: var(--colorExito);
     background-color: var(--colorExitoSuave);
 }
 
 /* Pestañas: Modificar perfil / Modificar cuenta (los colores son los de .nav-pills) */
-.dialogoEdicion .pestanasEdicion {
+#dialogoEditarPerfil .pestanasEdicion {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-.dialogoEdicion .pestanasEdicion .nav-link {
+#dialogoEditarPerfil .pestanasEdicion .nav-link {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -4968,34 +5121,34 @@ tr.resaltada td {
 
 /* En celulares el ícono de la pestaña sobra: queda solo el texto */
 @media (width < 480px) {
-    .dialogoEdicion .pestanasEdicion .nav-link .bi {
+    #dialogoEditarPerfil .pestanasEdicion .nav-link .bi {
         display: none;
     }
 }
 
 /* Campos en vertical */
-.dialogoEdicion .tab-pane {
+#dialogoEditarPerfil .tab-pane {
     display: none;
     gap: 1rem;
 }
 
-.dialogoEdicion .tab-pane.active {
+#dialogoEditarPerfil .tab-pane.active {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
 }
 
-.dialogoEdicion .form-field {
+#dialogoEditarPerfil .form-field {
     display: grid;
     gap: .35rem;
 }
 
-.dialogoEdicion .form-field small.excedido {
+#dialogoEditarPerfil .form-field small.excedido {
     font-weight: 700;
     color: var(--colorMagenta);
 }
 
 /* Editor de texto enriquecido (Quill) con el borde del sitio */
-.dialogoEdicion .ql-toolbar.ql-snow {
+#dialogoEditarPerfil .ql-toolbar.ql-snow {
     border: 1.5px solid var(--colorTextoSuave);
     border-bottom-color: var(--colorBorde);
     border-radius: var(--radioChico) var(--radioChico) 0 0;
@@ -5004,7 +5157,7 @@ tr.resaltada td {
 }
 
 /* Botones de la barra de 44px (quill.snow.css carga después: hace falta un selector más fuerte) */
-.dialogoEdicion .ql-toolbar.ql-snow button {
+#dialogoEditarPerfil .ql-toolbar.ql-snow button {
     width: 2.75rem;
     height: 2.75rem;
     padding: .7rem;
@@ -5013,25 +5166,25 @@ tr.resaltada td {
 
 /* Hover y foco en celeste oscuro, activo en tinta con ícono blanco (Quill los pinta de azul; con puntero táctil,
    de gris: .dialog suma una clase para ganarle a esa regla) */
-.dialog.dialogoEdicion .ql-toolbar.ql-snow button:is(:hover, :focus) {
+#dialogoEditarPerfil .ql-toolbar.ql-snow button:is(:hover, :focus) {
     background-color: var(--colorCelesteSuave);
     color: var(--colorCelesteOscuro);
 }
 
-.dialog.dialogoEdicion .ql-toolbar.ql-snow button.ql-active {
+#dialogoEditarPerfil .ql-toolbar.ql-snow button.ql-active {
     background-color: var(--colorTinta);
     color: var(--colorSuperficie);
 }
 
-.dialog.dialogoEdicion .ql-toolbar.ql-snow button:is(:hover, :focus, .ql-active) :is(.ql-stroke, .ql-stroke-miter) {
+#dialogoEditarPerfil .ql-toolbar.ql-snow button:is(:hover, :focus, .ql-active) :is(.ql-stroke, .ql-stroke-miter) {
     stroke: currentColor;
 }
 
-.dialog.dialogoEdicion .ql-toolbar.ql-snow button:is(:hover, :focus, .ql-active) :is(.ql-fill, .ql-stroke.ql-fill) {
+#dialogoEditarPerfil .ql-toolbar.ql-snow button:is(:hover, :focus, .ql-active) :is(.ql-fill, .ql-stroke.ql-fill) {
     fill: currentColor;
 }
 
-.dialogoEdicion .ql-container.ql-snow {
+#dialogoEditarPerfil .ql-container.ql-snow {
     border: 1.5px solid var(--colorTextoSuave);
     border-top: 0;
     border-radius: 0 0 var(--radioChico) var(--radioChico);
@@ -5040,68 +5193,64 @@ tr.resaltada td {
 }
 
 /* Barra y editor son hijos de la grilla .form-field: se tapa su separación de .35rem para que el marco sea uno solo */
-.dialogoEdicion .ql-toolbar.ql-snow + .ql-container.ql-snow {
+#dialogoEditarPerfil .ql-toolbar.ql-snow + .ql-container.ql-snow {
     margin-top: -.35rem;
 }
 
-.dialogoEdicion .editorTexto .ql-editor {
+#dialogoEditarPerfil .editorTexto .ql-editor {
     min-height: 9rem;
     max-height: 18rem;
 }
 
 /* Foco como el de los campos: borde tinta y anillo celeste */
-.dialogoEdicion .editorTexto:focus-within,
-.dialogoEdicion .ql-toolbar.ql-snow:has(+ .editorTexto:focus-within) {
+#dialogoEditarPerfil .editorTexto:focus-within,
+#dialogoEditarPerfil .ql-toolbar.ql-snow:has(+ .editorTexto:focus-within) {
     border-color: var(--colorTinta);
 }
 
-.dialogoEdicion .editorTexto:focus-within {
+#dialogoEditarPerfil .editorTexto:focus-within {
     box-shadow: var(--anilloFoco);
 }
 
 /* Foto de perfil: vista previa en círculo (componente "Change profile picture" del UI Kit) */
-.dialogoEdicion .vistaPreviaFoto {
+#dialogoEditarPerfil .vistaPreviaFoto {
     display: flex;
     align-items: center;
     gap: 1rem;
 }
 
-.dialogoEdicion .vistaPreviaFoto .avatar {
+#dialogoEditarPerfil .vistaPreviaFoto .avatar {
     --bs-avatar-size: 5.5rem;
 }
 
-.dialogoEdicion .vistaPreviaFoto > div {
+#dialogoEditarPerfil .vistaPreviaFoto > div {
     display: grid;
     justify-items: start;
     gap: .4rem;
 }
 
-.dialogoEdicion .vistaPreviaFoto label.boton {
+#dialogoEditarPerfil .vistaPreviaFoto label.boton {
     cursor: pointer;
 }
 
 /* El input está oculto: el foco se dibuja en el botón, en tinta como el foco global */
-.dialogoEdicion .vistaPreviaFoto:has(input:focus-visible) label.boton {
+#dialogoEditarPerfil .vistaPreviaFoto:has(input:focus-visible) label.boton {
     outline: 3px solid var(--colorFoco, var(--colorTinta));
     outline-offset: 3px;
 }
 
-.dialogoEdicion .estadoFotoDni {
+#dialogoEditarPerfil .estadoFotoDni {
     font-size: .85rem;
     color: var(--colorTextoSuave);
 }
 
-.dialogoEdicion .estadoFotoDni.cargada {
+#dialogoEditarPerfil .estadoFotoDni.cargada {
     font-weight: 600;
     color: var(--colorExito);
 }
 
 /* ---------- Modal "Ajustá tu foto" (Cropper.js 1.6, se abre arriba de "Editar perfil") ---------- */
-.dialog.dialogoRecorte {
-    --bs-dialog-width: min(40rem, 94vw);
-}
-
-.dialogoRecorte .dialog-body {
+#dialogoRecortarFoto .contenidoRecorte {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 11rem;
     gap: 1.25rem;
@@ -5109,7 +5258,7 @@ tr.resaltada td {
 }
 
 /* Escenario oscuro donde se mueve la foto */
-.dialogoRecorte .areaRecorte {
+#dialogoRecortarFoto .areaRecorte {
     height: min(52vh, 22rem);
     overflow: hidden;
     border: 1.5px solid var(--colorBorde);
@@ -5118,30 +5267,30 @@ tr.resaltada td {
 }
 
 /* Cropper.js pide max-width: 100% en la imagen para que entre en el escenario */
-.dialogoRecorte .areaRecorte img {
+#dialogoRecortarFoto .areaRecorte img {
     display: block;
     max-width: 100%;
 }
 
 /* Recuadro cuadrado con esquinas marcadas y borde celeste */
-.dialogoRecorte .cropper-view-box {
+#dialogoRecortarFoto .cropper-view-box {
     outline: 2px solid var(--colorCeleste);
 }
 
-.dialogoRecorte .cropper-modal {
+#dialogoRecortarFoto .cropper-modal {
     background-color: var(--colorTinta);
     opacity: .6;
 }
 
-.dialogoRecorte :is(.cropper-line, .cropper-point) {
+#dialogoRecortarFoto :is(.cropper-line, .cropper-point) {
     background-color: transparent;
 }
 
-.dialogoRecorte .cropper-point {
+#dialogoRecortarFoto .cropper-point {
     display: none;
 }
 
-.dialogoRecorte .cropper-point:is(.point-nw, .point-ne, .point-sw, .point-se) {
+#dialogoRecortarFoto .cropper-point:is(.point-nw, .point-ne, .point-sw, .point-se) {
     display: block;
     width: 1.4rem;
     height: 1.4rem;
@@ -5149,24 +5298,24 @@ tr.resaltada td {
     opacity: 1;
 }
 
-.dialogoRecorte .cropper-point.point-nw { top: -4px; left: -4px; border-right: 0; border-bottom: 0; }
-.dialogoRecorte .cropper-point.point-ne { top: -4px; right: -4px; border-left: 0; border-bottom: 0; }
-.dialogoRecorte .cropper-point.point-sw { bottom: -4px; left: -4px; border-right: 0; border-top: 0; }
-.dialogoRecorte .cropper-point.point-se { bottom: -4px; right: -4px; border-left: 0; border-top: 0; }
+#dialogoRecortarFoto .cropper-point.point-nw { top: -4px; left: -4px; border-right: 0; border-bottom: 0; }
+#dialogoRecortarFoto .cropper-point.point-ne { top: -4px; right: -4px; border-left: 0; border-bottom: 0; }
+#dialogoRecortarFoto .cropper-point.point-sw { bottom: -4px; left: -4px; border-right: 0; border-top: 0; }
+#dialogoRecortarFoto .cropper-point.point-se { bottom: -4px; right: -4px; border-left: 0; border-top: 0; }
 
-.dialogoRecorte .cropper-point.point-se::before {
+#dialogoRecortarFoto .cropper-point.point-se::before {
     display: none;
 }
 
 /* Columna derecha: cómo va a quedar (círculo, como el avatar del sitio) y los ajustes */
-.dialogoRecorte .controlesRecorte {
+#dialogoRecortarFoto .controlesRecorte {
     display: grid;
     justify-items: center;
     gap: .9rem;
     text-align: center;
 }
 
-.dialogoRecorte .vistaPreviaRecorte {
+#dialogoRecortarFoto .vistaPreviaRecorte {
     width: 9rem;
     height: 9rem;
     overflow: hidden;
@@ -5175,41 +5324,41 @@ tr.resaltada td {
     box-shadow: var(--sombraSuave);
 }
 
-.dialogoRecorte .controlesRecorte p {
+#dialogoRecortarFoto .controlesRecorte p {
     margin: 0;
     font-size: .82rem;
 }
 
-.dialogoRecorte .botonesRecorte {
+#dialogoRecortarFoto .botonesRecorte {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
     gap: .5rem;
 }
 
-.dialogoRecorte .botonesRecorte .boton {
+#dialogoRecortarFoto .botonesRecorte .boton {
     width: 2.75rem;
     height: 2.75rem;
     padding: 0;
 }
 
 @media (max-width: 575.98px) {
-    .dialogoRecorte .dialog-body {
+    #dialogoRecortarFoto .contenidoRecorte {
         grid-template-columns: 1fr;
     }
 
-    .dialogoRecorte .areaRecorte {
+    #dialogoRecortarFoto .areaRecorte {
         height: min(45vh, 18rem);
     }
 
-    .dialogoRecorte .vistaPreviaRecorte {
+    #dialogoRecortarFoto .vistaPreviaRecorte {
         width: 6rem;
         height: 6rem;
     }
 }
 
 /* Títulos del profesor */
-.dialogoEdicion .listaTitulos {
+#dialogoEditarPerfil .listaTitulos {
     display: grid;
     gap: .35rem;
     margin: 0;
@@ -5217,11 +5366,11 @@ tr.resaltada td {
     list-style: none;
 }
 
-.dialogoEdicion .listaTitulos:empty {
+#dialogoEditarPerfil .listaTitulos:empty {
     display: none;
 }
 
-.dialogoEdicion .listaTitulos li {
+#dialogoEditarPerfil .listaTitulos li {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -5232,18 +5381,18 @@ tr.resaltada td {
     font-size: .9rem;
 }
 
-.dialogoEdicion .agregarTitulo {
+#dialogoEditarPerfil .agregarTitulo {
     display: flex;
     gap: .5rem;
 }
 
-.dialogoEdicion .agregarTitulo .form-control {
+#dialogoEditarPerfil .agregarTitulo .form-control {
     flex: 1;
     min-width: 0;
 }
 
 /* Profesores: desde qué año da clase en cada colegio elegido (un campo de año por colegio) */
-.dialogoEdicion .aniosEscuelas {
+#dialogoEditarPerfil .aniosEscuelas {
     display: grid;
     gap: .5rem;
     margin-top: .35rem;
@@ -5253,47 +5402,36 @@ tr.resaltada td {
     background-color: var(--colorFondo);
 }
 
-.dialogoEdicion .aniosEscuelas[hidden] {
+#dialogoEditarPerfil .aniosEscuelas[hidden] {
     display: none;
 }
 
-.dialogoEdicion .aniosEscuelas p {
+#dialogoEditarPerfil .aniosEscuelas p {
     margin: 0;
     font-size: .85rem;
     font-weight: 700;
 }
 
-.dialogoEdicion .aniosEscuelas #listaAniosEscuelas {
+#dialogoEditarPerfil .aniosEscuelas #listaAniosEscuelas {
     display: grid;
     gap: .45rem;
 }
 
-.dialogoEdicion .anioEscuela {
+#dialogoEditarPerfil .anioEscuela {
     display: grid;
     grid-template-columns: 1fr 7.5rem;
     align-items: center;
     gap: .75rem;
 }
 
-.dialogoEdicion .anioEscuela label {
+#dialogoEditarPerfil .anioEscuela label {
     font-size: .88rem;
     font-weight: 600;
 }
 
 
 /* ---------- Modal "Historial" del Perfil (la tabla es la misma del Panel: ver 3.14) ---------- */
-.dialog.dialogoHistorial {
-    --bs-dialog-width: min(60rem, 96vw);
-}
-
-/* El cuerpo scrollea y el encabezado y el botón Cerrar quedan fijos */
-.dialogoHistorial .dialog-body {
-    max-height: min(70vh, 38rem);
-    overflow-y: auto;
-    overscroll-behavior: contain;
-}
-
-.dialogoHistorial .estadoHistorial {
+#dialogoHistorial .estadoHistorial {
     display: flex;
     align-items: center;
     gap: .5rem;
@@ -5301,16 +5439,17 @@ tr.resaltada td {
     font-weight: 600;
 }
 
-.dialogoHistorial .estadoHistorial:empty {
+#dialogoHistorial .estadoHistorial:empty {
     display: none;
 }
 
-.dialogoHistorial .card.tabla {
+#dialogoHistorial .card.tabla {
+    overflow-x: auto;
     box-shadow: none;
 }
 
 /* Aviso dentro del modal, como "reseña publicada" (el snackbar quedaría detrás del modal) */
-.dialogoHistorial .avisoHistorial {
+#dialogoHistorial .avisoHistorial {
     margin-top: .75rem;
     font-size: .88rem;
     font-weight: 600;
@@ -5318,18 +5457,12 @@ tr.resaltada td {
 }
 
 /* ---------- Modal "Amigos" del Perfil ---------- */
-.dialogoAmigos .dialog-body {
-    max-height: min(65vh, 32rem);
-    overflow-y: auto;
-    overscroll-behavior: contain;
-}
-
-.dialogoAmigos .estadoAmigos {
+#dialogoAmigos .estadoAmigos {
     padding-block: 1rem;
     font-weight: 600;
 }
 
-.dialogoAmigos .listaAmigos {
+#dialogoAmigos .listaAmigos {
     display: grid;
     gap: .5rem;
     margin: 0;
@@ -5337,7 +5470,7 @@ tr.resaltada td {
     list-style: none;
 }
 
-.dialogoAmigos .listaAmigos a {
+#dialogoAmigos .listaAmigos a {
     display: flex;
     align-items: center;
     gap: .75rem;
@@ -5350,18 +5483,18 @@ tr.resaltada td {
 }
 
 @media (hover: hover) {
-    .dialogoAmigos .listaAmigos a:hover {
+    #dialogoAmigos .listaAmigos a:hover {
         border-color: var(--colorTinta);
         background-color: var(--colorCelesteSuave);
     }
 }
 
-.dialogoAmigos .listaAmigos .avatar {
+#dialogoAmigos .listaAmigos .avatar {
     --bs-avatar-size: 2.5rem;
     flex-shrink: 0;
 }
 
-.dialogoAmigos .listaAmigos strong {
+#dialogoAmigos .listaAmigos strong {
     flex: 1;
     min-width: 0;
     overflow-wrap: anywhere;
@@ -5486,11 +5619,11 @@ tr.resaltada td {
     .boton.botonMeGusta .saltoCorazon,
     .perfil .cifras strong.rebote,
     .cargandoHistorial .bi,
-    .dialogoHistorial .estadoHistorial.cargando .bi {
+    #dialogoHistorial .estadoHistorial.cargando .bi {
         animation: none;
     }
 
-    .dialogoResena .filaEstrellas label:hover {
+    #dialogoDarResena .filaEstrellas label:hover {
         transform: none;
     }
 }

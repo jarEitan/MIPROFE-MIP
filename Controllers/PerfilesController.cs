@@ -60,6 +60,13 @@ public class PerfilesController : Controller
         return Json(perfil);
     }
 
+    // Buscador del header (site.js). Solo van los campos que muestra la lista, para que la respuesta pese poco
+    public IActionResult Buscar(string? texto)
+    {
+        List<Usuario> usuarios = new BD().buscarUsuarios((texto ?? "").Trim());
+        return Json(usuarios.Select(usuario => new { usuario.id, usuario.nombre, usuario.apellido, usuario.tipoUsuario, usuario.fotoPerfil, usuario.verificado }));
+    }
+
     public IActionResult ObtenerOpcionesPerfil()
     {
         return Json(new BD().obtenerOpcionesPerfil());
@@ -70,6 +77,7 @@ public class PerfilesController : Controller
         int idUsuario = int.Parse(HttpContext.Session.GetString("idUsuario") ?? "0");
         Usuario datos = new BD().obtenerDatosEdicion(idUsuario);
         datos.descripcion = limpiarDescripcion(datos.descripcion);
+        datos.tieneFotoDni = datos.fotoDni != null;
         datos.faltantes = new BD().obtenerFaltantesVerificacion(idUsuario);
         return Json(datos);
     }
@@ -113,8 +121,7 @@ public class PerfilesController : Controller
             if (fotoDni != null) borrarArchivo(anteriores.fotoDni);
 
             // El header y el aviso de verificación se arman con la sesión
-            resultado.faltantes = bd.obtenerFaltantesVerificacion(idUsuario);
-            resultado.guardarEnSesion(HttpContext.Session);
+            SesionController.guardarSesion(HttpContext.Session, resultado);
         }
         else
         {

@@ -152,16 +152,21 @@ const coloresAvatar = ["theme-primary", "theme-accent", "theme-inverse"];
 function crearTarjetaProfesor(profesor) {
     const urlPerfil = `/Home/Perfil/${profesor.id}`;
     const tarjeta = crearElemento("article", "card profesorFila");
+    const nombreCompleto = `${profesor.nombre} ${profesor.apellido}`;
+    // La descripción es HTML del editor: en la tarjeta va como texto corto
+    const textoDescripcion = (profesor.descripcion ?? "").replace(/<[^>]*>/g, " ");
+    let resumen = new DOMParser().parseFromString(textoDescripcion, "text/html").body.textContent.replace(/\s+/g, " ").trim();
+    if (resumen.length > 140) resumen = resumen.substring(0, 137).trimEnd() + "...";
 
     // Foto de perfil, o las iniciales sobre un color si todavía no cargó una
     const avatar = crearElemento("span", profesor.fotoPerfil ? "avatar" : `avatar ${coloresAvatar[profesor.id % coloresAvatar.length]}`);
     if (profesor.fotoPerfil) {
         const foto = document.createElement("img");
         foto.src = profesor.fotoPerfil;
-        foto.alt = `Foto de perfil de ${profesor.nombreCompleto}`;
+        foto.alt = `Foto de perfil de ${nombreCompleto}`;
         avatar.append(foto);
     } else {
-        avatar.textContent = profesor.iniciales;
+        avatar.textContent = (profesor.nombre.charAt(0) + profesor.apellido.charAt(0)).toUpperCase() || "?";
         avatar.setAttribute("aria-hidden", "true");
     }
 
@@ -169,7 +174,7 @@ function crearTarjetaProfesor(profesor) {
 
     const nombre = crearElemento("div", "nombre");
     const titulo = crearElemento("h3");
-    const enlace = crearElemento("a", "", profesor.nombreCompleto);
+    const enlace = crearElemento("a", "", nombreCompleto);
     enlace.href = urlPerfil;
     titulo.append(enlace);
     nombre.append(titulo);
@@ -201,7 +206,7 @@ function crearTarjetaProfesor(profesor) {
         cuerpo.append(etiquetas);
     }
 
-    if (profesor.resumen !== "") cuerpo.append(crearElemento("p", "resumen", profesor.resumen));
+    if (resumen !== "") cuerpo.append(crearElemento("p", "resumen", resumen));
 
     const datos = crearElemento("ul", "datos");
     const calificacion = crearElemento("li");
@@ -229,7 +234,7 @@ function crearTarjetaProfesor(profesor) {
     botonPedido.type = "button";
     botonPedido.dataset.pedirClase = "";
     botonPedido.dataset.idProfesor = profesor.id;
-    botonPedido.dataset.nombreProfesor = profesor.nombreCompleto;
+    botonPedido.dataset.nombreProfesor = nombreCompleto;
     lateral.append(botonPerfil, botonPedido);
 
     tarjeta.append(avatar, cuerpo, lateral);

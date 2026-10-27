@@ -214,7 +214,7 @@ function cargarMiAgenda() {
             });
             dibujarDiasDeAgenda();
             dibujarDiasBloqueados(agenda.diasBloqueados);
-            actualizarAvisosDeAgenda(agenda.tieneAgenda);
+            actualizarAvisosDeAgenda(agenda.franjas.length > 0);
         })
         .catch(error => {
             console.error(error);

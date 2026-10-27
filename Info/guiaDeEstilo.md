@@ -86,11 +86,28 @@ Antes de crear una clase nueva: ¿se resuelve con una existente + un selector de
 
 - `<section class="zona">` para cada zona grande y **aislada**; `<div>` para los ítems de adentro.
 - Una sección = una clase propia (`<section class="pasos">`). El orden del HTML coincide con el orden del CSS.
-- Partials para lo que se repite (`_marcaLogo`, `_tarjetaProfesor`, `_preguntasFrecuentes`, `_encabezadoInvitado/Usuario`, `_piePagina`).
+- Sin partials: lo que está en todas las páginas (header, aviso de verificación, footer, diálogos "Pedir clase" y "Dar reseña") va en `_Layout.cshtml`, y lo de una página va en su vista. `Views/Shared/` tiene solo `_Layout`.
 - Los datos salen de la BD (SP); lo que falta conectar lleva `TODO BD:`. La vista nunca inventa datos.
 - Los campos obligatorios se validan en JS antes de enviar (`validarRegistro`, `validarIngreso`): el controlador ya no revisa si vienen vacíos (ver sección 5).
 - Sesión: `@if (Context.Session.GetString("idUsuario") == null) { … }` (sintaxis de systemPrompt).
 - Íconos: `<i class="bi bi-nombre" aria-hidden="true"></i>` (Bootstrap Icons local).
+- Modales: todos con la misma caja, sin clases extra. Lo propio de cada uno se escribe en el CSS con su id (`#dialogoDarResena .filaEstrellas`):
+
+  ```html
+  <dialog class="dialog" id="dialogoAlgo" aria-labelledby="tituloAlgo">
+      <form …>  @* solo si manda datos *@
+          <div class="dialog-header">
+              <h2 class="dialog-title" id="tituloAlgo">Título</h2>
+              <button type="button" class="btn-close" data-bs-dismiss="dialog" aria-label="Cerrar"></button>
+          </div>
+          <div class="dialog-body">…<p class="mensajeError" id="mensajeAlgo" role="alert"></p></div>
+          <div class="dialog-footer">
+              <button type="button" class="boton contorno chico" data-bs-dismiss="dialog">Volver</button>
+              <button type="submit" class="boton principal chico">Confirmar</button>
+          </div>
+      </form>
+  </dialog>
+  ```
 
 
 ## 4. JavaScript
@@ -178,6 +195,8 @@ public class ResultadoMensaje
 ```
 
 Si no hay ningún error posible, no hay `codigo`: Likes devuelve solo `cantidadLikes` y `leGusta`.
+
+Los modelos tienen solo propiedades `{ get; set; }`: nada de métodos ni propiedades calculadas (`=>`). Lo que se calcula va en la vista, el JS o el controlador.
 
 ### Controladores
 

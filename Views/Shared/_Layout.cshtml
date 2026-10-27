@@ -24,32 +24,147 @@
     <link rel="stylesheet" href="~/lib/bootstrap-icons/font/bootstrap-icons.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
-<body data-tipo-usuario="@Context.Session.GetString("tipoUsuario")">
+@* Todo lo que se repite en todas las páginas está acá (no hay partials).
+   Claves de sesión: "idUsuario", "nombre", "apellido", "tipoUsuario", "fotoPerfil", "verificado", "datosFaltantes" y "cantidadNotificaciones". *@
+@{
+    string tipoUsuarioSesion = Context.Session.GetString("tipoUsuario") ?? "";
+    string idUsuarioSesion = Context.Session.GetString("idUsuario") ?? "";
+    string accionActual = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+    string controladorActual = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+
+    string nombre = Context.Session.GetString("nombre") ?? "";
+    string apellido = Context.Session.GetString("apellido") ?? "";
+    string nombreUsuario = (nombre + " " + apellido).Trim();
+    string fotoPerfil = Context.Session.GetString("fotoPerfil") ?? "";
+    // Sin foto de perfil, el avatar muestra la primera letra del nombre y del apellido
+    string iniciales = (nombre.Length > 0 ? nombre.Substring(0, 1) : "") + (apellido.Length > 0 ? apellido.Substring(0, 1) : "");
+    iniciales = iniciales == "" ? "?" : iniciales.ToUpper();
+    string cantidadNotificaciones = Context.Session.GetString("cantidadNotificaciones") ?? "0";
+
+    // En el perfil propio el aviso de verificación no va: ahí está el aviso completo dentro de la página
+    bool ocultarAvisoVerificacion = ViewBag.ocultarAvisoVerificacion ?? false;
+    bool mostrarAvisoVerificacion = idUsuarioSesion != "" && tipoUsuarioSesion != "admin"
+        && Context.Session.GetString("verificado") != "true" && !ocultarAvisoVerificacion;
+    string datosFaltantes = Context.Session.GetString("datosFaltantes") ?? "";
+}
+<body data-tipo-usuario="@tipoUsuarioSesion">
     <a class="saltarContenido" href="#contenido">Saltar al contenido</a>
 
     <!-- ================= HEADER ================= -->
-    @* El header depende del tipo de usuario de la sesión ("tipoUsuario"): sin sesión → invitado. *@
-    @{
-        string tipoUsuarioSesion = Context.Session.GetString("tipoUsuario") ?? "";
-    }
-    @if (tipoUsuarioSesion == "alumno")
-    {
-        <partial name="_encabezadoAlumno" />
-    }
-    else if (tipoUsuarioSesion == "profesor")
-    {
-        <partial name="_encabezadoProfesor" />
-    }
-    else if (tipoUsuarioSesion == "admin")
-    {
-        <partial name="_encabezadoAdmin" />
-    }
-    else
-    {
-        <partial name="_encabezadoInvitado" />
-    }
+    @* Cambia según el tipo de usuario: sin sesión → invitado. En pantallas < lg el menú es un drawer lateral (<dialog>); desde lg queda en línea *@
+    <header class="encabezado" id="encabezado">
+        <nav class="navbar lg:navbar-expand">
+            <div class="container">
+                <a class="marcaLogo" asp-controller="Home" asp-action="Index" aria-label="MiProfesor, ir al inicio">
+                    <img src="~/img/logoChico.png" alt="" width="40" height="40" />
+                    <span>Mi<span>Profesor</span></span>
+                </a>
 
-    <partial name="_avisoVerificacion" />
+                <button class="navbar-toggler" type="button" data-bs-toggle="drawer" data-bs-target="#menuPrincipal"
+                        aria-controls="menuPrincipal" aria-expanded="false" aria-label="Abrir menú">
+                    <span class="navbar-toggler-icon" aria-hidden="true"></span>
+                </button>
+
+                <dialog class="drawer drawer-end" tabindex="-1" id="menuPrincipal" aria-labelledby="tituloMenuPrincipal">
+                    <div class="drawer-header">
+                        <span class="drawer-title" id="tituloMenuPrincipal">Menú</span>
+                        <button type="button" class="btn-close" data-bs-dismiss="drawer" aria-label="Cerrar"></button>
+                    </div>
+
+                    <div class="drawer-body">
+                        <ul class="navbar-nav">
+                            <li class="nav-item">
+                                <a class="nav-link @((controladorActual == "Home" && accionActual == "Index") ? "active" : "")" aria-current="@((controladorActual == "Home" && accionActual == "Index") ? "page" : null)" asp-controller="Home" asp-action="Index">Inicio</a>
+                            </li>
+                            @if (tipoUsuarioSesion != "profesor")
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link @(controladorActual == "Catalogo" ? "active" : "")" aria-current="@(controladorActual == "Catalogo" ? "page" : null)" asp-controller="Catalogo" asp-action="Index">Catálogo</a>
+                                </li>
+                            }
+                            @if (tipoUsuarioSesion == "" || tipoUsuarioSesion == "alumno")
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link @(accionActual == "QuienesSomos" ? "active" : "")" aria-current="@(accionActual == "QuienesSomos" ? "page" : null)" asp-controller="Home" asp-action="QuienesSomos">Quiénes somos</a>
+                                </li>
+                            }
+                            <li class="nav-item">
+                                <a class="nav-link @(accionActual == "Soporte" ? "active" : "")" aria-current="@(accionActual == "Soporte" ? "page" : null)" asp-controller="Home" asp-action="Soporte">Soporte</a>
+                            </li>
+                        </ul>
+
+                        <div class="acciones">
+                            @* Buscador de usuarios: la lupa se agranda y se hace un campo. Los usuarios se piden recién al abrirlo (site.js) *@
+                            <div class="buscadorUsuarios" id="buscadorUsuarios">
+                                <div class="cajaBuscadorUsuarios">
+                                    <button type="button" class="botonLupa" id="botonBuscarUsuarios" aria-label="Buscar usuarios" aria-expanded="false" aria-controls="resultadosUsuarios"><i class="bi bi-search" aria-hidden="true"></i></button>
+                                    <input type="search" id="campoBuscarUsuarios" placeholder="Nombre o ID" autocomplete="off" aria-label="Buscar usuarios por nombre o ID" aria-controls="resultadosUsuarios" />
+                                </div>
+                                <ul class="resultadosUsuarios" id="resultadosUsuarios" hidden></ul>
+                            </div>
+
+                            @if (tipoUsuarioSesion == "")
+                            {
+                                <a class="boton contorno" asp-controller="Sesion" asp-action="IniciarSesion">Iniciar sesión</a>
+                                <a class="boton principal" asp-controller="Sesion" asp-action="Registrarse">Crear cuenta</a>
+                            }
+                            else
+                            {
+                                <a class="boton secundario" asp-controller="Home" asp-action="PanelControl">
+                                    <i class="bi bi-bar-chart-line" aria-hidden="true"></i> Panel de Control
+                                    @* Siempre está en el HTML (oculta si no hay nada): site.js la actualiza con fetch a /Notificaciones/Contar *@
+                                    <span class="badge theme-primary" id="insigniaNotificaciones" aria-label="@cantidadNotificaciones notificaciones" @(cantidadNotificaciones == "0" ? "hidden" : null)>@cantidadNotificaciones</span>
+                                </a>
+
+                                @* Nombre y foto llevan al perfil (ahí está el botón Cerrar sesión) *@
+                                <a class="usuario" asp-controller="Home" asp-action="Perfil" asp-route-id="@idUsuarioSesion" aria-label="Ir a mi perfil">
+                                    @if (fotoPerfil != "")
+                                    {
+                                        <span class="avatar"><img src="@fotoPerfil" alt="Foto de perfil de @nombreUsuario" /></span>
+                                    }
+                                    else
+                                    {
+                                        <span class="avatar theme-primary" aria-hidden="true">@iniciales</span>
+                                    }
+                                    <span class="nombreUsuario">@nombreUsuario</span>
+                                    @if (Context.Session.GetString("verificado") == "true")
+                                    {
+                                        <i class="bi bi-patch-check-fill tickVerificado" title="Cuenta verificada" aria-label="Cuenta verificada"></i>
+                                    }
+                                </a>
+                            }
+                        </div>
+                    </div>
+                </dialog>
+            </div>
+        </nav>
+    </header>
+
+    <!-- ================= AVISO: CUENTA NO VERIFICADA ================= -->
+    @* Estilo Pop up del UI Kit. Se puede cerrar hasta la próxima sesión (site.js lo recuerda en sessionStorage) *@
+    @if (mostrarAvisoVerificacion)
+    {
+        <div class="avisoVerificacion" id="avisoVerificacion" role="status" hidden>
+            <div class="container">
+                <div class="contenidoAviso">
+                    <span class="icono"><i class="bi bi-shield-exclamation" aria-hidden="true"></i></span>
+                    <p>
+                        <strong>Cuenta no verificada.</strong>
+                        @if (datosFaltantes != "")
+                        {
+                            <span>Te falta @datosFaltantes.</span>
+                        }
+                        else
+                        {
+                            <span>Completá tus datos para verificarla.</span>
+                        }
+                    </p>
+                    <a class="boton oscuro chico" asp-controller="Home" asp-action="Perfil" asp-route-id="@idUsuarioSesion" asp-route-editar="true">Completar mis datos</a>
+                    <button class="btn-close" type="button" id="botonCerrarAvisoVerificacion" aria-label="Cerrar aviso"></button>
+                </div>
+            </div>
+        </div>
+    }
 
     <!-- ================= MAIN ================= -->
     <main role="main" id="contenido">
@@ -57,18 +172,155 @@
     </main>
 
     <!-- ================= FOOTER ================= -->
-    <partial name="_piePagina" />
+    <footer class="pie">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-12 md:col-6 lg:col-4">
+                    <a class="marcaLogo" asp-controller="Home" asp-action="Index" aria-label="MiProfesor, ir al inicio">
+                        <img src="~/img/logoChico.png" alt="" width="40" height="40" />
+                        <span>Mi<span>Profesor</span></span>
+                    </a>
+                    <p>
+                        Una plataforma donde cada docente puede compartir su conocimiento y cada alumno encontrar la ayuda que necesita.
+                    </p>
+                    <p class="eslogan">El conocimiento nos conecta.</p>
+                </div>
 
-    @* Pedir clase: el diálogo está en todas las páginas para los alumnos (lo abren los botones [data-pedir-clase]
-       del Catálogo y del Perfil). Para otros usuarios el botón avisa o lleva a Iniciar sesión. *@
+                <div class="col-6 md:col-3 lg:col-2">
+                    <h5>Plataforma</h5>
+                    <ul>
+                        <li><a asp-controller="Catalogo" asp-action="Index">Catálogo</a></li>
+                        <li><a asp-controller="Catalogo" asp-action="Index" asp-route-colegio="Belgrano Day School">Filtro por colegios</a></li>
+                        <li><a asp-controller="Sesion" asp-action="Registrarse">Crear cuenta</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-6 md:col-3 lg:col-2">
+                    <h5>Proyecto</h5>
+                    <ul>
+                        <li><a asp-controller="Home" asp-action="QuienesSomos">Quiénes Somos</a></li>
+                        <li><a asp-controller="Home" asp-action="QuienesSomos" asp-fragment="equipo">Equipo de Desarrollo</a></li>
+                        <li><a class="destacado" asp-controller="Home" asp-action="Soporte">Soporte Técnico</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-12 lg:col-4">
+                    <h5>Desarrollado por</h5>
+                    <ul>
+                        <li><strong>Francisco Martínez</strong> <span>Project Leader</span></li>
+                        <li><strong>Tobias Schatzyki</strong> <span>Database</span></li>
+                        <li><strong>Eitan Ariel Glaz</strong> <span>Front-end</span></li>
+                        <li><strong>Ariel Chocron</strong> <span>Back-end</span></li>
+                    </ul>
+                </div>
+            </div>
+
+            <p class="derechos">
+                © @DateTime.Now.Year MiProfesor (MIP).
+            </p>
+        </div>
+    </footer>
+
+    <!-- ================= DIÁLOGO: PEDIR CLASE ================= -->
+    @* En todas las páginas para los alumnos: lo abren los botones [data-pedir-clase] (data-id-profesor y data-nombre-profesor)
+       del Catálogo y del Perfil. Lo maneja site.js (abrirPedidoDeClase) y lo manda con fetch a /Clases/EnviarPedido.
+       Para otros usuarios el botón avisa o lleva a Iniciar sesión. *@
     @if (tipoUsuarioSesion == "alumno")
     {
-        <partial name="_dialogoPedirClase" />
+        <dialog class="dialog" id="dialogoPedirClase" aria-labelledby="tituloPedirClase">
+            <form id="formularioPedirClase" onsubmit="return enviarPedidoDeClase()" novalidate>
+                @Html.AntiForgeryToken()
+                <div class="dialog-header">
+                    <h2 class="dialog-title" id="tituloPedirClase">Pedir una clase</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="dialog" aria-label="Cerrar"></button>
+                </div>
+
+                <div class="dialog-body">
+                    <p>Elegí cuándo querés tener la clase con <strong id="nombreProfesorPedido"></strong>. Te avisamos apenas responda.</p>
+
+                    @* Selector de día y hora (el mismo que "Cambiar horario" del Panel). Lo arma crearSelectorHorario() (clases.js) *@
+                    <div class="selectorHorario" data-selector-horario>
+                        <p class="resumenAgenda" data-resumen-agenda hidden></p>
+
+                        <div class="form-field">
+                            <label id="pedidoEtiquetaDia">Día</label>
+                            @* data-campo-dia: el contenedor de la tira es el "campo" (recibe el foco si falta elegir el día) *@
+                            <div class="tiraDias" data-campo-dia tabindex="-1" role="group" aria-labelledby="pedidoEtiquetaDia">
+                                <button class="flecha" type="button" data-mover-tira="-1" aria-label="Días anteriores"><i class="bi bi-chevron-left" aria-hidden="true"></i></button>
+                                <div class="dias" data-dias></div>
+                                <button class="flecha" type="button" data-mover-tira="1" aria-label="Días siguientes"><i class="bi bi-chevron-right" aria-hidden="true"></i></button>
+                            </div>
+                        </div>
+
+                        <div class="form-field">
+                            <label id="pedidoEtiquetaHora">Hora de inicio</label>
+                            <div class="franjas" data-franjas role="group" aria-labelledby="pedidoEtiquetaHora" aria-live="polite">
+                                <p class="ayudaFranjas">Elegí primero un día.</p>
+                            </div>
+                            <small>Cada clase dura 60 minutos. Las horas tachadas ya están ocupadas.</small>
+                        </div>
+                    </div>
+
+                    <div class="form-field">
+                        <label for="mensajePedido">Mensaje para el profesor (opcional)</label>
+                        <textarea class="form-control" id="mensajePedido" maxlength="500" rows="2" placeholder="Ej.: Tengo prueba de derivadas"></textarea>
+                        <small>Le llega por el chat junto con el pedido.</small>
+                    </div>
+                    <p class="mensajeError" id="mensajePedirClase" role="alert"></p>
+                </div>
+
+                <div class="dialog-footer">
+                    <button type="button" class="boton contorno chico" data-bs-dismiss="dialog">Cancelar</button>
+                    <button type="submit" class="boton principal chico" id="botonEnviarPedido"><i class="bi bi-send" aria-hidden="true"></i> Enviar pedido</button>
+                </div>
+            </form>
+        </dialog>
     }
-    @* Dar reseña: alumnos y profesores con sesión (la estrella del Perfil y "Dar reseña" del Historial) *@
+
+    <!-- ================= DIÁLOGO: DAR RESEÑA ================= -->
+    @* Alumnos y profesores con sesión. Lo abre cualquier botón [data-dar-resena] (data-id-usuario y data-nombre-usuario):
+       la estrella del Perfil y "Dar reseña" del Historial. Lo maneja site.js (abrirResena / enviarResena) y lo manda con fetch a /Resenas/Dar *@
     @if (tipoUsuarioSesion == "alumno" || tipoUsuarioSesion == "profesor")
     {
-        <partial name="_dialogoDarResena" />
+        <dialog class="dialog" id="dialogoDarResena" aria-labelledby="tituloDarResena">
+            <form id="formularioDarResena" onsubmit="return enviarResena()" novalidate>
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="idReceptor" id="idReceptorResena" />
+                <div class="dialog-header">
+                    <h2 class="dialog-title" id="tituloDarResena">Reseña para <span id="nombreResena"></span></h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="dialog" aria-label="Cerrar"></button>
+                </div>
+
+                <div class="dialog-body">
+                    <fieldset class="estrellasResena">
+                        <legend>¿Cómo fueron las clases?</legend>
+                        <div class="filaEstrellas">
+                            @for (int estrella = 1; estrella <= 5; estrella++)
+                            {
+                                <label>
+                                    <input class="visually-hidden" type="radio" name="puntuacion" value="@estrella" />
+                                    <i class="bi bi-star-fill" aria-hidden="true"></i>
+                                    <span class="visually-hidden">@estrella @(estrella == 1 ? "estrella" : "estrellas")</span>
+                                </label>
+                            }
+                            <span class="textoPuntuacion" id="textoPuntuacion" aria-hidden="true"></span>
+                        </div>
+                    </fieldset>
+
+                    <div class="form-field">
+                        <label for="descripcionResena">Comentario (opcional)</label>
+                        <textarea class="form-control" id="descripcionResena" name="descripcion" maxlength="500" rows="4" placeholder="Contá qué te sirvió y qué se podría mejorar"></textarea>
+                        <small id="contadorResena">0 / 500</small>
+                    </div>
+                    <p class="mensajeError" id="mensajeDarResena" role="alert"></p>
+                </div>
+
+                <div class="dialog-footer">
+                    <button type="button" class="boton contorno chico" data-bs-dismiss="dialog">Cancelar</button>
+                    <button type="submit" class="boton principal chico" id="botonEnviarResena"><i class="bi bi-send" aria-hidden="true"></i> Publicar reseña</button>
+                </div>
+            </form>
+        </dialog>
     }
 
     @* Snackbar del UI Kit: avisos cortos abajo de la pantalla (mostrarSnackbar en site.js) *@

@@ -179,10 +179,66 @@
         else
         {
             <div class="row row-cols-1 md:row-cols-2 lg:row-cols-3 g-3 lg:g-4">
-                @foreach (var profesor in profesoresDestacados)
+                @foreach (Usuario profesor in profesoresDestacados)
                 {
+                    string[] colegios = profesor.colegios?.Split(" · ") ?? new string[0];
+                    string[] materias = profesor.materias?.Split(", ") ?? new string[0];
+                    string nombreCompleto = profesor.nombre + " " + profesor.apellido;
+                    string iniciales = (profesor.nombre.Length > 0 ? profesor.nombre.Substring(0, 1) : "") + (profesor.apellido.Length > 0 ? profesor.apellido.Substring(0, 1) : "");
+                    iniciales = iniciales == "" ? "?" : iniciales.ToUpper();
+                    // La descripción es HTML del editor: en la tarjeta va como texto corto
+                    string resumen = System.Net.WebUtility.HtmlDecode(System.Text.RegularExpressions.Regex.Replace(profesor.descripcion ?? "", "<[^>]*>", " "));
+                    resumen = System.Text.RegularExpressions.Regex.Replace(resumen, @"\s+", " ").Trim();
+                    if (resumen.Length > 140) resumen = resumen.Substring(0, 137).TrimEnd() + "...";
+
                     <div class="col">
-                        <partial name="_tarjetaProfesor" model="profesor" />
+                        <article class="card profesor">
+                            <header>
+                                @if (!string.IsNullOrEmpty(profesor.fotoPerfil))
+                                {
+                                    <span class="avatar"><img src="@profesor.fotoPerfil" alt="Foto de perfil de @nombreCompleto" /></span>
+                                }
+                                else
+                                {
+                                    <span class="avatar theme-primary" aria-hidden="true">@iniciales</span>
+                                }
+                                <div>
+                                    <h3><a asp-controller="Home" asp-action="Perfil" asp-route-id="@profesor.id">@nombreCompleto</a></h3>
+                                    <p><i class="bi bi-building" aria-hidden="true"></i> @(colegios.Length == 0 ? "Sin colegio cargado" : string.Join(" · ", colegios.Take(2)) + (colegios.Length > 2 ? " +" + (colegios.Length - 2) : ""))</p>
+                                </div>
+                                @if (profesor.verificado)
+                                {
+                                    <span class="badge badge-subtle theme-success" title="Credenciales revisadas por el equipo de MIP"><i class="bi bi-patch-check-fill" aria-hidden="true"></i> Verificado</span>
+                                }
+                            </header>
+
+                            <div class="etiquetas">
+                                @for (int posicion = 0; posicion < materias.Length && posicion < 3; posicion++)
+                                {
+                                    <span class="badge @(posicion == 0 ? "theme-accent" : "badge-subtle theme-inverse")">@materias[posicion]</span>
+                                }
+                                @if (materias.Length > 3)
+                                {
+                                    <span class="badge badge-subtle theme-inverse">+@(materias.Length - 3)</span>
+                                }
+                            </div>
+
+                            @if (resumen != "")
+                            {
+                                <p>@resumen</p>
+                            }
+
+                            <ul class="datos">
+                                <li><i class="bi bi-star-fill" aria-hidden="true"></i> @(profesor.cantidadResenas == 0 ? "Sin reseñas" : (profesor.calificacion ?? 0).ToString("0.0")) @if (profesor.cantidadResenas > 0) { <text>(@profesor.cantidadResenas)</text> }</li>
+                                <li><i class="bi bi-laptop" aria-hidden="true"></i> @profesor.modalidades</li>
+                                <li><i class="bi bi-mortarboard" aria-hidden="true"></i> @profesor.niveles</li>
+                            </ul>
+
+                            <footer>
+                                <p><strong>$ @((profesor.precioHora ?? 0).ToString("N0"))</strong> <span>/ hora</span></p>
+                                <a class="boton principal chico" asp-controller="Home" asp-action="Perfil" asp-route-id="@profesor.id">Ver perfil</a>
+                            </footer>
+                        </article>
                     </div>
                 }
             </div>
@@ -208,7 +264,64 @@
                     <p>Las dudas más habituales, resueltas.</p>
                 </div>
 
-                <partial name="_preguntasFrecuentes" />
+                <div class="accordion" id="acordeonPreguntas">
+                    <details class="accordion-item" name="preguntas" open>
+                        <summary class="accordion-header">
+                            ¿Cómo puedo cancelar o reubicar una clase?
+                            <svg class="accordion-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m2 5 6 6 6-6" /></svg>
+                        </summary>
+                        <div class="accordion-body">
+                            Desde tu <strong>Panel de Control</strong>, en <strong>Administrar Clases</strong>, elegí la clase y tocá <em>Cancelar</em> o <em>Reubicar</em>.
+                            Si cancelás con anticipación se cancela automáticamente; si la clase está próxima, se abre un chat directo con el profesor para acordarlo.
+                        </div>
+                    </details>
+                    <details class="accordion-item" name="preguntas">
+                        <summary class="accordion-header">
+                            ¿Cómo encuentro profesores vinculados a mi colegio?
+                            <svg class="accordion-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m2 5 6 6 6-6" /></svg>
+                        </summary>
+                        <div class="accordion-body">
+                            Entrá al <strong>Catálogo</strong> y aplicá el filtro por tu institución educativa.
+                        </div>
+                    </details>
+                    <details class="accordion-item" name="preguntas">
+                        <summary class="accordion-header">
+                            ¿Cómo creo una cuenta como alumno o profesor?
+                            <svg class="accordion-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m2 5 6 6 6-6" /></svg>
+                        </summary>
+                        <div class="accordion-body">
+                            En la pantalla de registro elegí tu rol. <strong>Alumno:</strong> ingresá tu nombre, colegio y nivel.
+                            <strong>Profesor:</strong> cargá tus credenciales, las materias que dictás y los colegios u horarios en los que das clases.
+                        </div>
+                    </details>
+                    <details class="accordion-item" name="preguntas">
+                        <summary class="accordion-header">
+                            ¿Las clases son presenciales o virtuales?
+                            <svg class="accordion-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m2 5 6 6 6-6" /></svg>
+                        </summary>
+                        <div class="accordion-body">
+                            Las dos opciones existen. Cada profesor indica en su perfil si dicta de forma <strong>presencial</strong>, <strong>virtual</strong> o ambas, y en el catálogo podés filtrar por modalidad.
+                        </div>
+                    </details>
+                    <details class="accordion-item" name="preguntas">
+                        <summary class="accordion-header">
+                            ¿Cuánto cuesta una clase?
+                            <svg class="accordion-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m2 5 6 6 6-6" /></svg>
+                        </summary>
+                        <div class="accordion-body">
+                            Cada docente define su precio por hora y lo ves antes de contactarlo. Así podés comparar y elegir según tu presupuesto, sin sorpresas.
+                        </div>
+                    </details>
+                    <details class="accordion-item" name="preguntas">
+                        <summary class="accordion-header">
+                            ¿Cómo sé si un profesor es confiable?
+                            <svg class="accordion-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m2 5 6 6 6-6" /></svg>
+                        </summary>
+                        <div class="accordion-body">
+                            Cada perfil muestra sus materias, su colegio, las reseñas de otros alumnos y la etiqueta <strong>Verificado</strong> cuando el equipo revisó sus credenciales.
+                        </div>
+                    </details>
+                </div>
 
                 <p class="ayudaExtra">
                     ¿No encontraste lo que buscabas? <a asp-controller="Home" asp-action="Soporte">Ir al centro de soporte</a>

@@ -18,7 +18,7 @@ public class ClasesController : Controller
         AgendaProfesor agenda = bd.obtenerDisponibilidad(idProfesor);
         return Json(new
         {
-            tieneAgenda = agenda.tieneAgenda,
+            tieneAgenda = agenda.franjas.Count > 0,
             bloqueado = estaBloqueado(agenda, dia),
             franjas = franjasDelDia(agenda, dia),
             ocupados = bd.obtenerHorariosOcupados(idProfesor, idAlumno, dia, idClaseExcluir ?? 0)
@@ -38,7 +38,7 @@ public class ClasesController : Controller
         {
             dias.Add(new { dia = dia.ToString("yyyy-MM-dd"), bloqueado = estaBloqueado(agenda, dia), franjas = franjasDelDia(agenda, dia) });
         }
-        return Json(new { tieneAgenda = agenda.tieneAgenda, semana = agenda.franjas, dias = dias });
+        return Json(new { tieneAgenda = agenda.franjas.Count > 0, semana = agenda.franjas, dias = dias });
     }
 
     public IActionResult Calendario(DateTime desde, DateTime hasta)

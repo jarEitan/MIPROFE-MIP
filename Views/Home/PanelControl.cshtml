@@ -11,7 +11,13 @@
     List<NotificacionUsuario> acciones = notificaciones.Where(notificacion => notificacion.grupo == "accion").ToList();
     List<NotificacionUsuario> noticias = notificaciones.Where(notificacion => notificacion.grupo == "noticia").ToList();
     int mensajesSinLeer = acciones.Where(notificacion => notificacion.tipo == "mensajesSinLeer").Sum(notificacion => notificacion.cantidad);
-    string nombreUsuario = ((Context.Session.GetString("nombre") ?? "") + " " + (Context.Session.GetString("apellido") ?? "")).Trim();
+    string nombre = Context.Session.GetString("nombre") ?? "";
+    string apellido = Context.Session.GetString("apellido") ?? "";
+    string nombreUsuario = (nombre + " " + apellido).Trim();
+    string fotoPerfil = Context.Session.GetString("fotoPerfil") ?? "";
+    // Sin foto de perfil, el avatar muestra la primera letra del nombre y del apellido
+    string iniciales = (nombre.Length > 0 ? nombre.Substring(0, 1) : "") + (apellido.Length > 0 ? apellido.Substring(0, 1) : "");
+    iniciales = iniciales == "" ? "?" : iniciales.ToUpper();
     bool esProfesor = Context.Session.GetString("tipoUsuario") == "profesor";
     string rolUsuario = esProfesor ? "Profesor" : "Alumno";
 }
@@ -52,7 +58,14 @@
 <section class="bienvenida">
     <div class="container">
         <div class="saludo">
-            <partial name="_avatarUsuario" model='"avatar-xl"' />
+            @if (fotoPerfil != "")
+            {
+                <span class="avatar avatar-xl"><img src="@fotoPerfil" alt="Foto de perfil de @nombreUsuario" /></span>
+            }
+            else
+            {
+                <span class="avatar theme-primary avatar-xl" aria-hidden="true">@iniciales</span>
+            }
             <div class="textoSaludo">
                 <span class="pegatina celeste" style="--giro: 3deg">@rolUsuario</span>
                 <h1>¡Hola, @nombreUsuario!</h1>
@@ -354,7 +367,7 @@
 <!-- ================= DIÁLOGO: CAMBIAR HORARIO ================= -->
 @* Cualquiera de los dos propone otro horario. Una clase pendiente vuelve a Pendiente; una confirmada sigue en su horario
    hasta que la otra persona acepte el nuevo *@
-<dialog class="dialog dialogoClase" id="dialogoReubicarClase" aria-labelledby="tituloReubicarClase">
+<dialog class="dialog" id="dialogoReubicarClase" aria-labelledby="tituloReubicarClase">
     <form id="formularioReubicarClase" onsubmit="return enviarReubicacionDeClase()" novalidate>
         <div class="dialog-header">
             <h2 class="dialog-title" id="tituloReubicarClase">Cambiar el horario</h2>
@@ -363,7 +376,27 @@
         <div class="dialog-body">
             <p class="horarioActual"><i class="bi bi-clock" aria-hidden="true"></i> Horario actual: <strong id="horarioActualReubicar"></strong>, con <strong id="nombreClaseAReubicar"></strong>.</p>
             <p id="textoQuienResponde"></p>
-            <partial name="_selectorHorario" model='"reubicar"' />
+            <div class="selectorHorario" data-selector-horario>
+                <p class="resumenAgenda" data-resumen-agenda hidden></p>
+
+                <div class="form-field">
+                    <label id="reubicarEtiquetaDia">Día</label>
+                    @* data-campo-dia: el contenedor de la tira es el "campo" (recibe el foco si falta elegir el día) *@
+                    <div class="tiraDias" data-campo-dia tabindex="-1" role="group" aria-labelledby="reubicarEtiquetaDia">
+                        <button class="flecha" type="button" data-mover-tira="-1" aria-label="Días anteriores"><i class="bi bi-chevron-left" aria-hidden="true"></i></button>
+                        <div class="dias" data-dias></div>
+                        <button class="flecha" type="button" data-mover-tira="1" aria-label="Días siguientes"><i class="bi bi-chevron-right" aria-hidden="true"></i></button>
+                    </div>
+                </div>
+
+                <div class="form-field">
+                    <label id="reubicarEtiquetaHora">Hora de inicio</label>
+                    <div class="franjas" data-franjas role="group" aria-labelledby="reubicarEtiquetaHora" aria-live="polite">
+                        <p class="ayudaFranjas">Elegí primero un día.</p>
+                    </div>
+                    <small>Cada clase dura 60 minutos. Las horas tachadas ya están ocupadas.</small>
+                </div>
+            </div>
             <div class="form-field">
                 <label for="motivoReubicar">Motivo (opcional)</label>
                 <textarea class="form-control" id="motivoReubicar" maxlength="500" rows="2" placeholder="Le llega por el chat a la otra persona"></textarea>

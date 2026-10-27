@@ -8,10 +8,10 @@
         <h1>¿En qué te podemos ayudar hoy?</h1>
         <p>Buscá tu duda entre las preguntas frecuentes o escribinos: respondemos lo antes posible.</p>
 
-        <form class="buscador" id="formularioAyuda" onsubmit="return false" role="search">
+        <form class="buscador" id="formularioAyuda" onsubmit="return verPreguntasDeAyuda()" role="search">
             <label for="campoAyuda" class="visually-hidden">Buscar en las preguntas frecuentes</label>
             <input type="search" id="campoAyuda" placeholder="Ej: cancelar una clase..." autocomplete="off" />
-            <i class="bi bi-search" aria-hidden="true"></i>
+            <button type="submit" class="botonLupa" aria-label="Ver las preguntas"><i class="bi bi-search" aria-hidden="true"></i></button>
         </form>
         <p class="resultadoAyuda" id="mensajeAyuda" role="status"></p>
     </div>
@@ -59,7 +59,64 @@
                     <p>Pagos, perfiles y dinámica de las clases.</p>
                 </div>
 
-                <partial name="_preguntasFrecuentes" />
+                <div class="accordion" id="acordeonPreguntas">
+                    <details class="accordion-item" name="preguntas" open>
+                        <summary class="accordion-header">
+                            ¿Cómo puedo cancelar o reubicar una clase?
+                            <svg class="accordion-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m2 5 6 6 6-6" /></svg>
+                        </summary>
+                        <div class="accordion-body">
+                            Desde tu <strong>Panel de Control</strong>, en <strong>Administrar Clases</strong>, elegí la clase y tocá <em>Cancelar</em> o <em>Reubicar</em>.
+                            Si cancelás con anticipación se cancela automáticamente; si la clase está próxima, se abre un chat directo con el profesor para acordarlo.
+                        </div>
+                    </details>
+                    <details class="accordion-item" name="preguntas">
+                        <summary class="accordion-header">
+                            ¿Cómo encuentro profesores vinculados a mi colegio?
+                            <svg class="accordion-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m2 5 6 6 6-6" /></svg>
+                        </summary>
+                        <div class="accordion-body">
+                            Entrá al <strong>Catálogo</strong> y aplicá el filtro por tu institución educativa.
+                        </div>
+                    </details>
+                    <details class="accordion-item" name="preguntas">
+                        <summary class="accordion-header">
+                            ¿Cómo creo una cuenta como alumno o profesor?
+                            <svg class="accordion-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m2 5 6 6 6-6" /></svg>
+                        </summary>
+                        <div class="accordion-body">
+                            En la pantalla de registro elegí tu rol. <strong>Alumno:</strong> ingresá tu nombre, colegio y nivel.
+                            <strong>Profesor:</strong> cargá tus credenciales, las materias que dictás y los colegios u horarios en los que das clases.
+                        </div>
+                    </details>
+                    <details class="accordion-item" name="preguntas">
+                        <summary class="accordion-header">
+                            ¿Las clases son presenciales o virtuales?
+                            <svg class="accordion-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m2 5 6 6 6-6" /></svg>
+                        </summary>
+                        <div class="accordion-body">
+                            Las dos opciones existen. Cada profesor indica en su perfil si dicta de forma <strong>presencial</strong>, <strong>virtual</strong> o ambas, y en el catálogo podés filtrar por modalidad.
+                        </div>
+                    </details>
+                    <details class="accordion-item" name="preguntas">
+                        <summary class="accordion-header">
+                            ¿Cuánto cuesta una clase?
+                            <svg class="accordion-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m2 5 6 6 6-6" /></svg>
+                        </summary>
+                        <div class="accordion-body">
+                            Cada docente define su precio por hora y lo ves antes de contactarlo. Así podés comparar y elegir según tu presupuesto, sin sorpresas.
+                        </div>
+                    </details>
+                    <details class="accordion-item" name="preguntas">
+                        <summary class="accordion-header">
+                            ¿Cómo sé si un profesor es confiable?
+                            <svg class="accordion-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m2 5 6 6 6-6" /></svg>
+                        </summary>
+                        <div class="accordion-body">
+                            Cada perfil muestra sus materias, su colegio, las reseñas de otros alumnos y la etiqueta <strong>Verificado</strong> cuando el equipo revisó sus credenciales.
+                        </div>
+                    </details>
+                </div>
 
                 <p class="ayudaExtra" id="sinCoincidencias" hidden>
                     No hay preguntas que coincidan con tu búsqueda. Probá con otras palabras o <a href="#seccionContacto">escribinos</a>.

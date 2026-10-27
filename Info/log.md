@@ -18,7 +18,7 @@ Diseño: [Figma](https://www.figma.com/design/HDhfuOx62CKtV0MSiQWDl4/MIP), [Miro
 |---|---|
 | Framework | ASP.NET Core MVC **.NET 9** (namespace `MIP_MIPROFESOR`), Razor |
 | CSS | **Bootstrap 6.0.0-alpha.1** local + un solo `wwwroot/css/site.css` |
-| JS | Vanilla: `site.js` (todas las páginas), `clases.js` (todas), `catalogo.js`, `historial.js`, `chat.js`, `calendario.js` y `miAgenda.js` (solo donde se usan). Bootstrap como **módulo ES**; sin jQuery (si una vista usa `_ValidationScriptsPartial`, cargarlo en su `@section Scripts`) |
+| JS | Vanilla: `site.js` (todas las páginas), `clases.js` (todas), `catalogo.js`, `historial.js`, `chat.js`, `calendario.js` y `miAgenda.js` (solo donde se usan). Bootstrap como **módulo ES**; sin jQuery (sin validación de jQuery) |
 | Libs locales (`wwwroot/lib`) | Bootstrap Icons 1.11.3 (`<i class="bi bi-x" aria-hidden="true">`), Quill 2 (Sobre mí), Cropper.js 1.6.2 (foto) |
 | Fuentes (`wwwroot/fonts`) | Eras Bold ITC (`--fuenteTitulos`), Fredoka (`--fuenteMarca`), Plus Jakarta Sans (`--fuenteTexto`) |
 | BD | SQL Server 2017 + Dapper + Microsoft.Data.SqlClient. `01_estructura` tiene escrita fija la ruta del `.mdf` de `MSSQL14`: con otra versión hay que cambiarla. **Todo por stored procedures**, desde `Models/BD.cs` (login y registro en `BDsesion.cs`). Lo ya refactorizado los llama con `EXEC`; el resto todavía usa `CommandType.StoredProcedure` (ver [progreso.md](progreso.md)). Tres scripts en `MIP_Estructuras/`, en UTF-16: `01_estructura`, `02_stored_procedures` y `03_datos_prueba` |
@@ -54,8 +54,7 @@ Las contraseñas se guardan en texto plano a propósito, porque es un TP de la e
 
 ```
 Controllers/   Home (Index, Soporte, QuienesSomos, PanelControl, Perfil, Privacy), Sesion (IniciarSesion, Registrarse, CerrarSesion) + uno por función con fetch
-Views/Shared/  _Layout, _encabezadoInvitado/Alumno/Profesor/Admin, _piePagina, _marcaLogo, _avatarUsuario, _tarjetaProfesor,
-               _preguntasFrecuentes, _avisoVerificacion, _dialogoPedirClase, _selectorHorario, _dialogoDarResena
+Views/Shared/  _Layout (header, aviso de verificación, footer y diálogos "Pedir clase" y "Dar reseña"; sin partials)
 Views/Home/    Index (landing), PanelControl, Perfil, Soporte, QuienesSomos, Privacy ·  Views/Catalogo/Index ·  Views/Sesion/
 wwwroot/userData/fotos-perfil/, dni/   Archivos de usuarios (ignorados por git salvo .gitkeep). /userData/dni da 404 siempre
 wwwroot/img/   logo.png y logoChico.png (vistas, favicon, og:image)
@@ -75,7 +74,7 @@ Landing (`Index`): `.portada`, `.cinta`, `.pasos` (`#seccionComoFunciona`), `.pe
   - `enviarAmistad` manda la solicitud, o la acepta si el otro ya había mandado una.
   - `quitarAmistad` cancela la solicitud propia o deja de ser amigo.
   - Desde la notificación se acepta (`aceptarAmistad`) o se rechaza (`rechazarAmistad`, borra la fila). El catálogo con sesión ordena primero por amigos que completaron clase (`amigosRecomiendan`). No hay seguidores: los Me gusta cumplen ese papel.
-- **Verificación**: `faltantesVerificacion` recalcula `Usuarios.verificado` al guardar el perfil; aviso `_avisoVerificacion` en todas las páginas.
+- **Verificación**: `faltantesVerificacion` recalcula `Usuarios.verificado` al guardar el perfil; aviso de cuenta no verificada en `_Layout` (todas las páginas).
 - **Fotos**: el navegador recorta (Cropper) y sube WEBP 256×256; el servidor valida (≤5 MB, imagen), recorta al centro, re-encoda WEBP y borra la anterior. El DNI nunca es accesible por URL.
 - **Chat**: se actualiza cada 10 s solo con la pestaña visible (leer marca `Visto`). Entrada directa: `/Home/PanelControl?tab=chat&chat=ID`.
 
@@ -96,7 +95,7 @@ En todos, `0` = salió bien y en esa misma fila vienen los datos.
 | `darResena` | No tuvieron ninguna clase completada | Ya le dejaste una reseña | — |
 | `obtenerHistorialClases` | El usuario no existe | — | — |
 | `obtenerPerfil` | No es de ningún alumno ni profesor | — | — |
-| `guardarPerfilCompleto` | El mail lo usa otra cuenta | El DNI lo usa otra cuenta | Datos inválidos (largos, formatos, un solo colegio y nivel para el alumno, año de cada colegio para el profesor). `4` = foto inválida, lo revisa `PerfilesController` |
+| `guardarPerfilCompleto` | El mail lo usa otra cuenta | El DNI lo usa otra cuenta | Datos inválidos (largos, formatos, un solo colegio y nivel para el alumno, hasta 10 materias y 5 colegios para el profesor, y el año de cada colegio desde que cumplió 16). `4` = foto inválida, lo revisa `PerfilesController` |
 | `guardarDisponibilidad` | No sos profesor | Alguna franja no sirve | — |
 | `bloquearDia` | No sos profesor | El día ya pasó o falta más de un año | Ya estaba bloqueado |
 
@@ -110,7 +109,7 @@ Clases: en todas las acciones sobre una clase, `1` = no es tu clase o no te toca
 
 `rechazarPedidoClase`, `cancelarClase`, `rechazarSolicitudClase`, `retirarSolicitudClase` y `marcarClaseNoConcretada` solo usan `1` y `2` (en `marcarClaseNoConcretada`, `2` = pasaron más de 48 h). `cancelarClase` y `reubicarClase` devuelven también `estado`: `Pide cancelar` o `Pide cambio` cuando la otra persona tiene que aceptar.
 
-Los que solo leen datos no devuelven código: `obtenerLike`, `alternarLike` (los dos devuelven `cantidadLikes` y `leGusta`), `obtenerAmistad`, `obtenerAmigos`, `obtenerConversaciones`, `obtenerNotificaciones`, `contarNotificaciones`, `obtenerCatalogo`, `obtenerOpcionesPerfil`, `obtenerDatosEdicion`, `obtenerCalendarioClases`, `obtenerContadoresClases`, `obtenerHorariosOcupados` y `obtenerDisponibilidad`. `desbloquearDia` no devuelve nada.
+Los que solo leen datos no devuelven código: `buscarUsuarios` (buscador del header: por nombre o ID, de a 20), `obtenerLike`, `alternarLike` (los dos devuelven `cantidadLikes` y `leGusta`), `obtenerAmistad`, `obtenerAmigos`, `obtenerConversaciones`, `obtenerNotificaciones`, `contarNotificaciones`, `obtenerCatalogo`, `obtenerOpcionesPerfil`, `obtenerDatosEdicion`, `obtenerCalendarioClases`, `obtenerContadoresClases`, `obtenerHorariosOcupados` y `obtenerDisponibilidad`. `desbloquearDia` no devuelve nada.
 
 ## 7. Pendientes
 

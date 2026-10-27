@@ -95,7 +95,7 @@
                     {
                         @* Botones sociales: salen de las tablas Amigos, Mensajes, Likes y Resenas. Sin sesión llevan a Iniciar sesión.
                            Mensaje abre el chat con esta persona en el Panel de Control (chat.js). Agregar amigo cambia según cómo
-                           estén los dos (AmigosController) y la estrella abre "Dar reseña" (_dialogoDarResena, ResenasController). *@
+                           estén los dos (AmigosController) y la estrella abre "Dar reseña" (diálogo en _Layout, ResenasController). *@
                         <button class="boton principal" type="button" data-pedir-clase data-id-profesor="@idPerfil" data-nombre-profesor="" data-solo-profesor hidden>
                             <i class="bi bi-calendar-plus" aria-hidden="true"></i> Pedir clase
                         </button>
@@ -161,7 +161,7 @@
 
 <!-- ================= MODAL: AMIGOS (Dialog de Bootstrap 6) ================= -->
 @* Lo abre la cifra "amigos" del perfil. site.js pide la lista a /Amigos/Lista/{id}. *@
-<dialog class="dialog dialogoAmigos" id="dialogoAmigos" aria-labelledby="tituloAmigos">
+<dialog class="dialog" id="dialogoAmigos" aria-labelledby="tituloAmigos">
     <div class="dialog-header">
         <h2 class="dialog-title" id="tituloAmigos">Amigos de <span id="nombreAmigos"></span></h2>
         <button type="button" class="btn-close" data-bs-dismiss="dialog" aria-label="Cerrar"></button>
@@ -196,7 +196,7 @@
 <!-- ================= MODAL: HISTORIAL DE CLASES (Dialog de Bootstrap 6) ================= -->
 @* Lo abre #botonHistorial. historial.js pide las últimas 20 clases a /Historial/Obtener/{id} y dibuja la misma tabla del
    Panel de Control. En el perfil de otro solo se ven las clases completadas; en el propio, todas las del historial. *@
-<dialog class="dialog dialogoHistorial" id="dialogoHistorial" aria-labelledby="tituloHistorial">
+<dialog class="dialog" id="dialogoHistorial" aria-labelledby="tituloHistorial">
     <div class="dialog-header">
         <h2 class="dialog-title" id="tituloHistorial">Historial de <span id="nombreHistorial"></span></h2>
         <button type="button" class="btn-close" data-bs-dismiss="dialog" aria-label="Cerrar"></button>
@@ -216,7 +216,7 @@
     <!-- ================= MODAL: EDITAR PERFIL (Dialog de Bootstrap 6) ================= -->
     @* Dos pestañas y un solo botón Guardar: todo se guarda junto con el SP guardarPerfilCompleto.
        Las opciones (materias, niveles, modalidades, colegios) y los datos llegan por fetch al abrirlo. *@
-    <dialog class="dialog dialogoEdicion" id="dialogoEditarPerfil" aria-labelledby="tituloEditarPerfil">
+    <dialog class="dialog" id="dialogoEditarPerfil" aria-labelledby="tituloEditarPerfil">
         <form id="formularioEditarPerfil" method="post" asp-controller="Perfiles" asp-action="GuardarPerfil" enctype="multipart/form-data" onsubmit="return guardarPerfil()" novalidate>
             <div class="dialog-header">
                 <h2 class="dialog-title" id="tituloEditarPerfil">Editar perfil</h2>
@@ -252,7 +252,7 @@
                             <div class="form-field">
                                 <label for="edicionEscuelas">@(esProfesor ? "Colegios en los que das clase" : "Tu colegio")</label>
                                 <select class="form-control" id="edicionEscuelas" data-buscable data-nombre-ids="idsEscuelas"
-                                        data-placeholder="@(esProfesor ? "Buscá y elegí colegios" : "Buscá tu colegio")" multiple="@(esProfesor ? "multiple" : null)"></select>
+                                        data-placeholder="@(esProfesor ? "Buscá y elegí hasta 5 colegios" : "Buscá tu colegio")" multiple="@(esProfesor ? "multiple" : null)"></select>
                                 @if (esProfesor)
                                 {
                                     @* Un campo de año por cada colegio elegido (site.js, dibujarAniosDeEscuelas) *@
@@ -273,7 +273,7 @@
                             {
                                 <div class="form-field">
                                     <label for="edicionMaterias">Materias que enseñás</label>
-                                    <select class="form-control" id="edicionMaterias" data-buscable data-nombre-ids="idsMaterias" data-placeholder="Buscá y elegí materias" multiple></select>
+                                    <select class="form-control" id="edicionMaterias" data-buscable data-nombre-ids="idsMaterias" data-placeholder="Buscá y elegí hasta 10 materias" multiple></select>
                                 </div>
 
                                 <div class="form-field">
@@ -363,24 +363,26 @@
     <!-- ================= MODAL: RECORTAR FOTO DE PERFIL (Dialog de Bootstrap 6 + Cropper.js) ================= -->
     @* Se abre arriba de "Editar perfil" al elegir una foto. El recorte se hace en el navegador (WEBP 256x256)
        y se sube recién al tocar "Guardar" en "Editar perfil". *@
-    <dialog class="dialog dialogoRecorte" id="dialogoRecortarFoto" aria-labelledby="tituloRecortarFoto">
+    <dialog class="dialog" id="dialogoRecortarFoto" aria-labelledby="tituloRecortarFoto">
         <div class="dialog-header">
             <h2 class="dialog-title" id="tituloRecortarFoto">Ajustá tu foto</h2>
             <button type="button" class="btn-close" data-bs-dismiss="dialog" aria-label="Cerrar"></button>
         </div>
         <div class="dialog-body">
-            <div class="areaRecorte">
-                <img id="imagenRecorte" alt="Foto elegida para recortar" />
-            </div>
-            <div class="controlesRecorte">
-                <div class="vistaPreviaRecorte" id="vistaPreviaRecorte" aria-hidden="true"></div>
-                <p>Mové el recuadro o la foto y usá la rueda del mouse (o dos dedos) para acercar.</p>
-                <div class="botonesRecorte" role="group" aria-label="Ajustes de la foto">
-                    <button type="button" class="boton contorno chico" data-recorte="acercar" aria-label="Acercar"><i class="bi bi-zoom-in" aria-hidden="true"></i></button>
-                    <button type="button" class="boton contorno chico" data-recorte="alejar" aria-label="Alejar"><i class="bi bi-zoom-out" aria-hidden="true"></i></button>
-                    <button type="button" class="boton contorno chico" data-recorte="girarIzquierda" aria-label="Girar a la izquierda"><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i></button>
-                    <button type="button" class="boton contorno chico" data-recorte="girarDerecha" aria-label="Girar a la derecha"><i class="bi bi-arrow-clockwise" aria-hidden="true"></i></button>
-                    <button type="button" class="boton contorno chico" data-recorte="reiniciar" aria-label="Volver a empezar"><i class="bi bi-arrow-repeat" aria-hidden="true"></i></button>
+            <div class="contenidoRecorte">
+                <div class="areaRecorte">
+                    <img id="imagenRecorte" alt="Foto elegida para recortar" />
+                </div>
+                <div class="controlesRecorte">
+                    <div class="vistaPreviaRecorte" id="vistaPreviaRecorte" aria-hidden="true"></div>
+                    <p>Mové el recuadro o la foto y usá la rueda del mouse (o dos dedos) para acercar.</p>
+                    <div class="botonesRecorte" role="group" aria-label="Ajustes de la foto">
+                        <button type="button" class="boton contorno chico" data-recorte="acercar" aria-label="Acercar"><i class="bi bi-zoom-in" aria-hidden="true"></i></button>
+                        <button type="button" class="boton contorno chico" data-recorte="alejar" aria-label="Alejar"><i class="bi bi-zoom-out" aria-hidden="true"></i></button>
+                        <button type="button" class="boton contorno chico" data-recorte="girarIzquierda" aria-label="Girar a la izquierda"><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i></button>
+                        <button type="button" class="boton contorno chico" data-recorte="girarDerecha" aria-label="Girar a la derecha"><i class="bi bi-arrow-clockwise" aria-hidden="true"></i></button>
+                        <button type="button" class="boton contorno chico" data-recorte="reiniciar" aria-label="Volver a empezar"><i class="bi bi-arrow-repeat" aria-hidden="true"></i></button>
+                    </div>
                 </div>
             </div>
         </div>

@@ -76,7 +76,6 @@ public class AgendaProfesor
 {
     public List<FranjaSemanal> franjas { get; set; } = new List<FranjaSemanal>();
     public List<DiaBloqueado> diasBloqueados { get; set; } = new List<DiaBloqueado>();
-    public bool tieneAgenda => franjas.Count > 0;
 }
 
 // codigo (bloquearDia): 0 = ok, 1 = no sos profesor, 2 = el día ya pasó o falta más de un año, 3 = ya estaba bloqueado

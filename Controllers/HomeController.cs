@@ -53,7 +53,7 @@ public class HomeController : Controller
         ViewBag.contadores = bd.obtenerContadoresClases(int.Parse(idUsuario));
         HttpContext.Session.SetString("cantidadNotificaciones", notificaciones.Count(notificacion => notificacion.grupo == "accion").ToString());
         // Un profesor sin franjas semanales todavía no configuró su agenda (aviso arriba del Panel)
-        ViewBag.sinAgenda = HttpContext.Session.GetString("tipoUsuario") == "profesor" && !bd.obtenerDisponibilidad(int.Parse(idUsuario)).tieneAgenda;
+        ViewBag.sinAgenda = HttpContext.Session.GetString("tipoUsuario") == "profesor" && bd.obtenerDisponibilidad(int.Parse(idUsuario)).franjas.Count == 0;
         return View();
     }
 
