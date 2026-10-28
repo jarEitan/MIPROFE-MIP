@@ -550,7 +550,6 @@ const anioMinimoEscuela = 1950;
 // Lo mismo que revisa el SP guardarPerfilCompleto (código 3)
 const materiasMaximas = 10;
 const colegiosMaximos = 5;
-const edadMinimaParaEnsenar = 16;
 
 let editorDescripcion = null;
 let opcionesPerfilCargadas = null;
@@ -1117,6 +1116,7 @@ function inicializarEdicionPerfil() {
 
     document.querySelectorAll("[data-abrir-edicion]").forEach(boton => boton.addEventListener("click", cargarDatosEdicion));
     document.getElementById("edicionEscuelas").addEventListener("change", dibujarAniosDeEscuelas);
+    document.getElementById("edicionFechaNacimiento").addEventListener("change", dibujarAniosDeEscuelas);
     inicializarEditorDescripcion();
     inicializarFotosEdicion();
     inicializarTitulosEdicion();
@@ -1160,7 +1160,6 @@ function completarFormularioEdicion(opciones, datos) {
     const escuelas = datos.idsEscuelas ? datos.idsEscuelas.split(",") : [];
     aniosDeEscuelas = Object.fromEntries(escuelas.map(escuela => [parseInt(escuela), escuela.split(":")[1] ?? ""]));
     llenarSelectDeOpciones(campo("edicionEscuelas"), opciones.escuelas, ids(datos.idsEscuelas));
-    dibujarAniosDeEscuelas();
     llenarSelectDeOpciones(campo("edicionNiveles"), opciones.niveles, ids(datos.idsNiveles));
     llenarSelectDeOpciones(campo("edicionMaterias"), opciones.materias, ids(datos.idsMaterias));
     llenarSelectDeOpciones(campo("edicionModalidades"), opciones.modalidades, ids(datos.idsModalidades));
@@ -1175,6 +1174,8 @@ function completarFormularioEdicion(opciones, datos) {
     campo("edicionApellido").value = datos.apellido;
     campo("edicionMail").value = datos.mail;
     campo("edicionFechaNacimiento").value = datos.fechaNacimiento ? datos.fechaNacimiento.slice(0, 10) : "";
+    // Los años de los colegios arrancan en el de nacimiento: se dibujan después de cargarlo
+    dibujarAniosDeEscuelas();
     campo("edicionDni").value = datos.dni || "";
     campo("edicionDireccion").value = datos.direccion || "";
     campo("edicionFotoPerfil").value = "";
@@ -1203,27 +1204,32 @@ function llenarSelectDeOpciones(select, opciones, idsElegidos) {
     crearSelectorBuscable(select);
 }
 
-// Profesores: por cada colegio elegido se pregunta desde qué año da clase ahí (solo el año). Se redibuja cada
-// vez que cambian los colegios; lo escrito queda en aniosDeEscuelas para no perderlo al agregar o quitar otro.
+// Se puede dar clase en un colegio desde el año en que naciste (sin fecha de nacimiento, desde 1950)
+function primerAnioParaEnsenar() {
+    const anioNacimiento = Number(document.getElementById("edicionFechaNacimiento").value.slice(0, 4));
+    return anioNacimiento >= 1900 ? anioNacimiento : anioMinimoEscuela;
+}
+
+// Profesores: por cada colegio elegido se elige desde qué año da clase ahí (solo el año). Se redibuja cada
+// vez que cambian los colegios o la fecha de nacimiento; lo elegido queda en aniosDeEscuelas para no perderlo.
 function dibujarAniosDeEscuelas() {
     const contenedorAnios = document.getElementById("aniosEscuelas");
     if (!contenedorAnios) return;
 
+    const anioActual = new Date().getFullYear();
+    const primerAnio = primerAnioParaEnsenar();
     const escuelasElegidas = Array.from(document.getElementById("edicionEscuelas").selectedOptions).filter(opcion => opcion.value !== "");
     contenedorAnios.hidden = escuelasElegidas.length === 0;
     document.getElementById("listaAniosEscuelas").replaceChildren(...escuelasElegidas.map(opcion => {
-        const campoAnio = document.createElement("input");
-        campoAnio.type = "number";
+        // Del más nuevo al más viejo; si el año guardado quedó fuera del rango, queda sin elegir
+        const campoAnio = document.createElement("select");
         campoAnio.className = "form-control";
         campoAnio.id = `anioEscuela${opcion.value}`;
-        campoAnio.min = anioMinimoEscuela;
-        campoAnio.max = new Date().getFullYear();
-        campoAnio.step = 1;
-        campoAnio.inputMode = "numeric";
-        campoAnio.placeholder = "Ej: 2018";
+        campoAnio.append(new Option("Año", ""));
+        for (let anio = anioActual; anio >= primerAnio; anio--) campoAnio.append(new Option(anio, anio));
         campoAnio.value = aniosDeEscuelas[opcion.value] ?? "";
         campoAnio.dataset.nombreEscuela = opcion.textContent;
-        campoAnio.addEventListener("input", () => { aniosDeEscuelas[opcion.value] = campoAnio.value; });
+        campoAnio.addEventListener("change", () => { aniosDeEscuelas[opcion.value] = campoAnio.value; });
 
         const etiquetaAnio = crearElemento("label", "", opcion.textContent);
         etiquetaAnio.htmlFor = campoAnio.id;
@@ -1489,14 +1495,12 @@ function guardarPerfil() {
     if (campo("edicionEscuelas").multiple && campo("edicionEscuelas").selectedOptions.length > colegiosMaximos) {
         return errorEnCampoDeEdicion(campo("edicionEscuelas"), `Podés elegir hasta ${colegiosMaximos} colegios.`);
     }
-    // Se puede dar clase en un colegio desde el año en que cumpliste 16 (sin fecha de nacimiento, desde 1950)
+    // Cada año va desde el de nacimiento (sin fecha de nacimiento, desde 1950) hasta el actual
     const anioActual = new Date().getFullYear();
-    const fechaNacimiento = campo("edicionFechaNacimiento").value;
-    const anioDesde = fechaNacimiento === "" ? anioMinimoEscuela : Number(fechaNacimiento.slice(0, 4)) + edadMinimaParaEnsenar;
-    for (const campoAnio of document.querySelectorAll("#listaAniosEscuelas input")) {
+    const anioDesde = primerAnioParaEnsenar();
+    for (const campoAnio of document.querySelectorAll("#listaAniosEscuelas select")) {
         const anio = Number(campoAnio.value);
-        if (campoAnio.value === "") return errorEnCampoDeEdicion(campoAnio, `Escribí desde qué año das clase en ${campoAnio.dataset.nombreEscuela}.`);
-        if (anioDesde > anioActual) return errorEnCampoDeEdicion(campoAnio, `Para dar clase en un colegio tenés que tener al menos ${edadMinimaParaEnsenar} años.`);
+        if (campoAnio.value === "") return errorEnCampoDeEdicion(campoAnio, `Elegí desde qué año das clase en ${campoAnio.dataset.nombreEscuela}.`);
         if (!Number.isInteger(anio) || anio < anioDesde || anio > anioActual) return errorEnCampoDeEdicion(campoAnio, `El año de ${campoAnio.dataset.nombreEscuela} tiene que estar entre ${anioDesde} y ${anioActual}.`);
     }
 

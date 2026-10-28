@@ -95,7 +95,7 @@ En todos, `0` = salió bien y en esa misma fila vienen los datos.
 | `darResena` | No tuvieron ninguna clase completada | Ya le dejaste una reseña | — |
 | `obtenerHistorialClases` | El usuario no existe | — | — |
 | `obtenerPerfil` | No es de ningún alumno ni profesor | — | — |
-| `guardarPerfilCompleto` | El mail lo usa otra cuenta | El DNI lo usa otra cuenta | Datos inválidos (largos, formatos, un solo colegio y nivel para el alumno, hasta 10 materias y 5 colegios para el profesor, y el año de cada colegio desde que cumplió 16). `4` = foto inválida, lo revisa `PerfilesController` |
+| `guardarPerfilCompleto` | El mail lo usa otra cuenta | El DNI lo usa otra cuenta | Datos inválidos (largos, formatos, un solo colegio y nivel para el alumno, hasta 10 materias y 5 colegios para el profesor, y el año de cada colegio desde el de nacimiento). `4` = foto inválida, lo revisa `PerfilesController` |
 | `guardarDisponibilidad` | No sos profesor | Alguna franja no sirve | — |
 | `bloquearDia` | No sos profesor | El día ya pasó o falta más de un año | Ya estaba bloqueado |
 

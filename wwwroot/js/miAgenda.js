@@ -79,7 +79,7 @@ function crearFilaDeFranja(nombreDia, franja, posicion) {
     const icono = crearElemento("i", "bi bi-trash");
     icono.setAttribute("aria-hidden", "true");
     quitar.append(icono);
-    const error = crearElemento("small", "mensajeError");
+    const error = crearElemento("p", "mensajeError");
     error.setAttribute("role", "alert");
 
     const selectores = crearElemento("div", "selectoresDeFranja");
@@ -105,7 +105,7 @@ function validarAgenda() {
     const dias = leerDiasDeLaPantalla();
     const mensajeGeneral = document.getElementById("mensajeAgenda");
     let primerError = null;
-    document.querySelectorAll("#listaDiasAgenda .franjaDeAgenda small").forEach(error => { error.textContent = ""; });
+    document.querySelectorAll("#listaDiasAgenda .franjaDeAgenda .mensajeError").forEach(error => { error.textContent = ""; });
     mostrarMensaje(mensajeGeneral, "");
 
     dias.forEach((dia, indice) => {
@@ -118,7 +118,7 @@ function validarAgenda() {
             else if (rango.hasta - rango.desde < duracionMinimaDeFranja) error = "Cada franja tiene que ser de al menos 60 minutos.";
             else if (rangos.some(otro => otro.posicion < rango.posicion && otro.desde <= rango.hasta && rango.desde <= otro.hasta)) error = "Las franjas de un mismo día no se pueden tocar ni superponer.";
             if (error) {
-                filas[rango.posicion].querySelector("small").textContent = error;
+                mostrarMensaje(filas[rango.posicion].querySelector(".mensajeError"), error);
                 primerError = primerError || filas[rango.posicion].querySelector("select");
             }
         });

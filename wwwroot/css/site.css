@@ -905,7 +905,8 @@ mark {
     align-self: flex-start;
 }
 
-.card p {
+/* Los mensajes de error se ven igual en todos lados (ver .mensajeError) */
+.card p:not(.mensajeError) {
     font-size: .92rem;
     color: var(--colorTextoSuave);
 }
@@ -1125,16 +1126,17 @@ fieldset {
     gap: .6rem;
 }
 
-/* Mensajes de validación: se ven solo cuando el JS les escribe un texto (blanco sobre magenta, 5,1:1) */
+/* Mensajes de validación: siempre <p class="mensajeError" role="alert">. Se ven solo cuando el JS les escribe
+   un texto (blanco sobre magenta, 5,1:1); el texto va a la izquierda aunque el contenedor esté centrado */
 .mensajeError {
     margin-top: .75rem;
     padding: .6rem 1rem;
-    border: 0;
     border-radius: var(--radioChico);
     background-color: var(--colorMagenta);
     color: #fff;
     font-size: .875rem;
     font-weight: 600;
+    text-align: start;
     animation: sacudirError .4s var(--curvaSuave);
 }
 
@@ -3936,7 +3938,7 @@ tr.resaltada td {
     font-size: 1.15rem;
 }
 
-.miAgenda .card > p {
+.miAgenda .card > p:not(.mensajeError) {
     font-size: .9rem;
     color: var(--colorTextoSuave);
 }
