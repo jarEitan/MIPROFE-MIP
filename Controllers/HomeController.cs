@@ -62,4 +62,10 @@ public class HomeController : Controller
     {
         return View();
     }
+
+    // La muestra Program.cs (UseStatusCodePagesWithReExecute) cuando la URL no existe
+    public IActionResult NoEncontrado()
+    {
+        return View();
+    }
 }

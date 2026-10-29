@@ -62,7 +62,7 @@ function rangoDeLaGrilla(mes) {
     return { inicio, fin };
 }
 
-// Carga completa: la grilla del mes que se ve + una semana atrás y 90 días adelante (para "Requiere tu acción" y las
+// Carga completa: la grilla del mes que se ve + una semana atrás y 90 días adelante (para "Requieren tu atención" y las
 // novedades). Reemplaza todo lo que había. Devuelve una promesa.
 function cargarCalendario() {
     if (!document.getElementById("misClases")) return Promise.resolve();
@@ -200,7 +200,8 @@ function dibujarMes() {
     document.getElementById("diasMes").replaceChildren(...dias);
 }
 
-// "Clases que requieren tu acción": de todo el calendario, las más próximas primero. Sin ninguna no se muestra.
+// "Clases que requieren tu atención": de todo el calendario, las más próximas primero. Sin ninguna no se muestra.
+// Solo avisan: qué hay que hacer lo dice la tarjeta de la clase
 function dibujarRequiereAccion() {
     const seccion = document.getElementById("clasesRequierenAccion");
     const lista = document.getElementById("listaRequiereAccion");
@@ -213,27 +214,33 @@ function dibujarRequiereAccion() {
     lista.replaceChildren(...pendientes.map(clase => {
         const item = crearElemento("li", "pedidoPendiente");
         marcarComoClase(item, clase);
-        const texto = crearElemento("div", "textoPedido");
+        const texto = crearElemento("p", "textoPedido");
         texto.append(
-            crearElemento("strong", "", textoFechaCorta(leerFechaLocal(clase.fecha))),
-            ` · ${nombreCompleto(clase)} (${clase.miRol === "alumno" ? "Profesor" : "Alumno"})`,
-            crearElemento("span", "", textoDePedido(clase))
+            "Tu clase con ",
+            crearElemento("strong", "", nombreCompleto(clase)),
+            " del ",
+            crearElemento("strong", "", textoDiaLargo(leerFechaLocal(clase.fecha)).toLowerCase()),
+            " necesita de tu atención."
         );
-        const botones = crearElemento("div", "botonesClase");
-        botonesDeAccion(clase).forEach(boton => botones.append(boton));
-        botones.append(crearBotonDeClase("verDia", "contorno", "bi-calendar-event", "Ver en el calendario"));
-        item.append(texto, botones);
+        item.append(texto, crearBotonDeClase("irAClase", "principal", "bi-calendar-event", "Ir a la clase"));
         return item;
     }));
 }
 
-// Qué se le pide a la persona (para la lista de arriba y el detalle de la agenda)
+// Qué pasa con la clase, en su tarjeta: lo que pidió el otro o lo que pediste vos
 function textoDePedido(clase) {
+    const meToca = clase.esperaA === "yo";
+    const cambio = clase.fechaPropuesta ? `del ${textoFechaCorta(leerFechaLocal(clase.fecha))} al ${textoFechaCorta(leerFechaLocal(clase.fechaPropuesta))}` : "";
     switch (clase.estado) {
-        case "Pendiente": return clase.miRol === "alumno" ? "Te proponen este horario." : "Te piden esta clase.";
-        case "Rechazada": return "No aceptaron el horario: proponé otro o cancelá la clase.";
-        case "Pide cambio": return `Piden pasarla a ${textoFechaCorta(leerFechaLocal(clase.fechaPropuesta))}.`;
-        case "Pide cancelar": return "Piden cancelar la clase.";
+        case "Pendiente":
+            if (cambio) return meToca ? `${clase.nombreOtro} propone cambiar la clase ${cambio}.` : `Propusiste cambiar la clase ${cambio}. Esperando que responda ${clase.nombreOtro}.`;
+            return meToca ? `${clase.nombreOtro} te pidió esta clase.` : `Pediste esta clase. Esperando que responda ${clase.nombreOtro}.`;
+        case "Rechazada":
+            return meToca ? `${clase.nombreOtro} no aceptó el horario: proponé otro o cancelá la clase.` : `Rechazaste este horario. Esperando que ${clase.nombreOtro} proponga otro o cancele.`;
+        case "Pide cambio":
+            return meToca ? `${clase.nombreOtro} pidió cambiar la clase ${cambio}.` : `Pediste cambiar la clase ${cambio}. Sigue en su horario hasta que ${clase.nombreOtro} acepte.`;
+        case "Pide cancelar":
+            return meToca ? `${clase.nombreOtro} pidió cancelar la clase.` : `Pediste cancelar la clase. Sigue en pie hasta que ${clase.nombreOtro} acepte.`;
         default: return "";
     }
 }
@@ -338,10 +345,6 @@ function crearTurno(clase, delDia) {
     const detalles = crearElemento("ul", "detalleTurno");
     const pedido = textoDePedido(clase);
     if (pedido) detalles.append(crearDetalle("bi-info-circle", pedido));
-    if (clase.estado === "Pendiente" && clase.esperaA === "otro") detalles.append(crearDetalle("bi-hourglass-split", `Esperando que responda ${clase.nombreOtro}.`));
-    if (clase.estado === "Rechazada" && clase.esperaA === "otro") detalles.append(crearDetalle("bi-info-circle", `Rechazaste este horario. Esperando que ${clase.nombreOtro} proponga otro o cancele.`));
-    if (clase.estado === "Pide cambio" && clase.esperaA === "otro") detalles.append(crearDetalle("bi-arrow-left-right", `La clase sigue en su horario hasta que ${clase.nombreOtro} acepte pasarla a ${textoFechaCorta(leerFechaLocal(clase.fechaPropuesta))}.`));
-    if (clase.estado === "Pide cancelar" && clase.esperaA === "otro") detalles.append(crearDetalle("bi-x-octagon", `La clase sigue en pie hasta que ${clase.nombreOtro} acepte cancelarla.`));
     if (clase.motivo) detalles.append(crearDetalle("bi-info-circle", clase.motivo));
     const choque = choqueConOtraClase(clase, delDia);
     if (choque) detalles.append(crearDetalle("bi-exclamation-triangle", `Se superpone con la de las ${textoHoraDe(leerFechaLocal(choque.fecha))}.`));
@@ -463,14 +466,16 @@ function inicializarAccionesDelCalendario() {
         switch (boton.dataset.accionClase) {
             case "aceptar": responderClase(boton, "/Clases/Responder", true, "Clase confirmada."); break;
             case "rechazar": responderClase(boton, "/Clases/Responder", false, "Rechazaste ese horario. La otra persona puede proponer otro o cancelar la clase."); break;
-            case "aceptarSolicitud": responderClase(boton, "/Clases/ResponderSolicitud", true, "Aceptaste el pedido."); break;
+            case "aceptarSolicitud": responderClase(boton, "/Clases/ResponderSolicitud", true, clase.estado === "Pide cambio"
+                ? `El cambio de horario fue aceptado, el nuevo horario es: ${textoFechaCorta(leerFechaLocal(clase.fechaPropuesta))}.`
+                : "Aceptaste la cancelación."); break;
             case "rechazarSolicitud": responderClase(boton, "/Clases/ResponderSolicitud", false, "No aceptaste el pedido: la clase sigue como estaba."); break;
             case "retirar": responderClase(boton, "/Clases/RetirarSolicitud", undefined, "Retiraste el pedido: la clase sigue como estaba."); break;
             case "cancelar": abrirCancelacionDeClase(); break;
             case "reubicar": abrirReubicacionDeClase(); break;
             case "noSeDio": abrirNoSeDio(clase.id, nombreCompleto(clase), textoFechaCorta(leerFechaLocal(clase.fecha))); break;
             case "chat": abrirPestanaYClase(new URLSearchParams({ tab: "chat", chat: clase.idOtroUsuario })); break;
-            case "verDia": elegirDia(clase.fecha.slice(0, 10)); document.getElementById("agendaDia").scrollIntoView({ behavior: "smooth", block: "start" }); break;
+            case "irAClase": mostrarClaseEnCalendario(clase.id); break;
         }
     });
 

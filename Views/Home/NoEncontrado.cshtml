@@ -1,0 +1,15 @@
+@{
+    ViewData["Title"] = "Página no encontrada";
+}
+
+<!-- ================= CABECERA ================= -->
+<section class="cabecera">
+    <div class="container">
+        <h1>Esta página <mark>no existe</mark></h1>
+        <p>Puede que el link esté mal escrito o que la página se haya movido. Volvé al inicio o buscá un profesor en el catálogo.</p>
+        <div class="d-flex flex-wrap gap-3 mt-4">
+            <a class="boton principal" asp-controller="Home" asp-action="Index">Ir al inicio</a>
+            <a class="boton contorno" asp-controller="Catalogo" asp-action="Index">Ver el catálogo</a>
+        </div>
+    </div>
+</section>

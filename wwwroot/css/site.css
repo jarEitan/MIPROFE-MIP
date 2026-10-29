@@ -1235,9 +1235,13 @@ fieldset {
     font-weight: 700;
 }
 
-/* ".card p" pone gris a los párrafos: la burbuja conserva su texto oscuro */
-.card .burbuja {
+/* ".card p:not(.mensajeError)" pone gris a los párrafos y le ganaba a ".card .burbuja": con "p" la burbuja conserva su texto */
+.card p.burbuja {
     color: var(--colorTexto);
+}
+
+.card p.burbuja.propia {
+    color: var(--colorSuperficie);
 }
 
 /* Texto de ayuda debajo de un bloque */
@@ -3477,7 +3481,7 @@ fieldset {
 /* Mis clases: lo que requiere acción, el calendario del mes y la agenda del día (los dibuja calendario.js).
    Colores: azul = está bien (tinta), rojo = necesita tu acción (magenta), gris = terminó sin darse. El estado nunca va
    solo en el color: siempre hay texto, y lo que espera al otro lleva línea punteada.
-   Desde lg el calendario va a la izquierda y, a la derecha, lo que requiere acción y la agenda del día elegido. */
+   Desde lg el calendario va a la izquierda, la agenda del día elegido a la derecha y lo que requiere atención abajo. */
 .misClases {
     display: grid;
     gap: 1.25rem;
@@ -3486,22 +3490,12 @@ fieldset {
 @media (width >= 1024px) {
     .misClases {
         grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
-        grid-template-rows: auto 1fr;
-        grid-template-areas: "calendario requiere" "calendario agenda";
         align-items: start;
         gap: 1.25rem 1.5rem;
     }
 
     .misClases .requiereAccion {
-        grid-area: requiere;
-    }
-
-    .misClases .calendarioMes {
-        grid-area: calendario;
-    }
-
-    .misClases .agendaDia {
-        grid-area: agenda;
+        grid-column: 1 / -1;
     }
 }
 
@@ -3529,17 +3523,6 @@ fieldset {
     gap: .6rem;
 }
 
-/* Al costado del calendario la lista no empuja la agenda del día fuera de la vista; se desvanece abajo como las
-   notificaciones */
-@media (width >= 1024px) {
-    .requiereAccion ul {
-        max-height: 22rem;
-        padding-bottom: 1.75rem;
-        overflow-y: auto;
-        mask-image: linear-gradient(var(--colorTinta) calc(100% - 1.75rem), transparent);
-    }
-}
-
 .pedidoPendiente {
     display: flex;
     flex-wrap: wrap;
@@ -3559,11 +3542,6 @@ fieldset {
 
 .pedidoPendiente .textoPedido strong {
     font: 600 1rem var(--fuenteMarca);
-}
-
-.pedidoPendiente .textoPedido span {
-    display: block;
-    color: var(--colorTextoSuave);
 }
 
 .botonesClase {
@@ -4331,8 +4309,7 @@ tr.resaltada td {
     overflow-wrap: anywhere;
 }
 
-/* Hora del mensaje y, en los propios, una tilde (enviado) o dos (visto); hereda el color porque el gris no se lee sobre coral.
-   Con opacidad .85 la tinta sobre coral queda a 4,8:1 (con .75 era 4,1:1) */
+/* Hora del mensaje y, en los propios, una tilde (enviado) o dos (visto); hereda el color porque el gris no se lee sobre coral */
 .chat .burbuja .detalleMensaje {
     display: block;
     margin-top: .2rem;

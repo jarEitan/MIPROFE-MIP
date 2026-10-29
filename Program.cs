@@ -20,6 +20,9 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+// Una URL que no existe (o cualquier error sin contenido) muestra Home/NoEncontrado con el mismo código
+app.UseStatusCodePagesWithReExecute("/Home/NoEncontrado");
+
 app.UseHttpsRedirection();
 app.UseRouting();
 app.UseSession();
