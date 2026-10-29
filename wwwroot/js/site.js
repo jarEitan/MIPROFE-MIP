@@ -498,15 +498,25 @@ function validarContacto() {
     const campo = id => document.getElementById(id);
     exitoContacto.hidden = true;
 
-    if (campo("contactoNombre").value.trim().length < 3) return mostrarErrorEnCampo(mensajeContacto, campo("contactoNombre"), "Ingresá tu nombre completo.");
-    if (!correoValido(campo("contactoCorreo").value.trim())) return mostrarErrorEnCampo(mensajeContacto, campo("contactoCorreo"), "Ingresá un correo electrónico válido.");
     if (campo("contactoTipo").value === "") return mostrarErrorEnCampo(mensajeContacto, campo("contactoTipo"), "Elegí el tipo de consulta.");
     if (campo("contactoMensaje").value.trim().length < 10) return mostrarErrorEnCampo(mensajeContacto, campo("contactoMensaje"), "Contanos un poco más (mínimo 10 caracteres).");
 
     mostrarMensaje(mensajeContacto, "");
-    // TODO BD: guardar la consulta (BD.guardarConsulta) o enviarla por correo desde el servidor
-    exitoContacto.hidden = false;
-    document.getElementById("formularioContacto").reset();
+    enviarAccionDeClase("/Consultas/Enviar", { tipo: campo("contactoTipo").value, mensaje: campo("contactoMensaje").value.trim() })
+        .then(codigo => {
+            if (codigo == 0) {
+                exitoContacto.hidden = false;
+                document.getElementById("formularioContacto").reset();
+            } else if (codigo == 1) {
+                mostrarErrorEnCampo(mensajeContacto, campo("contactoTipo"), "Elegí el tipo de consulta.");
+            } else {
+                mostrarErrorEnCampo(mensajeContacto, campo("contactoMensaje"), "Contanos qué pasó.");
+            }
+        })
+        .catch(error => {
+            console.error(error);
+            mostrarMensaje(mensajeContacto, "No pudimos enviar la consulta. Probá de nuevo en un rato.");
+        });
     return false;
 }
 
@@ -541,7 +551,7 @@ function inicializarCierreDeDialogos() {
 // La vista Home/Perfil solo trae el esqueleto: los datos llegan por fetch desde PerfilesController.
 // Los textos de la BD se ponen con textContent. La única excepción es "Sobre mí", que es HTML del
 // editor y llega limpio desde el servidor (HtmlSanitizer solo deja negrita, listas, enlaces, etc.).
-const nombresDeTipoUsuario = { alumno: "Alumno", profesor: "Profesor", admin: "Administrador" };
+const nombresDeTipoUsuario = { alumno: "Alumno", profesor: "Profesor", admin: "Moderador" };
 const largoMaximoDescripcion = 1000;
 const pesoMaximoFoto = 5 * 1024 * 1024;
 const ladoFotoPerfil = 256;
@@ -560,6 +570,8 @@ let recortadorFoto = null;
 let edicionYaAbiertaSola = false;
 // Profesores: año desde el que da clase en cada colegio elegido, por id de colegio ({ "20": "2015" })
 let aniosDeEscuelas = {};
+// Datos del documento como estaban al abrir el modal: si una cuenta verificada los cambia, se avisa que pierde la verificación
+let documentoAlAbrirEdicion = null;
 
 function inicializarPerfil() {
     const seccionPerfil = document.getElementById("perfil");
@@ -571,6 +583,39 @@ function inicializarPerfil() {
     inicializarMeGusta();
     inicializarAmistad();
     inicializarEdicionPerfil();
+    inicializarVerDni();
+}
+
+// Solo moderadores: "Ver DNI" trae la foto con fetch (la carpeta del DNI no se sirve por URL)
+function inicializarVerDni() {
+    const botonVerDni = document.getElementById("botonVerDni");
+    if (!botonVerDni) return;
+
+    const estadoDni = document.getElementById("estadoDni");
+    const imagenDni = document.getElementById("imagenDni");
+    botonVerDni.addEventListener("click", () => {
+        if (imagenDni.src) return;
+        estadoDni.textContent = "Cargando la foto…";
+        fetch(`/Moderacion/FotoDni/${document.getElementById("perfil").dataset.idPerfil}`)
+            .then(respuesta => {
+                if (respuesta.status === 404) return null;
+                if (!respuesta.ok) throw new Error(`Error ${respuesta.status} al traer el DNI`);
+                return respuesta.blob();
+            })
+            .then(foto => {
+                if (foto === null) {
+                    estadoDni.textContent = "Esta cuenta todavía no cargó la foto del DNI.";
+                    return;
+                }
+                imagenDni.src = URL.createObjectURL(foto);
+                imagenDni.hidden = false;
+                estadoDni.textContent = "";
+            })
+            .catch(error => {
+                console.error(error);
+                estadoDni.textContent = "No pudimos cargar la foto. Probá de nuevo.";
+            });
+    });
 }
 
 function esPerfilPropio() {
@@ -1120,6 +1165,19 @@ function inicializarEdicionPerfil() {
     inicializarEditorDescripcion();
     inicializarFotosEdicion();
     inicializarTitulosEdicion();
+    ["edicionNombre", "edicionApellido", "edicionFechaNacimiento", "edicionDni", "edicionDireccion", "edicionFotoDni"]
+        .forEach(id => ["input", "change"].forEach(evento => document.getElementById(id).addEventListener(evento, revisarAvisoDeVerificacion)));
+}
+
+// Lo mismo que compara el SP guardarPerfilCompleto (sin distinguir mayúsculas). La foto del DNI cuenta si se eligió otra
+function datosDelDocumento() {
+    const valor = id => document.getElementById(id).value.trim().toLowerCase();
+    return [valor("edicionNombre"), valor("edicionApellido"), valor("edicionFechaNacimiento"),
+        valor("edicionDni").replace(/[\s.\-]/g, ""), valor("edicionDireccion"), valor("edicionFotoDni")].join("|");
+}
+
+function revisarAvisoDeVerificacion() {
+    document.getElementById("avisoPierdeVerificacion").hidden = documentoAlAbrirEdicion === null || datosDelDocumento() === documentoAlAbrirEdicion;
 }
 
 function cargarDatosEdicion() {
@@ -1188,6 +1246,8 @@ function completarFormularioEdicion(opciones, datos) {
     campo("estadoFotoDni").classList.toggle("cargada", datos.tieneFotoDni);
 
     mostrarProgresoVerificacion(datos.verificado, datos.faltantes);
+    documentoAlAbrirEdicion = datos.verificado ? datosDelDocumento() : null;
+    revisarAvisoDeVerificacion();
 }
 
 // Llena un <select> del modal y lo convierte en selector con búsqueda.
@@ -1255,6 +1315,11 @@ function mostrarProgresoVerificacion(verificado, faltantes) {
     titulo.textContent = faltantes.length === 1
         ? "Te falta 1 dato para verificar tu cuenta:"
         : `Te faltan ${faltantes.length} datos para verificar tu cuenta:`;
+    if (faltantes.length === 0) {
+        titulo.textContent = "Ya cargaste todos tus datos: un moderador está revisando tu cuenta.";
+        progresoVerificacion.append(titulo);
+        return;
+    }
     const listaFaltantes = document.createElement("ul");
     listaFaltantes.replaceChildren(...faltantes.map(faltante => {
         const itemFaltante = document.createElement("li");
@@ -1525,7 +1590,7 @@ function guardarPerfil() {
         .then(respuesta => {
             if (respuesta.codigo == 0) {
                 formularioEditarPerfil.querySelector("[data-bs-dismiss='dialog']").click();
-                mostrarSnackbar(respuesta.verificado ? "¡Listo! Tu cuenta está verificada." : "Cambios guardados.", "exito");
+                mostrarSnackbar(respuesta.verificado || respuesta.faltantes.length > 0 ? "Cambios guardados." : "Cambios guardados. Un moderador va a revisar tu cuenta.", "exito");
                 actualizarUsuarioEnEncabezado(respuesta);
                 mostrarAvisoVerificacionPerfil(respuesta.verificado, respuesta.faltantes);
                 cargarPerfil();

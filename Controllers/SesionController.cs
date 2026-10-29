@@ -48,7 +48,7 @@ public class SesionController : Controller
     [ValidateAntiForgeryToken]
     public IActionResult Registrarse(Usuario registro)
     {
-        // Para que nadie se registre como admin desde el formulario
+        // Para que nadie se registre como moderador (admin) desde el formulario
         registro.tipoUsuario = (registro.tipoUsuario == "profesor" ? "profesor" : "alumno");
 
         Usuario cuenta = new BDsesion().registrarUsuario(registro);

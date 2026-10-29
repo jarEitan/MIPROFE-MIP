@@ -1,0 +1,77 @@
+@{
+    ViewData["Title"] = "Moderación";
+    List<ConsultaSoporte> consultas = ViewBag.consultas;
+    List<Usuario> usuarios = ViewBag.usuarios;
+    Dictionary<string, string> nombresDeTipo = new Dictionary<string, string> { { "clases", "Problema con una clase" }, { "cuenta", "Cuenta y registro" }, { "sugerencia", "Sugerencia" }, { "otro", "Otro" } };
+}
+
+@section Scripts {
+    <script src="~/js/moderacion.js" asp-append-version="true"></script>
+}
+
+<!-- ================= CABECERA ================= -->
+<section class="cabecera">
+    <div class="container">
+        <h1>Panel de <mark>moderación</mark></h1>
+        <p>Respondé las consultas de Soporte (le llegan al usuario como mensaje directo) y verificá las cuentas que ya cargaron todos sus datos.</p>
+        <form class="mt-4" method="post" asp-controller="Sesion" asp-action="CerrarSesion">
+            <button class="boton oscuro" type="submit"><i class="bi bi-box-arrow-right" aria-hidden="true"></i> Cerrar sesión</button>
+        </form>
+    </div>
+</section>
+
+<!-- ================= MODERACIÓN: consultas y verificación ================= -->
+<section class="moderacion">
+    <div class="container">
+        @Html.AntiForgeryToken()
+
+        <h2>Consultas pendientes</h2>
+        @if (consultas.Count == 0)
+        {
+            <div class="card estadoVacio"><p>No hay consultas sin responder.</p></div>
+        }
+        <div class="row row-cols-1 lg:row-cols-2 g-3 lg:g-4">
+            @foreach (ConsultaSoporte consulta in consultas)
+            {
+                <div class="col">
+                    @* moderacion.js la saca de la lista cuando se responde *@
+                    <form class="card" data-id-consulta="@consulta.id" novalidate>
+                        <div class="d-flex flex-wrap align-items-center gap-2">
+                            <span class="badge theme-accent">@nombresDeTipo.GetValueOrDefault(consulta.tipo, consulta.tipo)</span>
+                            <time datetime="@consulta.fecha.ToString("s")">@consulta.fecha.ToString("dd/MM/yyyy HH:mm")</time>
+                        </div>
+                        <h3><a asp-controller="Home" asp-action="Perfil" asp-route-id="@consulta.idUsuario">@consulta.nombre</a></h3>
+                        <p>@consulta.mensaje</p>
+                        <div class="form-field">
+                            <label for="respuesta@(consulta.id)">Tu respuesta</label>
+                            <textarea class="form-control" id="respuesta@(consulta.id)" name="respuesta" rows="3" maxlength="900"></textarea>
+                        </div>
+                        <p class="mensajeError" role="alert"></p>
+                        <button class="boton principal chico" type="submit">Responder por mensaje</button>
+                    </form>
+                </div>
+            }
+        </div>
+
+        @* Solo los que tienen todos los datos (SP obtenerUsuariosPorVerificar). El DNI se mira en su perfil con "Ver DNI" *@
+        <h2>Verificar usuarios</h2>
+        @if (usuarios.Count == 0)
+        {
+            <div class="card estadoVacio"><p>No hay cuentas esperando verificación.</p></div>
+        }
+        <div class="row row-cols-1 sm:row-cols-2 lg:row-cols-4 g-3 lg:g-4">
+            @foreach (Usuario usuario in usuarios)
+            {
+                <div class="col">
+                    <div class="card">
+                        <h3><a asp-controller="Home" asp-action="Perfil" asp-route-id="@usuario.id">@usuario.nombre @usuario.apellido</a></h3>
+                        <p>@(usuario.tipoUsuario == "profesor" ? "Profesor" : "Alumno") · DNI @usuario.dni</p>
+                        <button class="boton principal chico" type="button" data-verificar-usuario="@usuario.id">
+                            <i class="bi bi-patch-check" aria-hidden="true"></i> Verificar cuenta
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>

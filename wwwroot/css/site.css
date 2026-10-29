@@ -1152,9 +1152,14 @@ fieldset {
     padding: .6rem 1rem;
     border-radius: var(--radioChico);
     background-color: var(--colorExito);
-    color: #ffffff; 
+    color: #ffffff;
     font-size: .875rem;
     font-weight: 600;
+}
+
+/* Texto blanco sobre fondos oscuros (tinta, magenta o verde). Va en el texto mismo: así no lo pisa el gris de ".card p" */
+.textoBlanco {
+    color: #fff;
 }
 
 /* Buscador en píldora (portada y soporte) */
@@ -3504,6 +3509,24 @@ fieldset {
     .misClases .requiereAccion {
         grid-column: 1 / -1;
     }
+
+    /* "contain: size" hace que la agenda no cuente para la altura de la fila: mide lo mismo que el calendario,
+       y si el día tiene más clases, la lista scrollea (el título del día queda fijo arriba) */
+    .misClases .agendaDia {
+        display: flex;
+        flex-direction: column;
+        align-self: stretch;
+        contain: size;
+    }
+
+    .misClases .agendaDia .turnos {
+        min-height: 0;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        padding: .25rem .5rem .5rem .25rem;
+        scrollbar-width: thin;
+        scrollbar-color: var(--colorBorde) transparent;
+    }
 }
 
 /* Coral suave, sin una segunda banda magenta (la de las notificaciones ya avisa) */
@@ -3560,6 +3583,8 @@ fieldset {
 /* Calendario del mes: lunes a domingo, una línea por clase (máximo 3 y "+N") */
 .calendarioMes {
     padding: .75rem;
+    /* La grilla entra deslizándose al cambiar de mes: "clip" corta ese corrimiento sin crear una barra de scroll */
+    overflow-x: clip;
 }
 
 @media (width >= 768px) {
@@ -3612,6 +3637,23 @@ fieldset {
 
 .calendarioMes .diasMes :is(.cargandoHistorial, .mensajeErrorCalendario) {
     grid-column: 1 / -1;
+}
+
+/* Al cambiar de mes (calendario.js, animarCambioDeMes) la grilla y el título entran desde el lado hacia el que se avanza */
+.calendarioMes [data-cambio-de-mes="siguiente"] {
+    animation: entrarMesSiguiente .32s var(--curvaSuave);
+}
+
+.calendarioMes [data-cambio-de-mes="anterior"] {
+    animation: entrarMesAnterior .32s var(--curvaSuave);
+}
+
+@keyframes entrarMesSiguiente {
+    from { opacity: 0; transform: translateX(2rem); }
+}
+
+@keyframes entrarMesAnterior {
+    from { opacity: 0; transform: translateX(-2rem); }
 }
 
 .diasMes .dia {
@@ -5057,11 +5099,33 @@ tr.resaltada td {
 }
 
 /* Progreso de la verificación: amarillo si falta algo, verde si ya está */
-#dialogoEditarPerfil .progresoVerificacion {
+#dialogoEditarPerfil .progresoVerificacion,
+#dialogoEditarPerfil .avisoPierdeVerificacion {
     padding: .8rem 1rem;
     border: 2px solid var(--colorAlerta);
     border-radius: var(--radioMedio);
     background-color: var(--colorAlertaSuave);
+}
+
+/* Cambio de un dato del documento: mismo amarillo que el progreso de verificación, pegado al botón Guardar */
+#dialogoEditarPerfil .avisoPierdeVerificacion {
+    display: flex;
+    align-items: flex-start;
+    gap: .6rem;
+    margin-top: 1rem;
+    color: var(--colorTinta);
+    font-size: .88rem;
+    font-weight: 700;
+}
+
+#dialogoEditarPerfil .avisoPierdeVerificacion[hidden] {
+    display: none;
+}
+
+#dialogoEditarPerfil .avisoPierdeVerificacion i {
+    color: var(--colorAlerta);
+    font-size: 1.1rem;
+    line-height: 1.2;
 }
 
 #dialogoEditarPerfil .progresoVerificacion p {
@@ -5476,6 +5540,36 @@ tr.resaltada td {
     min-width: 0;
     overflow-wrap: anywhere;
 }
+
+/* ---------- Modal "Foto del DNI" del Perfil (solo moderadores) ---------- */
+#dialogoDni img {
+    width: 100%;
+    border-radius: var(--radioChico);
+}
+
+
+/* ---------- 3.17 Moderación (consultas de Soporte y fotos de DNI) ---------- */
+.moderacion h2 {
+    margin-bottom: 1.5rem;
+}
+
+.moderacion h2 ~ h2 {
+    margin-top: var(--espacioSeccion);
+}
+
+.moderacion .card {
+    gap: .75rem;
+}
+
+.moderacion time {
+    color: var(--colorTextoSuave);
+    font-size: .875rem;
+}
+
+.moderacion .card .boton {
+    align-self: flex-start;
+}
+
 
 /* =========================================================
    4) FOOTER

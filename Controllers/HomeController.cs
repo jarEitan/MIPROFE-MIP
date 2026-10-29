@@ -47,6 +47,8 @@ public class HomeController : Controller
     {
         string? idUsuario = HttpContext.Session.GetString("idUsuario");
         if (idUsuario == null) return RedirectToAction("IniciarSesion", "Sesion");
+        // El moderador (admin) no tiene clases ni agenda: su panel es Moderación
+        if (HttpContext.Session.GetString("tipoUsuario") == "admin") return RedirectToAction("Index", "Moderacion");
 
         BD bd = new BD();
         List<NotificacionUsuario> notificaciones = bd.obtenerNotificaciones(int.Parse(idUsuario));

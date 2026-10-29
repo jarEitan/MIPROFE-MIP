@@ -379,8 +379,10 @@ function elegirDia(dia) {
     const fecha = leerFechaLocal(dia);
     // Un día de la semana de otro mes lleva a ese mes
     if (fecha.getMonth() !== calendario.mes.getMonth() || fecha.getFullYear() !== calendario.mes.getFullYear()) {
+        const mesAnterior = calendario.mes;
         calendario.mes = primerDiaDelMes(fecha);
         dibujarTodo();
+        animarCambioDeMes(calendario.mes - mesAnterior);
         cargarGrillaDelMes();
         return;
     }
@@ -393,6 +395,7 @@ function cambiarDeMes(desplazamiento) {
     const diaProvisorio = diaInicialDelMes(calendario.mes);
     calendario.diaElegido = diaProvisorio;
     dibujarTodo();
+    animarCambioDeMes(desplazamiento);
     // Con las clases del mes ya cargadas se elige el primer día con clases (si la persona no eligió otro mientras tanto)
     cargarGrillaDelMes().then(() => {
         if (calendario.diaElegido !== diaProvisorio) return;
@@ -404,10 +407,24 @@ function cambiarDeMes(desplazamiento) {
 
 function irAHoy() {
     const hoy = new Date();
+    const mesAnterior = calendario.mes;
     calendario.mes = primerDiaDelMes(hoy);
     calendario.diaElegido = diaInicialDelMes(calendario.mes);
     dibujarTodo();
+    animarCambioDeMes(calendario.mes - mesAnterior);
     cargarGrillaDelMes();
+}
+
+// La grilla y el título entran desde la derecha (mes siguiente) o la izquierda (anterior). Ver entrarMes en site.css
+function animarCambioDeMes(desplazamiento) {
+    if (desplazamiento === 0) return;
+    ["diasMes", "tituloMes"].forEach(id => {
+        const elemento = document.getElementById(id);
+        // Sacar el atributo y forzar un reflow reinicia la animación si se aprieta varias veces seguidas
+        elemento.removeAttribute("data-cambio-de-mes");
+        void elemento.offsetWidth;
+        elemento.dataset.cambioDeMes = desplazamiento > 0 ? "siguiente" : "anterior";
+    });
 }
 
 // Lo llaman las notificaciones (?tab=clases&clase=12) y el resaltado tras una acción: abre el día de esa clase y la
@@ -423,8 +440,10 @@ function mostrarClaseEnCalendario(idClase) {
     const fecha = leerFechaLocal(dia);
     calendario.diaElegido = dia;
     if (fecha.getMonth() !== calendario.mes.getMonth() || fecha.getFullYear() !== calendario.mes.getFullYear()) {
+        const mesAnterior = calendario.mes;
         calendario.mes = primerDiaDelMes(fecha);
         dibujarTodo();
+        animarCambioDeMes(calendario.mes - mesAnterior);
         cargarGrillaDelMes();
     } else {
         dibujarMes();

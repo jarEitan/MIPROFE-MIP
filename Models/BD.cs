@@ -416,4 +416,56 @@ public class BD
             return connection.QueryFirst<int>("EXEC rechazarAmistad @idUsuario, @idOtroUsuario", new { idUsuario = idUsuario, idOtroUsuario = idOtroUsuario });
         }
     }
+
+    // codigo: 0 = ok, 1 = tipo inválido, 2 = mensaje vacío
+    public int enviarConsulta(int idUsuario, string? tipo, string? mensaje)
+    {
+        using (var connection = new SqlConnection(connectionString))
+        {
+            return connection.QueryFirst<int>("EXEC enviarConsulta @idUsuario, @tipo, @mensaje", new { idUsuario = idUsuario, tipo = tipo, mensaje = mensaje });
+        }
+    }
+
+    public List<ConsultaSoporte> obtenerConsultasPendientes()
+    {
+        using (var connection = new SqlConnection(connectionString))
+        {
+            return connection.Query<ConsultaSoporte>("EXEC obtenerConsultasPendientes").ToList();
+        }
+    }
+
+    // codigo: 0 = ok, 1 = respuesta vacía, 2 = la consulta ya fue respondida o no existe
+    public int responderConsulta(int idModerador, int idConsulta, string? respuesta)
+    {
+        using (var connection = new SqlConnection(connectionString))
+        {
+            return connection.QueryFirst<int>("EXEC responderConsulta @idModerador, @idConsulta, @respuesta", new { idModerador = idModerador, idConsulta = idConsulta, respuesta = respuesta });
+        }
+    }
+
+    public List<Usuario> obtenerUsuariosPorVerificar()
+    {
+        using (var connection = new SqlConnection(connectionString))
+        {
+            return connection.Query<Usuario>("EXEC obtenerUsuariosPorVerificar").ToList();
+        }
+    }
+
+    // codigo: 0 = ok, 1 = no existe o ya está verificada
+    public int verificarUsuario(int idUsuario)
+    {
+        using (var connection = new SqlConnection(connectionString))
+        {
+            return connection.QueryFirst<int>("EXEC verificarUsuario @idUsuario", new { idUsuario = idUsuario });
+        }
+    }
+
+    // La ruta de la foto ("/userData/dni/...") o null si no la subió
+    public string? obtenerFotoDni(int idUsuario)
+    {
+        using (var connection = new SqlConnection(connectionString))
+        {
+            return connection.QueryFirst<string?>("EXEC obtenerFotoDni @idUsuario", new { idUsuario = idUsuario });
+        }
+    }
 }

@@ -27,13 +27,14 @@ Reglas de código: **[Info/systemPrompt.md](Info/systemPrompt.md)** (obligatorio
 | Carpeta | Contenido |
 |---|---|
 | `Controllers/` | Un controlador por módulo (tabla abajo) |
-| `Models/` | `BD.cs` (todo el acceso a datos), `BDsesion.cs` (login/registro) y un modelo por resultado: `Usuario`, `ClaseCalendario`, `MensajeChat`, `NotificacionUsuario`, `OpcionPerfil`, `ResenaPerfil`, `ResultadoAmistad`, `ResultadoHistorial`, `ResultadoLike` |
+| `Models/` | `BD.cs` (todo el acceso a datos), `BDsesion.cs` (login/registro) y un modelo por resultado: `Usuario`, `ClaseCalendario`, `ConsultaSoporte`, `MensajeChat`, `NotificacionUsuario`, `OpcionPerfil`, `ResenaPerfil`, `ResultadoAmistad`, `ResultadoHistorial`, `ResultadoLike` |
 | `Views/Home/` | `Index`, `PanelControl`, `Perfil`, `Privacy`, `QuienesSomos`, `Soporte`, `NoEncontrado` |
 | `Views/Sesion/` | `IniciarSesion`, `Registrarse` |
 | `Views/Catalogo/` | `Index` |
+| `Views/Moderacion/` | `Index` (consultas de Soporte y verificar usuarios, solo moderadores) |
 | `Views/Shared/` | `_Layout` (header, buscador de usuarios, footer) |
 | `wwwroot/css/` | `site.css`, único CSS propio |
-| `wwwroot/js/` | `site.js` (general), `catalogo.js`, `calendario.js`, `miAgenda.js`, `clases.js`, `chat.js`, `historial.js` |
+| `wwwroot/js/` | `site.js` (general), `catalogo.js`, `calendario.js`, `miAgenda.js`, `clases.js`, `chat.js`, `historial.js`, `moderacion.js` |
 | `MIP_Estructuras/` | `01_estructura`, `02_stored_procedures`, `03_datos_prueba` (SQL) |
 | `Info/` | Documentación: `systemPrompt.md`, `guiaDeEstilo.md`, `progreso.md` |
 
@@ -51,9 +52,11 @@ Reglas de código: **[Info/systemPrompt.md](Info/systemPrompt.md)** (obligatorio
 | Chat | `MensajesController`: Conversaciones, Chat, Enviar | `enviarMensaje`, `obtenerConversaciones`, `obtenerChat` |
 | Reseñas | `ResenasController`: Dar | `darResena` |
 | Historial | `HistorialController`: Obtener | `obtenerHistorialClases` |
+| Soporte | `ConsultasController`: Enviar | `enviarConsulta` |
+| Moderación (`tipoUsuario = 'admin'`, se crean a mano en la BD) | `ModeracionController`: Index, Responder (la respuesta va por mensaje directo), Verificar, FotoDni (la pide "Ver DNI" del Perfil) | `obtenerConsultasPendientes`, `responderConsulta`, `obtenerUsuariosPorVerificar`, `verificarUsuario`, `obtenerFotoDni` |
 | Clases (pedidos) | `ClasesController`: EnviarPedido, Responder, Cancelar, Reubicar, ResponderSolicitud, RetirarSolicitud, NoSeDio | `enviarPedidoClase`, `aceptarPedidoClase`, `rechazarPedidoClase`, `cancelarClase`, `reubicarClase`, `aceptarSolicitudClase`, `rechazarSolicitudClase`, `retirarSolicitudClase`, `marcarClaseNoConcretada` |
 | Agenda / calendario | `ClasesController`: Calendario, HorariosOcupados, DiasConAgenda, MiAgenda, GuardarAgenda, BloquearDia, DesbloquearDia | `obtenerCalendarioClases`, `obtenerContadoresClases`, `obtenerHorariosOcupados`, `obtenerDisponibilidad`, `guardarDisponibilidad`, `bloquearDia`, `desbloquearDia` |
 
-Pendiente (sin hacer): Consulta de Soporte, sugerencias del buscador, moderación de reseñas, filtros avanzados, pedido de un alumno por un profesor. Detalle en [progreso.md](Info/progreso.md).
+Pendiente (sin hacer): sugerencias del buscador, moderación de reseñas, filtros avanzados, pedido de un alumno por un profesor. Detalle en [progreso.md](Info/progreso.md).
 
 Mantener este índice al día: si agregás o renombrás un controlador, acción o método de `BD.cs`, actualizá la tabla.

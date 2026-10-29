@@ -8,6 +8,7 @@
     bool abrirEdicion = ViewBag.abrirEdicion ?? false;
     bool haySesion = Context.Session.GetString("idUsuario") != null;
     bool esProfesor = Context.Session.GetString("tipoUsuario") == "profesor";
+    bool esModerador = Context.Session.GetString("tipoUsuario") == "admin";
     ViewData["Title"] = esPerfilPropio ? "Mi perfil" : "Perfil";
 }
 
@@ -49,7 +50,7 @@
                     <span class="icono"><i class="bi bi-shield-exclamation" aria-hidden="true"></i></span>
                     <div>
                         <h2>Tu cuenta todavía no está verificada</h2>
-                        <p>Completá estos datos y se verifica sola. Las cuentas verificadas llevan el tick <i class="bi bi-patch-check-fill tickVerificado" aria-hidden="true"></i> al lado del nombre.</p>
+                        <p>Completá estos datos y un moderador va a revisar tu cuenta. Las cuentas verificadas llevan el tick <i class="bi bi-patch-check-fill tickVerificado" aria-hidden="true"></i> al lado del nombre.</p>
                         <ul class="faltantes" id="faltantesPerfil"></ul>
                     </div>
                     <button class="boton principal" type="button" data-abrir-edicion data-bs-toggle="dialog" data-bs-target="#dialogoEditarPerfil">
@@ -93,6 +94,12 @@
                     }
                     else
                     {
+                        @if (esModerador)
+                        {
+                            <button class="boton oscuro" type="button" id="botonVerDni" data-bs-toggle="dialog" data-bs-target="#dialogoDni">
+                                <i class="bi bi-person-vcard" aria-hidden="true"></i> Ver DNI
+                            </button>
+                        }
                         @* Botones sociales: salen de las tablas Amigos, Mensajes, Likes y Resenas. Sin sesión llevan a Iniciar sesión.
                            Mensaje abre el chat con esta persona en el Panel de Control (chat.js). Agregar amigo cambia según cómo
                            estén los dos (AmigosController) y la estrella abre "Dar reseña" (diálogo en _Layout, ResenasController). *@
@@ -210,6 +217,25 @@
         <button type="button" class="boton contorno chico" data-bs-dismiss="dialog">Cerrar</button>
     </div>
 </dialog>
+
+@if (esModerador && !esPerfilPropio)
+{
+    <!-- ================= MODAL: FOTO DEL DNI (solo moderadores) ================= -->
+    @* La abre #botonVerDni: site.js (inicializarVerDni) trae la foto con fetch a /Moderacion/FotoDni/{id} *@
+    <dialog class="dialog" id="dialogoDni" aria-labelledby="tituloDni">
+        <div class="dialog-header">
+            <h2 class="dialog-title" id="tituloDni">Foto del DNI</h2>
+            <button type="button" class="btn-close" data-bs-dismiss="dialog" aria-label="Cerrar"></button>
+        </div>
+        <div class="dialog-body">
+            <p id="estadoDni" role="status"></p>
+            <img id="imagenDni" alt="Foto del DNI de esta cuenta" hidden />
+        </div>
+        <div class="dialog-footer">
+            <button type="button" class="boton contorno chico" data-bs-dismiss="dialog">Cerrar</button>
+        </div>
+    </dialog>
+}
 
 @if (esPerfilPropio)
 {
@@ -350,6 +376,11 @@
                     </div>
                 </div>
 
+                @* Solo si la cuenta está verificada y cambia un dato del documento (site.js, revisarAvisoDeVerificacion) *@
+                <p class="avisoPierdeVerificacion" id="avisoPierdeVerificacion" role="status" hidden>
+                    <i class="bi bi-shield-exclamation" aria-hidden="true"></i>
+                    <span>Cambiaste datos de tu documento. Al guardar, tu cuenta deja de estar verificada hasta que un moderador la revise de nuevo.</span>
+                </p>
                 <p class="mensajeError" id="mensajeEditarPerfil" role="alert"></p>
             </div>
 

@@ -133,20 +133,22 @@
             <div class="col-12 md:col-10 lg:col-7">
                 <div class="encabezadoSeccion">
                     <h2>¿No resolviste tu duda?</h2>
-                    <p>Completá el formulario y el equipo de MIP te responde por correo.</p>
+                    <p>Completá el formulario y un moderador de MIP te responde por mensaje directo en tu Panel de Control.</p>
                 </div>
 
-                @* TODO BD: guardar la consulta (BD.guardarConsulta) o enviarla por correo desde el servidor *@
+                @* La respuesta llega por mensaje directo: hace falta una cuenta. El nombre y el correo los toma el SP de la sesión *@
+                @if (Context.Session.GetString("idUsuario") == null)
+                {
+                    <div class="card estadoVacio">
+                        <p>Para escribirnos tenés que iniciar sesión: te respondemos por mensaje directo.</p>
+                        <a class="boton principal" asp-controller="Sesion" asp-action="IniciarSesion">Iniciar sesión</a>
+                    </div>
+                }
+                else
+                {
                 <form class="card" id="formularioContacto" onsubmit="return validarContacto()" novalidate>
+                    @Html.AntiForgeryToken()
                     <div class="row g-3">
-                        <div class="col-12 md:col-6 form-field">
-                            <label for="contactoNombre">Nombre completo</label>
-                            <input class="form-control" type="text" id="contactoNombre" name="nombre" maxlength="100" autocomplete="name" />
-                        </div>
-                        <div class="col-12 md:col-6 form-field">
-                            <label for="contactoCorreo">Correo electrónico</label>
-                            <input class="form-control" type="email" id="contactoCorreo" name="correo" maxlength="150" autocomplete="email" />
-                        </div>
                         <div class="col-12 form-field">
                             <label for="contactoTipo">Tipo de consulta</label>
                             <select class="form-control" id="contactoTipo" name="tipo" data-buscable data-placeholder="Elegí el tipo de consulta">
@@ -165,11 +167,12 @@
 
                     <p class="mensajeError" id="mensajeContacto" role="alert"></p>
                     <p class="mensajeExito" id="exitoContacto" role="status" hidden>
-                        <i class="bi bi-check-circle-fill" aria-hidden="true"></i> ¡Gracias! Recibimos tu consulta y te vamos a responder pronto.
+                        <i class="bi bi-check-circle-fill textoBlanco" aria-hidden="true"></i> <span class="textoBlanco">¡Gracias! Recibimos tu consulta y te vamos a responder pronto.</span>
                     </p>
 
                     <button class="boton principal" type="submit">Enviar consulta</button>
                 </form>
+                }
             </div>
         </div>
     </div>

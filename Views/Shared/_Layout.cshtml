@@ -110,11 +110,21 @@
                             }
                             else
                             {
-                                <a class="boton secundario" asp-controller="Home" asp-action="PanelControl">
-                                    <i class="bi bi-bar-chart-line" aria-hidden="true"></i> Panel de Control
-                                    @* Siempre está en el HTML (oculta si no hay nada): site.js la actualiza con fetch a /Notificaciones/Contar *@
-                                    <span class="badge theme-primary" id="insigniaNotificaciones" aria-label="@cantidadNotificaciones notificaciones" @(cantidadNotificaciones == "0" ? "hidden" : null)>@cantidadNotificaciones</span>
-                                </a>
+                                @* El moderador (admin) tiene Moderación en lugar del Panel de Control *@
+                                @if (tipoUsuarioSesion == "admin")
+                                {
+                                    <a class="boton secundario" asp-controller="Moderacion" asp-action="Index">
+                                        <i class="bi bi-shield-check" aria-hidden="true"></i> Moderación
+                                    </a>
+                                }
+                                else
+                                {
+                                    <a class="boton secundario" asp-controller="Home" asp-action="PanelControl">
+                                        <i class="bi bi-bar-chart-line" aria-hidden="true"></i> Panel de Control
+                                        @* Siempre está en el HTML (oculta si no hay nada): site.js la actualiza con fetch a /Notificaciones/Contar *@
+                                        <span class="badge theme-primary" id="insigniaNotificaciones" aria-label="@cantidadNotificaciones notificaciones" @(cantidadNotificaciones == "0" ? "hidden" : null)>@cantidadNotificaciones</span>
+                                    </a>
+                                }
 
                                 @* Nombre y foto llevan al perfil (ahí está el botón Cerrar sesión) *@
                                 <a class="usuario" asp-controller="Home" asp-action="Perfil" asp-route-id="@idUsuarioSesion" aria-label="Ir a mi perfil">
@@ -156,10 +166,13 @@
                         }
                         else
                         {
-                            <span>Completá tus datos para verificarla.</span>
+                            <span>Ya cargaste todos tus datos: un moderador está revisando tu cuenta.</span>
                         }
                     </p>
-                    <a class="boton oscuro chico" asp-controller="Home" asp-action="Perfil" asp-route-id="@idUsuarioSesion" asp-route-editar="true">Completar mis datos</a>
+                    @if (datosFaltantes != "")
+                    {
+                        <a class="boton oscuro chico" asp-controller="Home" asp-action="Perfil" asp-route-id="@idUsuarioSesion" asp-route-editar="true">Completar mis datos</a>
+                    }
                     <button class="btn-close" type="button" id="botonCerrarAvisoVerificacion" aria-label="Cerrar aviso"></button>
                 </div>
             </div>
