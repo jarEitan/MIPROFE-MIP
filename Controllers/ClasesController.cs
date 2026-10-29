@@ -57,7 +57,7 @@ public class ClasesController : Controller
         ResultadoClase resultado = new BD().enviarPedidoClase(int.Parse(idAlumno), idProfesor, fecha, mensaje);
         if (resultado.codigo == 0 && !string.IsNullOrWhiteSpace(mensaje))
         {
-            avisarPorChat(int.Parse(idAlumno), idProfesor, "Te pedí una clase para el " + TextoFecha.clase(fecha) + ". " + mensaje);
+            avisarPorChat(int.Parse(idAlumno), idProfesor, "Te pedí una clase para el " + fecha.ToString("dd/MM 'a las' HH:mm") + ". " + mensaje);
         }
         return Json(conInsignia(resultado));
     }
@@ -92,7 +92,7 @@ public class ClasesController : Controller
         if (resultado.codigo == 0 && !string.IsNullOrWhiteSpace(motivo))
         {
             string accion = resultado.estado == "Pide cancelar" ? "Pedí cancelar" : "Cancelé";
-            avisarPorChat(int.Parse(idUsuario), resultado.idOtro!.Value, accion + " la clase del " + TextoFecha.clase(resultado.fecha!.Value) + ". Motivo: " + motivo);
+            avisarPorChat(int.Parse(idUsuario), resultado.idOtro!.Value, accion + " la clase del " + resultado.fecha!.Value.ToString("dd/MM 'a las' HH:mm") + ". Motivo: " + motivo);
         }
         return Json(conInsignia(resultado));
     }
@@ -107,7 +107,7 @@ public class ClasesController : Controller
         ResultadoClase resultado = new BD().reubicarClase(int.Parse(idUsuario), idClase, fecha, motivo);
         if (resultado.codigo == 0 && !string.IsNullOrWhiteSpace(motivo))
         {
-            avisarPorChat(int.Parse(idUsuario), resultado.idOtro!.Value, "Pedí cambiar la clase del " + TextoFecha.clase(resultado.fecha!.Value) + " al " + TextoFecha.clase(fecha) + ". Motivo: " + motivo);
+            avisarPorChat(int.Parse(idUsuario), resultado.idOtro!.Value, "Pedí cambiar la clase del " + resultado.fecha!.Value.ToString("dd/MM 'a las' HH:mm") + " al " + fecha.ToString("dd/MM 'a las' HH:mm") + ". Motivo: " + motivo);
         }
         return Json(conInsignia(resultado));
     }
@@ -125,7 +125,7 @@ public class ClasesController : Controller
             resultado = new BD().aceptarSolicitudClase(int.Parse(idUsuario), idClase);
             if (resultado.codigo == 0 && resultado.fechaPropuesta != null)
             {
-                avisarPorChat(int.Parse(idUsuario), resultado.idOtro!.Value, "El cambio de horario fue aceptado, el nuevo horario es: " + TextoFecha.clase(resultado.fechaPropuesta.Value) + ".");
+                avisarPorChat(int.Parse(idUsuario), resultado.idOtro!.Value, "El cambio de horario fue aceptado, el nuevo horario es: " + resultado.fechaPropuesta.Value.ToString("dd/MM 'a las' HH:mm") + ".");
             }
         }
         else

@@ -56,8 +56,8 @@
     static (string titulo, string mensaje, string boton) textoDeNotificacion(NotificacionUsuario n)
     {
         string nombre = n.nombreOtro + " " + n.apellidoOtro;
-        string clase = n.fechaClase == null ? "" : TextoFecha.clase(n.fechaClase.Value);
-        string propuesta = n.fechaPropuesta == null ? "" : TextoFecha.clase(n.fechaPropuesta.Value);
+        string clase = n.fechaClase == null ? "" : n.fechaClase.Value.ToString("dd/MM 'a las' HH:mm");
+        string propuesta = n.fechaPropuesta == null ? "" : n.fechaPropuesta.Value.ToString("dd/MM 'a las' HH:mm");
         switch (n.tipo)
         {
             case "solicitudAmistad": return ("Solicitud de amistad", nombre + " te envió una solicitud de amistad.", "Ver perfil");
