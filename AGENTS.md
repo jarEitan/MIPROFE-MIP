@@ -21,6 +21,7 @@ Reglas de código: **[Info/systemPrompt.md](Info/systemPrompt.md)** (obligatorio
 ## Reglas de trabajo
 - Antes de crear una clase CSS nueva, ver si se resuelve con una existente + selector descendiente.
 - Si no te aclaro la arquitectura de una función nueva, preguntame antes de programar: cómo se mueven los datos (vista → controller → SP), dónde se filtran (SP, `BD.cs` o JS) y cómo se administran (tablas y estados).
+- **No usar funciones en SQL** (ni `CREATE FUNCTION` ni funciones de SQL Server fuera de la lista de [systemPrompt.md](Info/systemPrompt.md)). Las fechas salen crudas del SP y el texto con fecha lo arma el sitio.
 
 ## Índice de archivos
 
