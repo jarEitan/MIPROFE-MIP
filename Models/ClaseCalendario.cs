@@ -4,15 +4,15 @@ namespace MIP_MIPROFESOR.Models;
 // estado: Pendiente | Rechazada | Confirmada | Pide cambio | Pide cancelar | Completada | No concretada | Cancelada.
 // esperaA (Pendiente, Rechazada activa, Pide cambio / Pide cancelar): a quién le toca mover ficha, yo | otro.
 // requiereAccion: me toca a mí (se pinta en rojo). fechaPropuesta: horario nuevo, solo en Pide cambio.
-// motivo: solo en No concretada. Los puede...: qué botones corresponden. Las fechas vienen como "2026-10-28T20:00".
+// motivo: solo en No concretada. Los puede...: qué botones corresponden.
 public class ClaseCalendario
 {
     public int id { get; set; }
     public string estado { get; set; } = "";
-    public string fecha { get; set; } = "";
-    public string fechaFin { get; set; } = "";
-    public string? fechaPropuesta { get; set; }
-    public string fechaEmision { get; set; } = "";
+    public DateTime fecha { get; set; }
+    public DateTime fechaFin { get; set; }
+    public DateTime? fechaPropuesta { get; set; }
+    public DateTime fechaEmision { get; set; }
     public int idOtroUsuario { get; set; }
     public string nombreOtro { get; set; } = "";
     public string apellidoOtro { get; set; } = "";
@@ -40,34 +40,38 @@ public class ContadoresClases
 
 // Lo que devuelven los SP de clases. Qué significa cada codigo está arriba de cada función en BD.cs.
 // estado: cómo quedó la clase (en cancelarClase y reubicarClase). cantidadNotificaciones la pone ClasesController.
+// idOtro, fecha y fechaPropuesta: lo que ClasesController necesita para armar el mensaje de chat de cada acción.
 public class ResultadoClase
 {
     public int codigo { get; set; }
     public string? estado { get; set; }
     public int? idClase { get; set; }
+    public int? idOtro { get; set; }
+    public DateTime? fecha { get; set; }
+    public DateTime? fechaPropuesta { get; set; }
     public int cantidadNotificaciones { get; set; }
 }
 
 // Franja ocupada que devuelve obtenerHorariosOcupados. de: profesor | alumno
 public class HorarioOcupado
 {
-    public string inicio { get; set; } = "";
-    public string fin { get; set; } = "";
+    public DateTime desde { get; set; }
+    public DateTime hasta { get; set; }
     public string de { get; set; } = "";
 }
 
-// Franja semanal de la agenda del profesor (tabla Disponibilidad). diaSemana: 1 = lunes ... 7 = domingo. Horas: "14:00"
+// Franja semanal de la agenda del profesor (tabla Disponibilidad). diaSemana: 1 = lunes ... 7 = domingo. Horas: 14:00
 public class FranjaSemanal
 {
     public int diaSemana { get; set; }
-    public string desde { get; set; } = "";
-    public string hasta { get; set; } = "";
+    public TimeSpan desde { get; set; }
+    public TimeSpan hasta { get; set; }
 }
 
-// Día bloqueado del profesor ("2026-10-28") y cuántas clases activas tiene ese día
+// Día bloqueado del profesor y cuántas clases activas tiene ese día
 public class DiaBloqueado
 {
-    public string fecha { get; set; } = "";
+    public DateTime fecha { get; set; }
     public int clasesEseDia { get; set; }
 }
 

@@ -150,9 +150,10 @@ function horaEnTexto(totalMinutos) {
     return `${dosDigitos(Math.floor(totalMinutos / 60))}:${dosDigitos(totalMinutos % 60)}`;
 }
 
-// "14:00" → "14", "9:30" → "9:30" (para "lun a vie 14 a 21")
+// "14:00:00" → "14", "09:30:00" → "9:30" (para "lun a vie 14 a 21")
 function horaCorta(texto) {
-    return texto.endsWith(":00") ? String(Number(texto.slice(0, 2))) : `${Number(texto.slice(0, 2))}${texto.slice(2)}`;
+    const [horas, minutos] = texto.split(":");
+    return minutos === "00" ? String(Number(horas)) : `${Number(horas)}:${minutos}`;
 }
 
 // "lun a vie 14 a 21, sáb 9 a 13": agrupa los días seguidos que tienen las mismas franjas
@@ -255,7 +256,7 @@ function crearSelectorHorario(raiz) {
                 franja.dataset.hora = texto;
                 franja.setAttribute("aria-pressed", "false");
 
-                const choque = ocupados.find(ocupado => new Date(ocupado.inicio) < fin && new Date(ocupado.fin) > inicio);
+                const choque = ocupados.find(ocupado => new Date(ocupado.desde) < fin && new Date(ocupado.hasta) > inicio);
                 if (inicio < limite) {
                     franja.disabled = true;
                     franja.title = "Tiene que empezar dentro de 1 hora o más";

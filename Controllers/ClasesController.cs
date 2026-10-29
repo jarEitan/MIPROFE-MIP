@@ -54,7 +54,12 @@ public class ClasesController : Controller
         string? idAlumno = HttpContext.Session.GetString("idUsuario");
         if (idAlumno == null) return Unauthorized();
 
-        return Json(conInsignia(new BD().enviarPedidoClase(int.Parse(idAlumno), idProfesor, fecha, mensaje)));
+        ResultadoClase resultado = new BD().enviarPedidoClase(int.Parse(idAlumno), idProfesor, fecha, mensaje);
+        if (resultado.codigo == 0 && !string.IsNullOrWhiteSpace(mensaje))
+        {
+            avisarPorChat(int.Parse(idAlumno), idProfesor, "Te pedí una clase para el " + TextoFecha.clase(fecha) + ". " + mensaje);
+        }
+        return Json(conInsignia(resultado));
     }
 
     [HttpPost]
@@ -83,7 +88,13 @@ public class ClasesController : Controller
         string? idUsuario = HttpContext.Session.GetString("idUsuario");
         if (idUsuario == null) return Unauthorized();
 
-        return Json(conInsignia(new BD().cancelarClase(int.Parse(idUsuario), idClase, motivo)));
+        ResultadoClase resultado = new BD().cancelarClase(int.Parse(idUsuario), idClase, motivo);
+        if (resultado.codigo == 0 && !string.IsNullOrWhiteSpace(motivo))
+        {
+            string accion = resultado.estado == "Pide cancelar" ? "Pedí cancelar" : "Cancelé";
+            avisarPorChat(int.Parse(idUsuario), resultado.idOtro!.Value, accion + " la clase del " + TextoFecha.clase(resultado.fecha!.Value) + ". Motivo: " + motivo);
+        }
+        return Json(conInsignia(resultado));
     }
 
     [HttpPost]
@@ -93,7 +104,12 @@ public class ClasesController : Controller
         string? idUsuario = HttpContext.Session.GetString("idUsuario");
         if (idUsuario == null) return Unauthorized();
 
-        return Json(conInsignia(new BD().reubicarClase(int.Parse(idUsuario), idClase, fecha, motivo)));
+        ResultadoClase resultado = new BD().reubicarClase(int.Parse(idUsuario), idClase, fecha, motivo);
+        if (resultado.codigo == 0 && !string.IsNullOrWhiteSpace(motivo))
+        {
+            avisarPorChat(int.Parse(idUsuario), resultado.idOtro!.Value, "Pedí cambiar la clase del " + TextoFecha.clase(resultado.fecha!.Value) + " al " + TextoFecha.clase(fecha) + ". Motivo: " + motivo);
+        }
+        return Json(conInsignia(resultado));
     }
 
     [HttpPost]
@@ -107,6 +123,10 @@ public class ClasesController : Controller
         if (aceptar)
         {
             resultado = new BD().aceptarSolicitudClase(int.Parse(idUsuario), idClase);
+            if (resultado.codigo == 0 && resultado.fechaPropuesta != null)
+            {
+                avisarPorChat(int.Parse(idUsuario), resultado.idOtro!.Value, "El cambio de horario fue aceptado, el nuevo horario es: " + TextoFecha.clase(resultado.fechaPropuesta.Value) + ".");
+            }
         }
         else
         {
@@ -180,9 +200,15 @@ public class ClasesController : Controller
         return resultado;
     }
 
+    // Los mensajes automáticos de las clases van al chat del otro; enviarMensaje acepta hasta 1000 caracteres
+    private static void avisarPorChat(int idEmisor, int idReceptor, string texto)
+    {
+        new BD().enviarMensaje(idEmisor, idReceptor, texto.Length > 1000 ? texto.Substring(0, 1000) : texto);
+    }
+
     private static bool estaBloqueado(AgendaProfesor agenda, DateTime dia)
     {
-        return agenda.diasBloqueados.Any(bloqueado => bloqueado.fecha == dia.ToString("yyyy-MM-dd"));
+        return agenda.diasBloqueados.Any(bloqueado => bloqueado.fecha == dia.Date);
     }
 
     // Las franjas de ese día de la semana (lunes = 1, como en Disponibilidad). Vacías si el día está bloqueado

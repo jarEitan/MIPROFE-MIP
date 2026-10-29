@@ -14,13 +14,13 @@ public class ResultadoHistorial
     public List<ClaseHistorial> clases { get; set; } = new List<ClaseHistorial>();
 }
 
-// fecha: "2026-10-28T20:00". estado: Completada | No concretada | Cancelada. motivo: solo en No concretada.
+// estado: Completada | No concretada | Cancelada. motivo: solo en No concretada.
 // puntuacion: estrellas de la última reseña que el dueño le dejó al otro (null = no le dejó)
 public class ClaseHistorial
 {
     public int id { get; set; }
     public string estado { get; set; } = "";
-    public string fecha { get; set; } = "";
+    public DateTime fecha { get; set; }
     public int idOtroUsuario { get; set; }
     public string nombreOtro { get; set; } = "";
     public string apellidoOtro { get; set; } = "";

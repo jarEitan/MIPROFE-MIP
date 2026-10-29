@@ -209,7 +209,7 @@ function cargarMiAgenda() {
     return pedirJson("/Clases/MiAgenda")
         .then(agenda => {
             diasDeAgenda = nombresDeDiasDeAgenda.map((_, indice) => {
-                const franjas = agenda.franjas.filter(franja => franja.diaSemana === indice + 1).map(franja => ({ desde: franja.desde, hasta: franja.hasta }));
+                const franjas = agenda.franjas.filter(franja => franja.diaSemana === indice + 1).map(franja => ({ desde: franja.desde.slice(0, 5), hasta: franja.hasta.slice(0, 5) }));
                 return { activo: franjas.length > 0, franjas };
             });
             dibujarDiasDeAgenda();
@@ -261,17 +261,18 @@ function dibujarDiasBloqueados(dias) {
     }
 
     lista.replaceChildren(...dias.map(dia => {
+        const fecha = dia.fecha.slice(0, 10);
         const item = crearElemento("li");
-        item.dataset.fecha = dia.fecha;
+        item.dataset.fecha = fecha;
         const texto = crearElemento("div");
-        texto.append(crearElemento("strong", "", textoDiaLargo(leerFechaLocal(dia.fecha))));
+        texto.append(crearElemento("strong", "", textoDiaLargo(leerFechaLocal(fecha))));
         if (dia.clasesEseDia > 0) {
             texto.append(crearElemento("small", "", `Tenés ${dia.clasesEseDia} ${dia.clasesEseDia === 1 ? "clase" : "clases"} ese día: avisales o cancelalas.`));
         }
         const desbloquear = crearElemento("button", "boton contorno chico", "Desbloquear");
         desbloquear.type = "button";
-        desbloquear.dataset.desbloquearDia = dia.fecha;
-        desbloquear.setAttribute("aria-label", `Desbloquear el ${textoDiaLargo(leerFechaLocal(dia.fecha)).toLowerCase()}`);
+        desbloquear.dataset.desbloquearDia = fecha;
+        desbloquear.setAttribute("aria-label", `Desbloquear el ${textoDiaLargo(leerFechaLocal(fecha)).toLowerCase()}`);
         item.append(texto, desbloquear);
         return item;
     }));
