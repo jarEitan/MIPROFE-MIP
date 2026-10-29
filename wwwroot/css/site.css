@@ -1152,7 +1152,7 @@ fieldset {
     padding: .6rem 1rem;
     border-radius: var(--radioChico);
     background-color: var(--colorExito);
-    color: #fff;
+    color: #ffffff; 
     font-size: .875rem;
     font-weight: 600;
 }
@@ -2020,7 +2020,7 @@ fieldset {
     background-color: #fff;
 }
 
-/* ---------- 3.3 Inicio: cómo funciona (camino de tres números unidos por una línea punteada) ---------- */
+/* ---------- 3.3 Inicio: cómo funciona (camino de tres números unidos por una línea punteada; también en Quiénes somos) ---------- */
 .pasos {
     background-color: var(--colorSuperficie);
 }
@@ -2113,19 +2113,22 @@ fieldset {
     }
 }
 
-/* ---------- 3.4 Inicio: perfiles alumno / profesor ---------- */
-.perfiles .card {
+/* ---------- 3.4 Inicio: perfiles alumno / profesor (y misión y visión de Quiénes somos) ---------- */
+.perfiles .card,
+.mision .card {
     gap: 1rem;
     padding: clamp(1.5rem, 1rem + 2vw, 2.25rem);
 }
 
-.perfiles .card ul {
+.perfiles .card ul,
+.mision .card ul {
     display: grid;
     gap: .55rem;
     margin-bottom: .5rem;
 }
 
-.perfiles .card li {
+.perfiles .card li,
+.mision .card li {
     display: flex;
     align-items: flex-start;
     gap: .6rem;
@@ -2133,7 +2136,8 @@ fieldset {
     font-weight: 600;
 }
 
-.perfiles .card li::before {
+.perfiles .card li::before,
+.mision .card li::before {
     content: "✓";
     display: inline-flex;
     align-items: center;
@@ -2149,7 +2153,9 @@ fieldset {
 }
 
 .perfiles .card.oscura li::before,
-.perfiles .card.oscura .icono {
+.perfiles .card.oscura .icono,
+.mision .card.oscura li::before,
+.mision .card.oscura .icono {
     background-color: var(--colorCeleste);
 }
 
@@ -2158,7 +2164,8 @@ fieldset {
     border-color: transparent;
 }
 
-.perfiles .card .icono {
+.perfiles .card .icono,
+.mision .card .icono {
     background-color: #fff;
     color: var(--colorTinta);
 }
@@ -4464,15 +4471,6 @@ tr.resaltada td {
     line-height: 1.5;
 }
 
-.mision .card {
-    gap: 1rem;
-    padding: clamp(1.5rem, 1rem + 2vw, 2.25rem);
-}
-
-.mision .card p {
-    font-size: 1rem;
-}
-
 /* Cómo somos: celeste plano (el texto va en tinta) con los atributos en pegatinas quietas */
 .atributos {
     background-color: var(--colorCeleste);
@@ -4515,8 +4513,8 @@ tr.resaltada td {
     font-weight: 600;
 }
 
-/* Equipo sigue a Por qué nace sobre blanco: un solo espacio entre las dos */
-.problemas + .equipo {
+/* El camino (.pasos, en 3.3) sigue a Por qué nace sobre blanco: un solo espacio entre las dos. Lo que viene después ya lo junta .pasos ~ section */
+.problemas + .pasos {
     padding-top: 0;
 }
 

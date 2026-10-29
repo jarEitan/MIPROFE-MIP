@@ -254,7 +254,7 @@ El `.catch` queda para todo lo que no es una respuesta normal del SP: sin conexi
 
 ### Contraseñas
 
-Se guardan en texto plano a propósito, porque es un TP de la escuela. `iniciarSesion` las compara en el SP. No volver a ponerles hash sin hablarlo antes con el equipo.
+Se guardan encriptadas con PBKDF2 (SHA256) y una sal por usuario, como `"sal.hash"` en base64. `BDsesion.cs` las encripta al registrar y las compara al iniciar sesión: el SP `iniciarSesion` solo devuelve la guardada. No hay código para aceptar contraseñas sin encriptar.
 
 ### Scripts de la base (`MIP_Estructuras/`)
 
@@ -262,7 +262,7 @@ Se guardan en texto plano a propósito, porque es un TP de la escuela. `iniciarS
 |---|---|
 | `MIP-BD_01_estructura.sql` | `CREATE DATABASE`, tablas, claves y restricciones |
 | `MIP-BD_02_stored_procedures.sql` | Funciones y SP |
-| `MIP-BD_03_datos_prueba.sql` | Datos de prueba (456 cuentas con contraseña `12345678`) |
+| `MIP-BD_03_datos_prueba.sql` | Datos de prueba (456 cuentas con contraseña `12345678`, todavía sin encriptar: no pueden iniciar sesión) |
 
 - Para aplicar cualquier cambio, se borra la base `MIP` y se corren los tres en orden: 01 → 02 → 03.
 - Están en **UTF-16**, como los exporta SSMS. Al editarlos hay que respetar esa codificación; si se guardan en otra, se rompen los acentos.

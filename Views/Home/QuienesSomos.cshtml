@@ -8,11 +8,16 @@
         <div class="row align-items-center gy-5">
             <div class="col-12 lg:col-7">
                 <h1>Quiénes <mark>somos</mark></h1>
-                <p>Esta es nuestra start-up, dedicada a ayudar a profesores y alumnos a conectarse</p>
+                <p>Esta es nuestra start-up, dedicada a ayudar a profesores y alumnos a conectarse. Somos cuatro estudiantes que vivimos de cerca lo difícil que es encontrar una buena clase particular, y decidimos resolverlo.</p>
                 <ul>
                     <li><span class="icono"><i class="bi bi-backpack" aria-hidden="true"></i></span> Ayudar a los estudiantes a encontrar profesores particulares</li>
                     <li><span class="icono celeste"><i class="bi bi-person-video3" aria-hidden="true"></i></span> Ayudar a los profesores particulares a encontrar estudiantes</li>
+                    <li><span class="icono oscuro"><i class="bi bi-chat-dots" aria-hidden="true"></i></span> Que la búsqueda, el chat, la agenda y las reseñas estén en un solo lugar</li>
                 </ul>
+                <div class="d-flex flex-wrap gap-3 mt-5">
+                    <a class="boton principal" asp-controller="Catalogo" asp-action="Index">Ver el catálogo</a>
+                    <a class="boton contorno" href="#equipo">Conocer al equipo</a>
+                </div>
             </div>
 
             @* Plancha decorativa de pegatinas *@
@@ -41,26 +46,39 @@
     </div>
 </section>
 
-<!-- ================= MISIÓN Y VISIÓN ================= -->
+<!-- ================= MISIÓN Y VISIÓN (las tarjetas usan el estilo de .perfiles) ================= -->
 <section class="mision">
     <div class="container">
         <div class="encabezadoSeccion">
             <h2>Misión y visión</h2>
+            <p>Lo que hacemos hoy y hacia dónde queremos llegar.</p>
         </div>
 
         <div class="row g-3 lg:g-4">
             <div class="col-12 md:col-6">
-                <div class="card">
+                <div class="card coral">
                     <span class="icono"><i class="bi bi-bullseye" aria-hidden="true"></i></span>
                     <h3>Misión</h3>
                     <p>Garantizar que todo alumno consiga un profesor particular sin complicaciones y que cada docente pueda enseñar a quien lo necesite.</p>
+                    <ul>
+                        <li>Un catálogo que se filtra por materia, nivel, colegio y modalidad</li>
+                        <li>Perfiles verificados y reseñas de otros alumnos</li>
+                        <li>Chat directo para coordinar, sin intermediarios</li>
+                        <li>Pedidos, cambios y cancelaciones desde el Panel de Control</li>
+                    </ul>
                 </div>
             </div>
             <div class="col-12 md:col-6">
-                <div class="card">
-                    <span class="icono celeste"><i class="bi bi-eye" aria-hidden="true"></i></span>
+                <div class="card oscura">
+                    <span class="icono"><i class="bi bi-eye" aria-hidden="true"></i></span>
                     <h3>Visión</h3>
                     <p>Crear un espacio universal de enseñanza y aprendizaje accesible, independientemente de la situación, el contexto, el precio o la disponibilidad horaria.</p>
+                    <ul>
+                        <li>Buscar un profesor no cuesta nada</li>
+                        <li>Cada docente define su propio precio por hora</li>
+                        <li>Clases presenciales o virtuales, según lo que te quede cómodo</li>
+                        <li>Una agenda con los horarios libres de cada profesor</li>
+                    </ul>
                 </div>
             </div>
         </div>
@@ -77,12 +95,14 @@
             </div>
             <div class="col-12 lg:col-8">
                 <h3>Genéricos</h3>
+                <p>Lo que no puede faltar en ninguna plataforma de educación.</p>
                 <ul class="plancha">
                     <li class="pegatina" style="--giro:-3deg"><i class="bi bi-universal-access" aria-hidden="true"></i> Accesibilidad</li>
                     <li class="pegatina" style="--giro:2deg"><i class="bi bi-people" aria-hidden="true"></i> Comunidad</li>
                     <li class="pegatina" style="--giro:-2deg"><i class="bi bi-patch-check" aria-hidden="true"></i> Profesionalismo</li>
                 </ul>
                 <h3>Específicos</h3>
+                <p>Lo que nos hace distintos: aprender también puede ser divertido, cada uno arma sus clases a su manera y siempre buscamos formas nuevas de conectar.</p>
                 <ul class="plancha">
                     <li class="pegatina coral" style="--giro:3deg"><i class="bi bi-emoji-laughing" aria-hidden="true"></i> Divertido</li>
                     <li class="pegatina coral" style="--giro:-3deg"><i class="bi bi-arrows-move" aria-hidden="true"></i> Flexible</li>
@@ -107,6 +127,7 @@
                     <span class="icono"><i class="bi bi-person-hearts" aria-hidden="true"></i></span>
                     <h3>Menores de edad y tarifas rígidas</h3>
                     <p>Es difícil conseguir apoyo escolar adaptado para menores, con precios flexibles. MIP ofrece un entorno seguro y tarifas transparentes.</p>
+                    <p>Cada profesor muestra su precio por hora antes de la primera clase, y las cuentas se verifican con DNI.</p>
                     <p class="detectado"><span class="avatar avatar-sm theme-danger" aria-hidden="true">EG</span> Lo detectó <strong>Eitan</strong></p>
                 </div>
             </div>
@@ -115,6 +136,7 @@
                     <span class="icono celeste"><i class="bi bi-building" aria-hidden="true"></i></span>
                     <h3>Programas específicos de cada colegio</h3>
                     <p>Cuesta encontrar docentes que conozcan tu programa, y a ellos captar alumnos de su zona. El catálogo se indexa por colegio.</p>
+                    <p>Los profesores cargan los colegios donde enseñan, así encontrás a quien ya sabe cómo se trabaja en el tuyo.</p>
                     <p class="detectado"><span class="avatar avatar-sm theme-primary" aria-hidden="true">FM</span> Lo detectó <strong>Fran</strong></p>
                 </div>
             </div>
@@ -123,6 +145,7 @@
                     <span class="icono oscuro"><i class="bi bi-chat-quote" aria-hidden="true"></i></span>
                     <h3>Todo por el boca a boca</h3>
                     <p>Hoy se contrata a un profesor por contactos informales. MIP centraliza la oferta con perfiles claros y reputación comprobable.</p>
+                    <p>Las reseñas las dejan alumnos que tomaron clases, y los Me gusta muestran a quién recomienda la comunidad.</p>
                     <p class="detectado"><span class="avatar avatar-sm theme-inverse" aria-hidden="true">AC</span> Lo detectó <strong>Ari</strong></p>
                 </div>
             </div>
@@ -131,10 +154,39 @@
                     <span class="icono"><i class="bi bi-piggy-bank" aria-hidden="true"></i></span>
                     <h3>Refuerzo escolar caro</h3>
                     <p>Reforzar contenidos no debería costar de más. Mostramos precios por hora y coincidencias por zona y modalidad.</p>
+                    <p>Comparás varios profesores en el catálogo y elegís el que mejor se ajusta a lo que podés pagar.</p>
                     <p class="detectado"><span class="avatar avatar-sm theme-accent" aria-hidden="true">TS</span> Lo detectó <strong>Tobi</strong></p>
                 </div>
             </div>
         </div>
+    </div>
+</section>
+
+<!-- ================= CÓMO LO ARMAMOS (el camino de .pasos del Inicio) ================= -->
+<section class="pasos">
+    <div class="container">
+        <div class="encabezadoSeccion">
+            <h2>De un problema a una plataforma</h2>
+            <p>Así pasamos de lo que vivíamos a MiProfesor.</p>
+        </div>
+
+        <ol>
+            <li>
+                <span class="numero">1</span>
+                <h3>Detectamos</h3>
+                <p>Cada uno trajo un problema que había vivido como alumno, o que había visto en su familia y en su colegio.</p>
+            </li>
+            <li>
+                <span class="numero">2</span>
+                <h3>Lo pensamos juntos</h3>
+                <p>Definimos la misión, la visión, el manifiesto y cómo queremos que nos vean, antes de escribir una línea de código.</p>
+            </li>
+            <li>
+                <span class="numero">3</span>
+                <h3>Lo construimos</h3>
+                <p>Trabajamos por sprints, cada uno a cargo de una parte: datos, servidor, interfaz y coordinación.</p>
+            </li>
+        </ol>
     </div>
 </section>
 
@@ -143,6 +195,7 @@
     <div class="container">
         <div class="encabezadoSeccion">
             <h2>Las personas detrás de MIP</h2>
+            <p>Somos cuatro, y cada uno se encarga de una parte del proyecto.</p>
         </div>
 
         <div class="row row-cols-1 sm:row-cols-2 lg:row-cols-4 g-3 lg:g-4">
@@ -151,7 +204,7 @@
                     <span class="avatar avatar-xl theme-primary">FM</span>
                     <h3>Francisco Martínez</h3>
                     <span class="badge theme-inverse">Project Leader</span>
-                    <p>Dirección del proyecto y coordinación de los sprints de desarrollo.</p>
+                    <p>Dirección del proyecto y coordinación de los sprints de desarrollo. Ordena las prioridades para que todas las partes avancen juntas.</p>
                 </div>
             </div>
             <div class="col">
@@ -159,7 +212,7 @@
                     <span class="avatar avatar-xl theme-accent">TS</span>
                     <h3>Tobias Schatzyki</h3>
                     <span class="badge theme-inverse">Database Engineer</span>
-                    <p>Modelado de datos, consultas SQL y estructuras de almacenamiento.</p>
+                    <p>Modelado de datos, consultas SQL y estructuras de almacenamiento. Diseña dónde se guardan las clases, las reseñas y los mensajes.</p>
                 </div>
             </div>
             <div class="col">
@@ -167,7 +220,7 @@
                     <span class="avatar avatar-xl theme-danger">EG</span>
                     <h3>Eitan Ariel Glaz</h3>
                     <span class="badge theme-inverse">Front-end Developer</span>
-                    <p>Interfaces responsivas, componentes visuales y microinteracciones.</p>
+                    <p>Interfaces responsivas, componentes visuales y microinteracciones. Cuida que la página se use igual de bien en el celular.</p>
                 </div>
             </div>
             <div class="col">
@@ -175,7 +228,7 @@
                     <span class="avatar avatar-xl theme-inverse">AC</span>
                     <h3>Ariel Chocron</h3>
                     <span class="badge theme-inverse">Back-end Developer</span>
-                    <p>Lógica de negocio, procesamiento de solicitudes y seguridad en el servidor.</p>
+                    <p>Lógica de negocio, procesamiento de solicitudes y seguridad en el servidor. Se ocupa de las sesiones y de proteger los datos de cada cuenta.</p>
                 </div>
             </div>
         </div>
@@ -186,12 +239,13 @@
 <section class="llamadoFinal">
     <div class="container">
         <div class="row align-items-center gy-4">
-            <div class="col-12 lg:col-8 text-center lg:text-start">
+            <div class="col-12 lg:col-7 text-center lg:text-start">
                 <h2>¿Tenés una <mark>idea</mark> o una duda?</h2>
-                <p>Escribinos desde el centro de ayuda: leemos todos los mensajes.</p>
+                <p>Escribinos desde el centro de ayuda: leemos todos los mensajes. Y si todavía no tenés cuenta, sumate y empezá a buscar tu profesor.</p>
             </div>
-            <div class="col-12 lg:col-4 acciones">
+            <div class="col-12 lg:col-5 acciones">
                 <a class="boton secundario" asp-controller="Home" asp-action="Soporte">Ir a Soporte</a>
+                <a class="boton claro" asp-controller="Sesion" asp-action="Registrarse">Crear cuenta gratis</a>
             </div>
         </div>
     </div>

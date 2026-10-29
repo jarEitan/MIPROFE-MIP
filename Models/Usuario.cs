@@ -4,7 +4,7 @@ namespace MIP_MIPROFESOR.Models;
 
 // Una persona: sesión, registro, perfil, edición, amigos y tarjetas del catálogo. Cada SP llena solo sus columnas.
 // Las listas vienen como texto: materias = "Física, Química", idsMaterias = "37,38", idsEscuelas = "20:2015,21:2019".
-// codigo: registro (1 = mail ya registrado, 2 = fecha inválida), login (1 = el mail no existe, 2 = contraseña incorrecta),
+// codigo: registro (1 = mail ya registrado, 2 = fecha inválida), login (1 = el mail no existe, 2 = contraseña incorrecta, esto lo revisa BDsesion),
 // obtenerPerfil (1 = no es de ningún alumno ni profesor), guardarPerfilCompleto (1 = mail de otra cuenta,
 // 2 = DNI de otra cuenta, 3 = datos inválidos, 4 = foto inválida, esto lo revisa PerfilesController)
 public class Usuario
