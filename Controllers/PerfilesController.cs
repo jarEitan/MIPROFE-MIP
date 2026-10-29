@@ -82,7 +82,14 @@ public class PerfilesController : Controller
         return Json(datos);
     }
 
-    // El SP revisa los datos. Acá solo se limpia el HTML de "Sobre mí" y se revisan las fotos
+    // Texto sin espacios de más; vacío = null
+    private static string? limpiarTexto(string? texto)
+    {
+        string? limpio = texto?.Trim();
+        return limpio == "" ? null : limpio;
+    }
+
+    // El SP revisa los datos. Acá se limpian los textos y el HTML de "Sobre mí" (y se revisa su largo, que no entra en el SP) y se revisan las fotos
     [HttpPost]
     [ValidateAntiForgeryToken]
     [RequestSizeLimit(12 * 1024 * 1024)]
@@ -95,6 +102,18 @@ public class PerfilesController : Controller
         BD bd = new BD();
         Usuario anteriores = bd.obtenerDatosEdicion(idUsuario);
         edicion.descripcion = limpiarDescripcion(edicion.descripcion);
+        if (edicion.descripcion != null && edicion.descripcion.Length > 5000) return Json(new Usuario { codigo = 3 });
+
+        edicion.nombre = (edicion.nombre ?? "").Trim();
+        edicion.apellido = (edicion.apellido ?? "").Trim();
+        edicion.mail = (edicion.mail ?? "").Trim().ToLowerInvariant();
+        edicion.dni = limpiarTexto(edicion.dni?.Replace(".", "").Replace("-", "").Replace(" ", ""));
+        edicion.direccion = limpiarTexto(edicion.direccion);
+        edicion.titulos = edicion.titulos.Where(titulo => !string.IsNullOrWhiteSpace(titulo)).Select(titulo => titulo.Trim()).ToList();
+
+        // Los profesores mandan cada colegio con el año desde el que dan clase ahí ("20:2015,21:2019"): el SP recibe los IDs y el año lo guarda guardarAnioEscuela
+        string[] escuelas = (edicion.idsEscuelas ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries);
+        edicion.idsEscuelas = string.Join(",", escuelas.Select(escuela => escuela.Split(':')[0]));
 
         string? fotoPerfil = null;
         string? fotoDni = null;
@@ -122,6 +141,17 @@ public class PerfilesController : Controller
 
             // El header y el aviso de verificación se arman con la sesión
             SesionController.guardarSesion(HttpContext.Session, resultado);
+
+            // Sin año válido el colegio queda sin año, y el resto del perfil ya quedó guardado
+            if (resultado.tipoUsuario == "profesor")
+            {
+                foreach (string escuela in escuelas)
+                {
+                    string[] partes = escuela.Split(':');
+                    int.TryParse(partes.Length > 1 ? partes[1] : "", out int anio);
+                    if (bd.guardarAnioEscuela(idUsuario, int.Parse(partes[0]), anio) != 0) return Json(new Usuario { codigo = 3 });
+                }
+            }
         }
         else
         {

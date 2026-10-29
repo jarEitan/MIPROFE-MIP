@@ -33,6 +33,6 @@ public class MensajesController : Controller
         string? idEmisor = HttpContext.Session.GetString("idUsuario");
         if (idEmisor == null) return Unauthorized();
 
-        return Json(new BD().enviarMensaje(int.Parse(idEmisor), idReceptor, contenido));
+        return Json(new BD().enviarMensaje(int.Parse(idEmisor), idReceptor, contenido?.Trim()));
     }
 }

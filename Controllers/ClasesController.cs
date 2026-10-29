@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Mvc;
 using MIP_MIPROFESOR.Models;
 
@@ -168,7 +169,18 @@ public class ClasesController : Controller
         string? idProfesor = HttpContext.Session.GetString("idUsuario");
         if (idProfesor == null) return Unauthorized();
 
-        return Json(new { codigo = new BD().guardarDisponibilidad(int.Parse(idProfesor), franjas) });
+        // "1:14:00-21:00,6:09:00-13:00" (lunes = 1): se separa acá y cada franja la revisa agregarFranja
+        string hora = @"((?:[01]\d|2[0-3]):[0-5]\d)";
+        List<Match> partes = (franjas ?? "").Split(',').Select(texto => Regex.Match(texto, @"^(\d):" + hora + "-" + hora + "$")).ToList();
+        if (partes.Any(parte => !parte.Success)) return Json(new { codigo = 2 });
+
+        BD bd = new BD();
+        int codigo = bd.borrarDisponibilidadSemanal(int.Parse(idProfesor));
+        foreach (Match parte in partes)
+        {
+            if (codigo == 0) codigo = bd.agregarFranja(int.Parse(idProfesor), int.Parse(parte.Groups[1].Value), TimeSpan.Parse(parte.Groups[2].Value), TimeSpan.Parse(parte.Groups[3].Value));
+        }
+        return Json(new { codigo = codigo });
     }
 
     [HttpPost]
@@ -203,6 +215,7 @@ public class ClasesController : Controller
     // Los mensajes automáticos de las clases van al chat del otro; enviarMensaje acepta hasta 1000 caracteres
     private static void avisarPorChat(int idEmisor, int idReceptor, string texto)
     {
+        texto = texto.Trim();
         new BD().enviarMensaje(idEmisor, idReceptor, texto.Length > 1000 ? texto.Substring(0, 1000) : texto);
     }
 
