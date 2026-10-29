@@ -1,4 +1,4 @@
-using System.Text.RegularExpressions;
+using System.Globalization;
 using Microsoft.AspNetCore.Mvc;
 using MIP_MIPROFESOR.Models;
 
@@ -166,19 +166,30 @@ public class ClasesController : Controller
     [ValidateAntiForgeryToken]
     public IActionResult GuardarAgenda(string franjas)
     {
-        string? idProfesor = HttpContext.Session.GetString("idUsuario");
-        if (idProfesor == null) return Unauthorized();
+        string? idSesion = HttpContext.Session.GetString("idUsuario");
+        if (idSesion == null) return Unauthorized();
+        int idProfesor = int.Parse(idSesion);
 
-        // "1:14:00-21:00,6:09:00-13:00" (lunes = 1): se separa acá y cada franja la revisa agregarFranja
-        string hora = @"((?:[01]\d|2[0-3]):[0-5]\d)";
-        List<Match> partes = (franjas ?? "").Split(',').Select(texto => Regex.Match(texto, @"^(\d):" + hora + "-" + hora + "$")).ToList();
-        if (partes.Any(parte => !parte.Success)) return Json(new { codigo = 2 });
+        // "1:14:00-21:00,6:09:00-13:00" (lunes = 1) -> { día, hora, minutos, hora, minutos } por franja. El resto lo revisa agregarFranja
+        List<int[]> lista = new List<int[]>();
+        foreach (string texto in (franjas ?? "").Split(','))
+        {
+            int[] n = new int[5];
+            string[] partes = texto.Split(':', '-');
+            bool valida = partes.Length == 5;
+            for (int i = 0; valida && i < 5; i++)
+            {
+                valida = int.TryParse(partes[i], NumberStyles.None, CultureInfo.InvariantCulture, out n[i]);
+            }
+            if (!valida || n[1] > 23 || n[2] > 59 || n[3] > 23 || n[4] > 59) return Json(new { codigo = 2 });
+            lista.Add(n);
+        }
 
         BD bd = new BD();
-        int codigo = bd.borrarDisponibilidadSemanal(int.Parse(idProfesor));
-        foreach (Match parte in partes)
+        int codigo = bd.borrarDisponibilidadSemanal(idProfesor);
+        foreach (int[] n in lista)
         {
-            if (codigo == 0) codigo = bd.agregarFranja(int.Parse(idProfesor), int.Parse(parte.Groups[1].Value), TimeSpan.Parse(parte.Groups[2].Value), TimeSpan.Parse(parte.Groups[3].Value));
+            if (codigo == 0) codigo = bd.agregarFranja(idProfesor, n[0], new TimeSpan(n[1], n[2], 0), new TimeSpan(n[3], n[4], 0));
         }
         return Json(new { codigo = codigo });
     }
@@ -215,7 +226,6 @@ public class ClasesController : Controller
     // Los mensajes automáticos de las clases van al chat del otro; enviarMensaje acepta hasta 1000 caracteres
     private static void avisarPorChat(int idEmisor, int idReceptor, string texto)
     {
-        texto = texto.Trim();
         new BD().enviarMensaje(idEmisor, idReceptor, texto.Length > 1000 ? texto.Substring(0, 1000) : texto);
     }
 
