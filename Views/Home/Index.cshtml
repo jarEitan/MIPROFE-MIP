@@ -181,8 +181,8 @@
             <div class="row row-cols-1 md:row-cols-2 lg:row-cols-3 g-3 lg:g-4">
                 @foreach (Usuario profesor in profesoresDestacados)
                 {
-                    string[] colegios = profesor.colegios?.Split(" · ") ?? new string[0];
-                    string[] materias = profesor.materias?.Split(", ") ?? new string[0];
+                    string[] colegios = profesor.colegios?.Split(" · ", StringSplitOptions.RemoveEmptyEntries) ?? new string[0];
+                    string[] materias = profesor.materias?.Split(", ", StringSplitOptions.RemoveEmptyEntries) ?? new string[0];
                     string nombreCompleto = profesor.nombre + " " + profesor.apellido;
                     string iniciales = (profesor.nombre.Length > 0 ? profesor.nombre.Substring(0, 1) : "") + (profesor.apellido.Length > 0 ? profesor.apellido.Substring(0, 1) : "");
                     iniciales = iniciales == "" ? "?" : iniciales.ToUpper();

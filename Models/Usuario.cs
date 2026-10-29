@@ -32,8 +32,6 @@ public class Usuario
     public int cantidadResenas { get; set; }
     public int cantidadLikes { get; set; }
     public int cantidadAmigos { get; set; }
-    // Cuántos amigos del visitante completaron clases con este profesor (0 sin sesión)
-    public int amigosRecomiendan { get; set; }
     public string? materias { get; set; }
     public string? niveles { get; set; }
     public string? modalidades { get; set; }

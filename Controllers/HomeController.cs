@@ -7,8 +7,9 @@ public class HomeController : Controller
 {
     public IActionResult Index()
     {
-        // Los 3 primeros del catálogo: cuentas verificadas y mejor calificadas
-        ViewBag.profesoresDestacados = new BD().obtenerCatalogo(null, null, null, null, "", 1, 5, 0).profesores.Take(3).ToList();
+        // Los 3 primeros del catálogo: los mejor calificados
+        List<int> ids = new BD().obtenerIdsCatalogo(null, null, null, null, null);
+        ViewBag.profesoresDestacados = new BD().obtenerProfesoresCatalogo(ids, 1, 3);
         return View();
     }
 

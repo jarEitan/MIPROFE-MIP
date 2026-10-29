@@ -159,17 +159,21 @@ public class BD
         }
     }
 
-    // Con sesión, primero salen los profesores con los que tus amigos completaron clases
-    public ResultadoCatalogo obtenerCatalogo(string? busqueda, string? materia, string? colegio, string? modalidad, string niveles, int pagina, int porPagina, int idVisitante)
+    // Fase 1 del catálogo: los ID de los profesores que cumplen los filtros, sin orden
+    public List<int> obtenerIdsCatalogo(string? busqueda, string? materia, string? colegio, string? modalidad, string? niveles)
     {
         using (var connection = new SqlConnection(connectionString))
         {
-            using (var tablas = connection.QueryMultiple("EXEC obtenerCatalogo @busqueda, @materia, @colegio, @modalidad, @niveles, @pagina, @porPagina, @idVisitante", new { busqueda = busqueda, materia = materia, colegio = colegio, modalidad = modalidad, niveles = niveles, pagina = pagina, porPagina = porPagina, idVisitante = idVisitante }))
-            {
-                ResultadoCatalogo catalogo = tablas.ReadFirst<ResultadoCatalogo>();
-                catalogo.profesores = tablas.Read<Usuario>().ToList();
-                return catalogo;
-            }
+            return connection.Query<int>("EXEC obtenerIdsCatalogo @busqueda, @materia, @colegio, @modalidad, @niveles", new { busqueda = busqueda, materia = materia, colegio = colegio, modalidad = modalidad, niveles = niveles }).ToList();
+        }
+    }
+
+    // Fase 2: de esos ID, los datos de una sola página, ordenados por calificación
+    public List<Usuario> obtenerProfesoresCatalogo(List<int> ids, int pagina, int porPagina)
+    {
+        using (var connection = new SqlConnection(connectionString))
+        {
+            return connection.Query<Usuario>("EXEC obtenerProfesoresCatalogo @ids, @pagina, @porPagina", new { ids = string.Join(",", ids), pagina = pagina, porPagina = porPagina }).ToList();
         }
     }
 

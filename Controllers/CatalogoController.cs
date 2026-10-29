@@ -3,7 +3,7 @@ using MIP_MIPROFESOR.Models;
 
 namespace MIP_MIPROFESOR.Controllers;
 
-// La página trae los selectores y catalogo.js pide los resultados a Catalogo/Buscar con fetch
+// La página trae los selectores y catalogo.js pide cada página a Catalogo/Buscar con fetch
 public class CatalogoController : Controller
 {
     // Los filtros de la URL solo preseleccionan el formulario (links de Inicio y búsquedas compartidas)
@@ -29,8 +29,8 @@ public class CatalogoController : Controller
     [HttpGet("Catalogo/Buscar")]
     public IActionResult Buscar(string? busqueda, string? materia, string? colegio, string? modalidad, string[]? nivel, int pagina = 1, int porPagina = 10)
     {
-        int idVisitante = int.Parse(HttpContext.Session.GetString("idUsuario") ?? "0");
-        string niveles = string.Join(",", nivel ?? new string[0]);
-        return Json(new BD().obtenerCatalogo(busqueda, materia, colegio, modalidad, niveles, pagina, porPagina, idVisitante));
+        string? niveles = nivel == null || nivel.Length == 0 ? null : string.Join(",", nivel);
+        List<int> ids = new BD().obtenerIdsCatalogo(busqueda, materia, colegio, modalidad, niveles);
+        return Json(new { total = ids.Count, profesores = new BD().obtenerProfesoresCatalogo(ids, pagina, porPagina) });
     }
 }

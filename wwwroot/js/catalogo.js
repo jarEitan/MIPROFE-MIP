@@ -1,14 +1,14 @@
-// Catálogo de profesores: lee los filtros del formulario, pide una página a Catalogo/Buscar con fetch
+// Catálogo de profesores: al aplicar los filtros pide la primera página a Catalogo/Buscar con fetch
 // y dibuja las tarjetas horizontales y la paginación. Los selectores con búsqueda los arma site.js.
 // Todo el texto de la base se inserta con textContent, nunca como HTML.
 
 const porPaginaPermitidos = [5, 10, 15, 20];
 const porPaginaPredeterminado = 10;
 
+let filtrosAplicados = new URLSearchParams();
 let paginaActual = 1;
 let porPaginaActual = porPaginaPredeterminado;
-let temporizadorBusqueda = null;
-let numeroDeBusqueda = 0;
+let numeroDePedido = 0;
 
 function inicializarCatalogo() {
     const formularioFiltros = document.getElementById("formularioFiltros");
@@ -20,20 +20,16 @@ function inicializarCatalogo() {
     porPaginaActual = porPaginaPermitidos.includes(porPaginaInicial) ? porPaginaInicial : porPaginaPredeterminado;
     document.getElementById("tarjetasPorPagina").value = porPaginaActual;
 
-    // Al elegir en un selector se vuelve a buscar desde la página 1
-    formularioFiltros.addEventListener("change", evento => {
-        if (evento.target.tagName === "SELECT") buscarProfesores(1);
-    });
-
-    // Al escribir se espera a que la persona termine antes de buscar
-    document.getElementById("filtroTexto").addEventListener("input", () => {
-        clearTimeout(temporizadorBusqueda);
-        temporizadorBusqueda = setTimeout(() => buscarProfesores(1), 400);
+    // Los filtros se aplican solo con el botón (o Enter en el buscador)
+    formularioFiltros.addEventListener("submit", evento => {
+        evento.preventDefault();
+        aplicarFiltros();
     });
 
     // El reset vacía los campos DESPUÉS de este evento, por eso se espera un instante
-    formularioFiltros.addEventListener("reset", () => setTimeout(() => buscarProfesores(1), 0));
+    formularioFiltros.addEventListener("reset", () => setTimeout(aplicarFiltros, 0));
 
+    // Cambiar de página o de cantidad usa los filtros aplicados, no lo que se esté eligiendo
     document.getElementById("paginaAnterior").addEventListener("click", () => buscarProfesores(paginaActual - 1, true));
     document.getElementById("paginaSiguiente").addEventListener("click", () => buscarProfesores(paginaActual + 1, true));
     document.getElementById("tarjetasPorPagina").addEventListener("change", evento => {
@@ -41,7 +37,14 @@ function inicializarCatalogo() {
         buscarProfesores(1);
     });
 
+    filtrosAplicados = leerFiltros();
+    history.replaceState(null, "", location.pathname);
     buscarProfesores(paginaActual);
+}
+
+function aplicarFiltros() {
+    filtrosAplicados = leerFiltros();
+    buscarProfesores(1);
 }
 
 // Arma los parámetros de la consulta con lo que hay en el formulario
@@ -58,56 +61,43 @@ function leerFiltros() {
 }
 
 function buscarProfesores(pagina, subirALaLista) {
-    const filtros = leerFiltros();
-
-    // La URL visible guarda solo lo que no es el valor por defecto, para poder compartir la búsqueda
-    const parametrosUrl = new URLSearchParams(filtros);
-    if (pagina > 1) parametrosUrl.set("pagina", pagina);
-    if (porPaginaActual !== porPaginaPredeterminado) parametrosUrl.set("porPagina", porPaginaActual);
-    const textoUrl = parametrosUrl.toString();
-    history.replaceState(null, "", textoUrl === "" ? location.pathname : `${location.pathname}?${textoUrl}`);
-
-    // El servidor siempre recibe la página y la cantidad
-    const consulta = new URLSearchParams(filtros);
+    const consulta = new URLSearchParams(filtrosAplicados);
     consulta.set("pagina", pagina);
     consulta.set("porPagina", porPaginaActual);
 
-    const numeroDeEstaBusqueda = ++numeroDeBusqueda;
+    const numeroDeEstePedido = ++numeroDePedido;
     const listaProfesores = document.getElementById("listaProfesores");
     listaProfesores.setAttribute("aria-busy", "true");
 
     fetch(`/Catalogo/Buscar?${consulta}`)
-        .then(respuesta => respuesta.json().then(datos => ({ ok: respuesta.ok, datos })))
-        .then(({ ok, datos }) => {
-            // Si mientras tanto se pidió otra búsqueda, esta respuesta ya no sirve
-            if (numeroDeEstaBusqueda !== numeroDeBusqueda) return;
-            if (!ok) throw new Error("Respuesta con error");
+        .then(respuesta => respuesta.json())
+        .then(datos => {
+            // Si mientras tanto se pidió otra página, esta respuesta ya no sirve
+            if (numeroDeEstePedido !== numeroDePedido) return;
+            paginaActual = pagina;
             mostrarResultados(datos);
             if (subirALaLista) listaProfesores.scrollIntoView({ behavior: "smooth", block: "start" });
         })
         .catch(error => {
-            if (numeroDeEstaBusqueda === numeroDeBusqueda) mostrarErrorCatalogo();
-        })
-        .finally(() => listaProfesores.removeAttribute("aria-busy"));
+            if (numeroDeEstePedido === numeroDePedido) mostrarErrorCatalogo();
+        });
 }
 
 function mostrarResultados(datos) {
-    paginaActual = datos.pagina;
-    porPaginaActual = datos.porPagina;
-
+    const totalPaginas = Math.max(1, Math.ceil(datos.total / porPaginaActual));
     const listaProfesores = document.getElementById("listaProfesores");
     listaProfesores.replaceChildren(...datos.profesores.map(crearTarjetaProfesor));
+    listaProfesores.removeAttribute("aria-busy");
 
     document.getElementById("errorCatalogo").hidden = true;
     document.getElementById("sinResultados").hidden = datos.total > 0;
     document.getElementById("cantidadResultados").textContent = datos.total === 1 ? "1 profesor" : `${datos.total} profesores`;
 
-    const paginador = document.getElementById("paginador");
-    paginador.hidden = datos.total === 0;
-    dibujarNumerosDePagina(datos.pagina, datos.totalPaginas);
-    document.getElementById("paginaAnterior").disabled = datos.pagina <= 1;
-    document.getElementById("paginaSiguiente").disabled = datos.pagina >= datos.totalPaginas;
-    document.getElementById("tarjetasPorPagina").value = datos.porPagina;
+    document.getElementById("paginador").hidden = datos.total === 0;
+    dibujarNumerosDePagina(paginaActual, totalPaginas);
+    document.getElementById("paginaAnterior").disabled = paginaActual <= 1;
+    document.getElementById("paginaSiguiente").disabled = paginaActual >= totalPaginas;
+    document.getElementById("tarjetasPorPagina").value = porPaginaActual;
 }
 
 // Números de página: todos si son pocos; si no, la primera, la última y las cercanas a la actual
@@ -133,6 +123,7 @@ function dibujarNumerosDePagina(pagina, totalPaginas) {
 
 function mostrarErrorCatalogo() {
     document.getElementById("listaProfesores").replaceChildren();
+    document.getElementById("listaProfesores").removeAttribute("aria-busy");
     document.getElementById("sinResultados").hidden = true;
     document.getElementById("paginador").hidden = true;
     document.getElementById("cantidadResultados").textContent = "";
@@ -188,16 +179,10 @@ function crearTarjetaProfesor(profesor) {
     if (profesor.calificacion >= 4.8 && profesor.cantidadResenas >= 2) {
         nombre.append(crearElemento("span", "badge badge-subtle theme-primary", "Popular"));
     }
-    // Recomendación: amigos tuyos que ya completaron clases con este profesor (solo con sesión; ellos van primero)
-    if (profesor.amigosRecomiendan > 0) {
-        const recomendado = crearElemento("span", "badge badge-subtle theme-accent");
-        recomendado.append(crearIcono("bi-people-fill"), profesor.amigosRecomiendan === 1 ? " 1 amigo tomó clase" : ` ${profesor.amigosRecomiendan} amigos tomaron clase`);
-        nombre.append(recomendado);
-    }
     cuerpo.append(nombre);
 
     const colegios = crearElemento("p", "colegios");
-    colegios.append(crearIcono("bi-building"), ` ${profesor.colegios ?? "Sin colegio cargado"}`);
+    colegios.append(crearIcono("bi-building"), ` ${profesor.colegios || "Sin colegio cargado"}`);
     cuerpo.append(colegios);
 
     if (profesor.materias) {
@@ -224,7 +209,7 @@ function crearTarjetaProfesor(profesor) {
     const lateral = crearElemento("div", "lateral");
 
     const importe = crearElemento("p", "importe");
-    importe.append(crearElemento("strong", "", `$ ${profesor.precioHora.toLocaleString("es-AR")}`), " ", crearElemento("span", "", "/ hora"));
+    importe.append(crearElemento("strong", "", `$ ${(profesor.precioHora ?? 0).toLocaleString("es-AR")}`), " ", crearElemento("span", "", "/ hora"));
     lateral.append(importe);
 
     const botonPerfil = crearElemento("a", "boton contorno chico", "Ver perfil");

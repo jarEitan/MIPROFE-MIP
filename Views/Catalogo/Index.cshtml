@@ -50,8 +50,8 @@
                         </div>
 
                         <div class="drawer-body">
-                            @* Sin envío: catalogo.js lee los campos y pide los resultados con fetch a Catalogo/Buscar *@
-                            <form id="formularioFiltros" onsubmit="return false" data-pagina="@ViewBag.pagina" data-por-pagina="@ViewBag.porPagina">
+                            @* Sin envío: al aplicar, catalogo.js lee los campos y pide los resultados con fetch a Catalogo/Buscar *@
+                            <form id="formularioFiltros" data-pagina="@ViewBag.pagina" data-por-pagina="@ViewBag.porPagina">
                                 <div class="form-field">
                                     <label for="filtroTexto">Buscar</label>
                                     <input class="form-control" type="search" id="filtroTexto" name="busqueda" value="@busqueda" placeholder="Nombre, materia o tema..." autocomplete="off" />
@@ -100,7 +100,10 @@
                                     </select>
                                 </div>
 
-                                <button class="boton contorno chico" type="reset" id="botonLimpiarFiltros">Limpiar filtros</button>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <button class="boton principal chico" type="submit" id="botonAplicarFiltros">Aplicar filtros</button>
+                                    <button class="boton contorno chico" type="reset" id="botonLimpiarFiltros">Limpiar filtros</button>
+                                </div>
                             </form>
                         </div>
                     </dialog>
