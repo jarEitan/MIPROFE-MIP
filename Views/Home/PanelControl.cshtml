@@ -51,6 +51,32 @@
             default: return "bi-calendar-x";
         }
     }
+
+    // El SP devuelve los datos crudos: acá se arma el texto de cada notificación
+    static (string titulo, string mensaje, string boton) textoDeNotificacion(NotificacionUsuario n)
+    {
+        string nombre = n.nombreOtro + " " + n.apellidoOtro;
+        string clase = n.fechaClase == null ? "" : n.fechaClase.Value.ToString("dd/MM 'a las' HH:mm");
+        string propuesta = n.fechaPropuesta == null ? "" : n.fechaPropuesta.Value.ToString("dd/MM 'a las' HH:mm");
+        switch (n.tipo)
+        {
+            case "solicitudAmistad": return ("Solicitud de amistad", nombre + " te envió una solicitud de amistad.", "Ver perfil");
+            case "mensajesSinLeer": return ("Mensajes sin leer", nombre + (n.cantidad == 1 ? " te mandó un mensaje." : " te mandó " + n.cantidad + " mensajes."), "Abrir chat");
+            case "pedidoPorResponder":
+            case "propuestaPorResponder":
+                return (n.tipo == "pedidoPorResponder" ? "Pedido de clase" : "Nuevo horario propuesto",
+                    nombre + (n.fechaPropuesta != null ? " pidió cambiar la clase del " + clase + " al " + propuesta + "."
+                        : n.tipo == "pedidoPorResponder" ? " te pidió una clase para el " + clase + "." : " te propone dar la clase el " + clase + "."),
+                    "Responder");
+            case "horarioRechazado": return ("Horario rechazado", nombre + " no aceptó el horario del " + clase + ". Proponé otro o cancelá la clase.", "Proponer otro horario");
+            case "pideCambioPorResponder": return ("Pide cambiar el horario", n.nombreOtro + " pidió cambiar la clase del " + clase + " al " + propuesta + ".", "Responder");
+            case "pideCancelarPorResponder": return ("Pide cancelar la clase", n.nombreOtro + " pidió cancelar tu clase del " + clase + ".", "Responder");
+            case "claseConfirmada": return ("Clase confirmada", n.nombreOtro + " confirmó tu clase del " + clase + ".", "Ver clase");
+            case "claseCancelada": return ("Clase cancelada", n.nombreOtro + " canceló tu clase del " + clase + ".", "Ver clase");
+            case "claseTerminada": return ("Terminó tu clase", "Terminó tu clase con " + nombre + ". ¿Cómo te fue?", "Dar reseña");
+            default: return ("Clase no concretada", "La clase del " + clase + " con " + n.nombreOtro + " no se concretó (" + (n.fecha == n.fechaClase ? "no se acordó un horario" : "se marcó que no se dio") + ").", "Ver clase");
+        }
+    }
 }
 
 <!-- ================= SALUDO ================= -->
@@ -130,18 +156,19 @@
                                 : esChat
                                     ? Url.Action("PanelControl", "Home", new { tab = "chat", chat = notificacion.idOtroUsuario })!
                                     : Url.Action("PanelControl", "Home", new { tab = "clases", clase = notificacion.idClase })!;
+                            var texto = textoDeNotificacion(notificacion);
                             <li class="notificacion" data-tipo="@notificacion.tipo" data-id-otro="@notificacion.idOtroUsuario" data-nombre="@notificacion.nombreOtro">
                                 <span class="icono @(esChat ? "celeste" : "")"><i class="bi @iconoDeNotificacion(notificacion.tipo)" aria-hidden="true"></i></span>
                                 <div class="textoNotificacion">
                                     <h3>
-                                        @notificacion.titulo
+                                        @texto.titulo
                                         @if (esChat)
                                         {
                                             <span class="badge theme-primary">@(notificacion.cantidad == 1 ? "1 sin leer" : $"{notificacion.cantidad} sin leer")</span>
                                         }
                                     </h3>
                                     <p>
-                                        @notificacion.mensaje
+                                        @texto.mensaje
                                         @if (esAmistad)
                                         {
                                             <a href="@urlDestino">Ver perfil</a>
@@ -162,7 +189,7 @@
                                 }
                                 else
                                 {
-                                    <a class="boton principal chico" href="@urlDestino">@notificacion.textoBoton</a>
+                                    <a class="boton principal chico" href="@urlDestino">@texto.boton</a>
                                 }
                             </li>
                         }
@@ -179,12 +206,13 @@
                         @foreach (var noticia in noticias)
                         {
                             string urlNoticia = Url.Action("PanelControl", "Home", new { tab = "clases", clase = noticia.idClase })!;
+                            var textoNoticia = textoDeNotificacion(noticia);
                             <li class="notificacion noticia" data-tipo="@noticia.tipo">
                                 <span class="icono celeste"><i class="bi @iconoDeNotificacion(noticia.tipo)" aria-hidden="true"></i></span>
                                 <div class="textoNotificacion">
-                                    <h3>@noticia.titulo</h3>
+                                    <h3>@textoNoticia.titulo</h3>
                                     <p>
-                                        @noticia.mensaje
+                                        @textoNoticia.mensaje
                                         @if (noticia.fecha != null)
                                         {
                                             <small>· @tiempoRelativo(noticia.fecha.Value)</small>
@@ -193,11 +221,11 @@
                                     @if (noticia.destino == "resena")
                                     {
                                         @* Abre el diálogo Dar reseña del layout (site.js: inicializarResenas) *@
-                                        <button class="boton principal chico" type="button" data-dar-resena data-id-usuario="@noticia.idOtroUsuario" data-nombre-usuario="@noticia.nombreOtro @noticia.apellidoOtro"><i class="bi bi-star" aria-hidden="true"></i> @noticia.textoBoton</button>
+                                        <button class="boton principal chico" type="button" data-dar-resena data-id-usuario="@noticia.idOtroUsuario" data-nombre-usuario="@noticia.nombreOtro @noticia.apellidoOtro"><i class="bi bi-star" aria-hidden="true"></i> @textoNoticia.boton</button>
                                     }
                                     else
                                     {
-                                        <a class="boton contorno chico" href="@urlNoticia">@noticia.textoBoton</a>
+                                        <a class="boton contorno chico" href="@urlNoticia">@textoNoticia.boton</a>
                                     }
                                 </div>
                             </li>

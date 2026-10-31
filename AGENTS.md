@@ -21,6 +21,7 @@ Reglas de código: **[Info/systemPrompt.md](Info/systemPrompt.md)** (obligatorio
 ## Reglas de trabajo
 - Antes de crear una clase CSS nueva, ver si se resuelve con una existente + selector descendiente.
 - Si no te aclaro la arquitectura de una función nueva, preguntame antes de programar: cómo se mueven los datos (vista → controller → SP), dónde se filtran (SP, `BD.cs` o JS) y cómo se administran (tablas y estados).
+- **No usar funciones en SQL** (ni `CREATE FUNCTION` ni funciones de SQL Server fuera de la lista de [systemPrompt.md](Info/systemPrompt.md)). Las fechas salen crudas del SP y el texto con fecha lo arma el sitio.
 
 ## Índice de archivos
 
@@ -44,7 +45,7 @@ Reglas de código: **[Info/systemPrompt.md](Info/systemPrompt.md)** (obligatorio
 |---|---|---|
 | Sesión | `SesionController`: IniciarSesion, Registrarse, CerrarSesion | `registrarUsuario`, `iniciarSesion` (en `BDsesion.cs`) |
 | Navegación / páginas | `HomeController`: Index, Soporte, QuienesSomos, Perfil, PanelControl, Privacy, NoEncontrado | — |
-| Perfil | `PerfilesController`: ObtenerPerfil, Buscar, ObtenerOpcionesPerfil, ObtenerDatosEdicion, GuardarPerfil | `obtenerPerfil`, `buscarUsuarios`, `obtenerOpcionesPerfil`, `obtenerDatosEdicion`, `obtenerFaltantesVerificacion`, `guardarPerfilCompleto` |
+| Perfil | `PerfilesController`: ObtenerPerfil, Buscar, ObtenerOpcionesPerfil, ObtenerDatosEdicion, GuardarPerfil | `obtenerPerfil`, `buscarUsuarios`, `obtenerOpcionesPerfil`, `obtenerDatosEdicion`, `obtenerFaltantesVerificacion`, `guardarPerfilCompleto`, `guardarAnioEscuela` |
 | Catálogo | `CatalogoController`: Index, Buscar | `obtenerIdsCatalogo`, `obtenerProfesoresCatalogo` |
 | Likes | `LikesController`: ObtenerLike, AlternarLike | `obtenerLike`, `alternarLike` |
 | Amigos | `AmigosController`: Estado, Cambiar, Lista | `obtenerAmistad`, `enviarAmistad`, `quitarAmistad`, `obtenerAmigos` |
@@ -55,7 +56,7 @@ Reglas de código: **[Info/systemPrompt.md](Info/systemPrompt.md)** (obligatorio
 | Soporte | `ConsultasController`: Enviar | `enviarConsulta` |
 | Moderación (`tipoUsuario = 'admin'`, se crean a mano en la BD) | `ModeracionController`: Index, Responder (la respuesta va por mensaje directo), Verificar, FotoDni (la pide "Ver DNI" del Perfil) | `obtenerConsultasPendientes`, `responderConsulta`, `obtenerUsuariosPorVerificar`, `verificarUsuario`, `obtenerFotoDni` |
 | Clases (pedidos) | `ClasesController`: EnviarPedido, Responder, Cancelar, Reubicar, ResponderSolicitud, RetirarSolicitud, NoSeDio | `enviarPedidoClase`, `aceptarPedidoClase`, `rechazarPedidoClase`, `cancelarClase`, `reubicarClase`, `aceptarSolicitudClase`, `rechazarSolicitudClase`, `retirarSolicitudClase`, `marcarClaseNoConcretada` |
-| Agenda / calendario | `ClasesController`: Calendario, HorariosOcupados, DiasConAgenda, MiAgenda, GuardarAgenda, BloquearDia, DesbloquearDia | `obtenerCalendarioClases`, `obtenerContadoresClases`, `obtenerHorariosOcupados`, `obtenerDisponibilidad`, `guardarDisponibilidad`, `bloquearDia`, `desbloquearDia` |
+| Agenda / calendario | `ClasesController`: Calendario, HorariosOcupados, DiasConAgenda, MiAgenda, GuardarAgenda, BloquearDia, DesbloquearDia | `obtenerCalendarioClases`, `obtenerContadoresClases`, `obtenerHorariosOcupados`, `obtenerDisponibilidad`, `borrarDisponibilidadSemanal`, `agregarFranja`, `bloquearDia`, `desbloquearDia` |
 
 Pendiente (sin hacer): sugerencias del buscador, moderación de reseñas, filtros avanzados, pedido de un alumno por un profesor. Detalle en [progreso.md](Info/progreso.md).
 

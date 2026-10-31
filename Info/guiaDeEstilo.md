@@ -155,12 +155,18 @@ END
 ```
 
 - Cada rama lleva su `BEGIN … END` aunque tenga una sola línea. El siguiente `IF` va **adentro** de la rama que corresponde, nunca después de un `RETURN`.
-- El resultado sale con `SELECT`, nunca con `RETURN`. En un stored procedure, `RETURN` solo acepta un número entero: `RETURN 'texto'` da error de conversión, y Dapper no lo lee como fila. (En las funciones SQL sí se usa `RETURN` con cualquier tipo.)
+- El resultado sale con `SELECT`, nunca con `RETURN`. En un stored procedure, `RETURN` solo acepta un número entero: `RETURN 'texto'` da error de conversión, y Dapper no lo lee como fila.
 - `0` = salió bien, y en esa misma fila van los datos. `1`, `2`, `3`… = cada error, en el orden en que se revisan.
 - Si hay dos acciones distintas, se hacen dos SP: `enviarAmistad` y `quitarAmistad`, no un SP `cambiarAmistad @accion`. El controlador puede seguir recibiendo `accion` y elegir cuál llamar.
-- No van: `SET NOCOUNT`, `TRY/CATCH`, transacciones, `WITH (UPDLOCK)`, funciones auxiliares para algo de una línea ni comentarios largos arriba del SP. Los códigos se explican en el modelo de C#.
+- No van: `SET NOCOUNT`, `TRY/CATCH`, transacciones, `WITH (UPDLOCK)` ni comentarios largos arriba del SP. Los códigos se explican en el modelo de C#.
 - Los textos con acentos van con `N'…'`.
 - Se usa `CREATE PROCEDURE`, porque la base se borra y se vuelve a crear con cada cambio.
+- **No usar funciones en SQL.** Ni `CREATE FUNCTION` ni funciones de SQL Server fuera de esta lista:
+  - Permitido: `SELECT`, `DISTINCT`, `JOIN`, `WHERE`, `AND/OR`, comparaciones (`= <> < > <= >=`), `BETWEEN`, `IS NULL`, `LIKE`, `IN (…)`, `EXISTS` / `NOT EXISTS`, `IF … ELSE` con `BEGIN/END`, `CAST`, `COUNT`, `AVG`, `STRING_AGG` (con o sin `WITHIN GROUP`), `STRING_SPLIT`, `GROUP BY`, `ORDER BY`, `OFFSET … ROWS FETCH NEXT … ROWS ONLY`, subconsultas, `INSERT`, `UPDATE`, `DELETE`, `GETDATE`, `DATEADD`, `DECLARE`, `SET` sobre una variable o un parámetro, `UNION` / `UNION ALL`, `CASE`, operadores (`+ - * / %`), `EXEC` de otro SP (solo `actualizarEstadosClases`).
+  - Prohibido (no exhaustivo): `ISNULL`, `NULLIF`, `COALESCE`, `LTRIM`, `RTRIM`, `TRIM`, `LEN`, `LEFT`, `RIGHT`, `SUBSTRING`, `CHARINDEX`, `REPLACE`, `LOWER`, `UPPER`, `YEAR`, `MONTH`, `DAY`, `DATEPART`, `DATENAME`, `DATEDIFF`, `DATEFROMPARTS`, `CONVERT`, `FORMAT`, `TRY_CAST`, `MAX`, `MIN`, `SUM`, `TOP`, `WITH` (CTE), `ROW_NUMBER` / `OVER`, `IDENTITY()`, tablas `#temporales` y variables de tabla, parámetros `OUTPUT`, `INSERT … EXEC`.
+- **Fechas crudas**: el SP devuelve `datetime`, `time` o `date`, nunca texto. El texto con fecha ("21/11 a las 12:00") lo arma el C# o el JS.
+- Largo máximo: `CAST(@texto AS nvarchar(n)) <> @texto` (el CAST corta, así que solo da distinto si era más largo).
+- Vacío: `@texto IS NULL OR @texto = ''` (el `=` ya ignora los espacios del final).
 
 ### BD.cs
 
@@ -261,7 +267,7 @@ Se guardan encriptadas con PBKDF2 (SHA256) y una sal por usuario, como `"sal.has
 | Archivo | Qué tiene |
 |---|---|
 | `MIP-BD_01_estructura.sql` | `CREATE DATABASE`, tablas, claves y restricciones |
-| `MIP-BD_02_stored_procedures.sql` | Funciones y SP |
+| `MIP-BD_02_stored_procedures.sql` | Stored procedures |
 | `MIP-BD_03_datos_prueba.sql` | Datos de prueba (456 cuentas con contraseña `12345678`, todavía sin encriptar: no pueden iniciar sesión) |
 
 - Para aplicar cualquier cambio, se borra la base `MIP` y se corren los tres en orden: 01 → 02 → 03.

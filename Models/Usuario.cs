@@ -6,7 +6,8 @@ namespace MIP_MIPROFESOR.Models;
 // Las listas vienen como texto: materias = "Física, Química", idsMaterias = "37,38", idsEscuelas = "20:2015,21:2019".
 // codigo: registro (1 = mail ya registrado, 2 = fecha inválida), login (1 = el mail no existe, 2 = contraseña incorrecta, esto lo revisa BDsesion),
 // obtenerPerfil (1 = no es de ningún alumno ni profesor), guardarPerfilCompleto (1 = mail de otra cuenta,
-// 2 = DNI de otra cuenta, 3 = datos inválidos, 4 = foto inválida, esto lo revisa PerfilesController)
+// 2 = DNI de otra cuenta, 3 = datos inválidos, 4 = foto inválida, esto lo revisa PerfilesController).
+// El 3 también sale si el año de un colegio no sirve (guardarAnioEscuela) o si la descripción pasa de 5000 caracteres (PerfilesController)
 public class Usuario
 {
     public int codigo { get; set; }

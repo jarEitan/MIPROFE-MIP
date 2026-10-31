@@ -159,6 +159,15 @@ public class BD
         }
     }
 
+    // Año desde el que el profesor da clase en el colegio. codigo: 0 = ok, 3 = año fuera de rango (del año de nacimiento al actual)
+    public int guardarAnioEscuela(int idUsuario, int idEscuela, int anio)
+    {
+        using (var connection = new SqlConnection(connectionString))
+        {
+            return connection.QueryFirst<int>("EXEC guardarAnioEscuela @idUsuario, @idEscuela, @anio", new { idUsuario = idUsuario, idEscuela = idEscuela, anio = anio });
+        }
+    }
+
     // Fase 1 del catálogo: los ID de los profesores que cumplen los filtros, sin orden
     public List<int> obtenerIdsCatalogo(string? busqueda, string? materia, string? colegio, string? modalidad, string? niveles)
     {
@@ -323,13 +332,21 @@ public class BD
         }
     }
 
-    // Reemplaza el horario semanal. franjas: "1:14:00-21:00,6:09:00-13:00" (lunes = 1)
-    // codigo: 0 = ok, 1 = no sos profesor, 2 = alguna franja no sirve (de al menos 60 minutos, entre las 7 y las 23 y sin tocarse con otra)
-    public int guardarDisponibilidad(int idProfesor, string franjas)
+    // codigo: 0 = ok, 1 = no sos profesor
+    public int borrarDisponibilidadSemanal(int idProfesor)
     {
         using (var connection = new SqlConnection(connectionString))
         {
-            return connection.QueryFirst<int>("EXEC guardarDisponibilidad @idProfesor, @franjas", new { idProfesor = idProfesor, franjas = franjas });
+            return connection.QueryFirst<int>("EXEC borrarDisponibilidadSemanal @idProfesor", new { idProfesor = idProfesor });
+        }
+    }
+
+    // diaSemana: lunes = 1. codigo: 0 = ok, 1 = no sos profesor, 2 = la franja no sirve (de al menos 60 minutos, entre las 7 y las 23 y sin tocarse con otra del mismo día)
+    public int agregarFranja(int idProfesor, int diaSemana, TimeSpan desde, TimeSpan hasta)
+    {
+        using (var connection = new SqlConnection(connectionString))
+        {
+            return connection.QueryFirst<int>("EXEC agregarFranja @idProfesor, @diaSemana, @desde, @hasta", new { idProfesor = idProfesor, diaSemana = diaSemana, desde = desde, hasta = hasta });
         }
     }
 

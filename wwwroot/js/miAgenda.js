@@ -1,6 +1,6 @@
 // Mi agenda (solo profesores): el horario semanal (franjas por día de la semana) y los días bloqueados. Se carga solo en el
 // Panel de Control de un profesor, después de site.js y clases.js. Todo con fetch a ClasesController (MiAgenda, GuardarAgenda,
-// BloquearDia, DesbloquearDia); el servidor valida lo mismo que este archivo (SP guardarDisponibilidad).
+// BloquearDia, DesbloquearDia); el servidor valida lo mismo que este archivo (SP agregarFranja).
 // Un profesor sin franjas no configuró su agenda: los alumnos pueden pedirle clases de 8 a 22 cualquier día.
 
 const nombresDeDiasDeAgenda = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
@@ -99,7 +99,7 @@ function leerDiasDeLaPantalla() {
     }));
 }
 
-// ----- Validación (la misma que el SP guardarDisponibilidad) -----
+// ----- Validación (la misma que el SP agregarFranja) -----
 // Muestra el error al lado de la franja. Devuelve true si todo está bien.
 function validarAgenda() {
     const dias = leerDiasDeLaPantalla();
@@ -209,7 +209,7 @@ function cargarMiAgenda() {
     return pedirJson("/Clases/MiAgenda")
         .then(agenda => {
             diasDeAgenda = nombresDeDiasDeAgenda.map((_, indice) => {
-                const franjas = agenda.franjas.filter(franja => franja.diaSemana === indice + 1).map(franja => ({ desde: franja.desde, hasta: franja.hasta }));
+                const franjas = agenda.franjas.filter(franja => franja.diaSemana === indice + 1).map(franja => ({ desde: franja.desde.slice(0, 5), hasta: franja.hasta.slice(0, 5) }));
                 return { activo: franjas.length > 0, franjas };
             });
             dibujarDiasDeAgenda();
@@ -261,17 +261,18 @@ function dibujarDiasBloqueados(dias) {
     }
 
     lista.replaceChildren(...dias.map(dia => {
+        const fecha = dia.fecha.slice(0, 10);
         const item = crearElemento("li");
-        item.dataset.fecha = dia.fecha;
+        item.dataset.fecha = fecha;
         const texto = crearElemento("div");
-        texto.append(crearElemento("strong", "", textoDiaLargo(leerFechaLocal(dia.fecha))));
+        texto.append(crearElemento("strong", "", textoDiaLargo(leerFechaLocal(fecha))));
         if (dia.clasesEseDia > 0) {
             texto.append(crearElemento("small", "", `Tenés ${dia.clasesEseDia} ${dia.clasesEseDia === 1 ? "clase" : "clases"} ese día: avisales o cancelalas.`));
         }
         const desbloquear = crearElemento("button", "boton contorno chico", "Desbloquear");
         desbloquear.type = "button";
-        desbloquear.dataset.desbloquearDia = dia.fecha;
-        desbloquear.setAttribute("aria-label", `Desbloquear el ${textoDiaLargo(leerFechaLocal(dia.fecha)).toLowerCase()}`);
+        desbloquear.dataset.desbloquearDia = fecha;
+        desbloquear.setAttribute("aria-label", `Desbloquear el ${textoDiaLargo(leerFechaLocal(fecha)).toLowerCase()}`);
         item.append(texto, desbloquear);
         return item;
     }));
