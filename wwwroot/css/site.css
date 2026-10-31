@@ -5048,10 +5048,33 @@ tr.resaltada td {
     }
 }
 
+/* El margen manda las estrellas (y el tacho, si está) a la derecha */
 .perfil .estrellas {
+    margin-left: auto;
     display: inline-flex;
     gap: .1rem;
     color: var(--colorCoral);
+}
+
+/* Con el tacho, estrellas y tacho no se separan: el nombre es el que hace salto de línea */
+.perfil .resena header:has(.borrarResena) {
+    flex-wrap: nowrap;
+}
+
+/* Mide 44 px para el toque, pero el margen negativo no agranda el encabezado */
+.perfil .resena .borrarResena {
+    flex-shrink: 0;
+    margin-block: -.5rem;
+    border-color: transparent;
+    background-color: transparent;
+    box-shadow: none;
+    color: var(--colorMagenta);
+}
+
+@media (hover: hover) {
+    .perfil .resena .borrarResena:hover {
+        background-color: rgba(213, 31, 71, .1);
+    }
 }
 
 .perfil .resena p {

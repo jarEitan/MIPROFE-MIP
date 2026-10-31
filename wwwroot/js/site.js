@@ -806,6 +806,16 @@ function mostrarResenasPerfil(resenas) {
 
         const encabezadoResena = document.createElement("header");
         encabezadoResena.append(autorResena, estrellas);
+        // El tacho lo ven quien escribió la reseña y los moderadores; el SP borrarResena vuelve a revisarlo
+        if (String(resena.idEmisor) === document.getElementById("perfil").dataset.idVisitante || document.body.dataset.tipoUsuario === "admin") {
+            const borrar = document.createElement("button");
+            borrar.type = "button";
+            borrar.className = "boton botonIcono borrarResena";
+            borrar.dataset.idResena = resena.id;
+            borrar.setAttribute("aria-label", `Borrar la reseña de ${resena.nombre} ${resena.apellido}`);
+            borrar.innerHTML = '<i class="bi bi-trash3-fill" aria-hidden="true"></i>';
+            encabezadoResena.append(borrar);
+        }
         tarjetaResena.append(encabezadoResena);
 
         if (resena.descripcion) {
@@ -1663,6 +1673,43 @@ function inicializarResenas() {
     });
 }
 
+// Tacho de una reseña del perfil: confirma con #dialogoBorrarResena y vuelve a cargar el perfil (promedio incluido)
+function inicializarBorrarResenas() {
+    const dialogo = document.getElementById("dialogoBorrarResena");
+    if (!dialogo) return;
+
+    document.getElementById("resenasPerfil").addEventListener("click", evento => {
+        const boton = evento.target.closest("[data-id-resena]");
+        if (!boton) return;
+        dialogo.dataset.idResena = boton.dataset.idResena;
+        dialogo.showModal();
+    });
+
+    document.getElementById("botonConfirmarBorrarResena").addEventListener("click", () => {
+        const token = document.querySelector("#perfil input[name='__RequestVerificationToken']");
+        dialogo.close();
+        pedirJson("/Resenas/Borrar", {
+            method: "POST",
+            headers: { "RequestVerificationToken": token ? token.value : "" },
+            body: new URLSearchParams({ idResena: dialogo.dataset.idResena })
+        })
+            .then(resultado => {
+                if (resultado.codigo == 0) {
+                    mostrarSnackbar("Borramos la reseña.", "exito");
+                } else if (resultado.codigo == 1) {
+                    mostrarSnackbar("Esa reseña ya no existe.", "error");
+                } else {
+                    mostrarSnackbar("Solo podés borrar tus propias reseñas.", "error");
+                }
+                cargarPerfil();
+            })
+            .catch(error => {
+                console.error(error);
+                mostrarSnackbar("No pudimos borrar la reseña. Probá de nuevo.", "error");
+            });
+    });
+}
+
 function abrirResena(idUsuario, nombreUsuario) {
     const formulario = document.getElementById("formularioDarResena");
     formulario.reset();
@@ -1860,6 +1907,7 @@ function inicializarSitio() {
     inicializarAccesosDelPanel();
     inicializarCierreDeDialogos();
     inicializarResenas();
+    inicializarBorrarResenas();
     inicializarPerfil();
     inicializarBuscadorDeUsuarios();
 }
