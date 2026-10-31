@@ -100,7 +100,7 @@ function quitarNotificacion(item, cantidadNotificaciones) {
         contador.hidden = restantes === 0;
     }
     if (lista && restantes === 0) {
-        lista.replaceWith(crearElemento("p", "sinNotificaciones", "No tenés nada pendiente. Acá vas a ver las solicitudes de amistad, los mensajes sin leer y las clases que esperan tu respuesta."));
+        lista.replaceWith(crearElemento("p", "sinNotificaciones", "No tenés nada pendiente."));
     }
     actualizarInsigniaDeNotificaciones(cantidadNotificaciones);
 }
@@ -391,7 +391,7 @@ function inicializarPedidoDeClase() {
 function abrirPedidoDeClase(idProfesor, nombreProfesor) {
     const tipoUsuario = document.body.dataset.tipoUsuario;
     if (!tipoUsuario) {
-        window.location.href = "/Sesion/IniciarSesion";
+        window.location.href = "/Sesion/IniciarSesion?volver=" + encodeURIComponent(location.pathname + location.search);
         return;
     }
     if (tipoUsuario !== "alumno" || !selectorDePedido) {
