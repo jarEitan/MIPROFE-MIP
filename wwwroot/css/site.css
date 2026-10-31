@@ -3350,6 +3350,12 @@ fieldset {
     color: #fff;
 }
 
+/* Sin pendientes la banda no alarma */
+.notificaciones .pendientes:has(.sinNotificaciones) h2 {
+    background-color: transparent;
+    color: var(--colorTinta);
+}
+
 .notificaciones .pendientes h2 .badge {
     background-color: #fff;
     color: var(--colorTinta);
@@ -3364,17 +3370,10 @@ fieldset {
 /* La lista se desvanece abajo (máscara, sin color nuevo): la fila cortada se lee como "hay más". El padding de abajo
    es la zona que se desvanece, así al final del scroll la última fila se ve entera */
 .notificaciones .listaNotificaciones {
-    max-height: 26rem;
+    max-height: 15rem;
     padding: .125rem 1.25rem 1.75rem;
     overflow-y: auto;
     mask-image: linear-gradient(var(--colorTinta) calc(100% - 1.75rem), transparent);
-}
-
-/* En pantallas grandes la lista se corta antes: así el calendario asoma en la primera pantalla */
-@media (width >= 1024px) {
-    .notificaciones .listaNotificaciones {
-        max-height: 15rem;
-    }
 }
 
 .notificaciones .notificacion {
@@ -3488,12 +3487,17 @@ fieldset {
         justify-content: center;
         padding-inline: .5rem;
     }
+
+    /* Con una cantidad impar, la última pestaña ocupa todo el ancho en vez de quedar sola */
+    .panel .nav-link:last-child:nth-child(odd) {
+        grid-column: 1 / -1;
+    }
 }
 
-/* Mis clases: lo que requiere acción, el calendario del mes y la agenda del día (los dibuja calendario.js).
+/* Mis clases: el calendario del mes y la agenda del día (los dibuja calendario.js).
    Colores: azul = está bien (tinta), rojo = necesita tu acción (magenta), gris = terminó sin darse. El estado nunca va
    solo en el color: siempre hay texto, y lo que espera al otro lleva línea punteada.
-   Desde lg el calendario va a la izquierda, la agenda del día elegido a la derecha y lo que requiere atención abajo. */
+   Desde lg el calendario va a la izquierda, la agenda del día elegido a la derecha. */
 .misClases {
     display: grid;
     gap: 1.25rem;
@@ -3504,10 +3508,6 @@ fieldset {
         grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
         align-items: start;
         gap: 1.25rem 1.5rem;
-    }
-
-    .misClases .requiereAccion {
-        grid-column: 1 / -1;
     }
 
     /* "contain: size" hace que la agenda no cuente para la altura de la fila: mide lo mismo que el calendario,
@@ -3527,51 +3527,6 @@ fieldset {
         scrollbar-width: thin;
         scrollbar-color: var(--colorBorde) transparent;
     }
-}
-
-/* Coral suave, sin una segunda banda magenta (la de las notificaciones ya avisa) */
-.requiereAccion {
-    padding: 1rem 1.25rem 1.25rem;
-    border-radius: var(--radioGrande);
-    background-color: var(--colorCoralSuave);
-}
-
-.requiereAccion h3 {
-    display: flex;
-    align-items: center;
-    gap: .5rem;
-    margin: 0 0 .75rem;
-    font: 600 1.125rem/1.2 var(--fuenteMarca);
-}
-
-.requiereAccion h3 .bi {
-    color: var(--colorMagenta);
-}
-
-.requiereAccion ul {
-    display: grid;
-    gap: .6rem;
-}
-
-.pedidoPendiente {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: .6rem 1rem;
-    padding: .75rem 1rem;
-    border-radius: var(--radioMedio);
-    background-color: var(--colorSuperficie);
-}
-
-.pedidoPendiente .textoPedido {
-    flex: 1 1 14rem;
-    font-size: .9375rem;
-    line-height: 1.45;
-}
-
-.pedidoPendiente .textoPedido strong {
-    font: 600 1rem var(--fuenteMarca);
 }
 
 .botonesClase {
@@ -3635,8 +3590,12 @@ fieldset {
     color: var(--colorTextoSuave);
 }
 
-.calendarioMes .diasMes :is(.cargandoHistorial, .mensajeErrorCalendario) {
+.calendarioMes .diasMes :is(.cargandoHistorial, .mensajeErrorCalendario, .boton) {
     grid-column: 1 / -1;
+}
+
+.calendarioMes .diasMes .boton {
+    justify-self: center;
 }
 
 /* Al cambiar de mes (calendario.js, animarCambioDeMes) la grilla y el título entran desde el lado hacia el que se avanza */
@@ -3831,6 +3790,11 @@ fieldset {
     color: var(--colorTextoSuave);
 }
 
+.agendaDia .estadoVacio {
+    max-width: none;
+    margin-inline: 0;
+}
+
 .agendaDia .estadoVacio .boton {
     margin-top: .75rem;
 }
@@ -3977,6 +3941,18 @@ tr.resaltada td {
     border-radius: var(--radioMedio);
     background-color: var(--colorCeleste);
     font-weight: 600;
+}
+
+.miAgenda .card > .avisoSinAgenda {
+    color: var(--colorTinta);
+}
+
+/* En pantallas chicas el botón acompaña la lista larga de días */
+@media (width < 1024px) {
+    #botonGuardarAgenda {
+        position: sticky;
+        bottom: 1rem;
+    }
 }
 
 .diasDeAgenda {
@@ -4381,6 +4357,12 @@ tr.resaltada td {
     min-width: 0;
 }
 
+.chat .redactar small {
+    align-self: center;
+    color: var(--colorTextoSuave);
+    white-space: nowrap;
+}
+
 @media (width >= 1024px) {
     .panel .chat {
         grid-template-columns: 17rem 1fr;
@@ -4766,8 +4748,9 @@ tr.resaltada td {
 /* En celulares el botón principal ocupa toda la fila y el resto se reparte abajo */
 @media (width < 768px) {
     .perfil .accionesPerfil .boton {
-        flex: 1 1 auto;
+        flex: 1 1 0;
         justify-content: center;
+        padding-inline: 1rem;
     }
 
     .perfil .accionesPerfil .boton.principal {
@@ -4777,6 +4760,26 @@ tr.resaltada td {
     /* Los botones de ícono se quedan en 44 px, solos o con otra acción al lado */
     .perfil .accionesPerfil .boton.botonIcono {
         flex: 0 0 2.75rem;
+    }
+
+    /* Agregar amigo va en su propia fila para que Mensaje y los íconos no queden sueltos */
+    .perfil .accionesPerfil #botonAmistad {
+        order: 1;
+        flex-basis: 100%;
+    }
+}
+
+/* Hasta lg "Pedir clase" queda fijo abajo para tenerlo a mano mientras se lee; el padding del pie evita que tape el final */
+@media (width < 1024px) {
+    .perfil .accionesPerfil [data-pedir-clase] {
+        position: fixed;
+        inset: auto 1rem 1rem;
+        z-index: 1020;
+        box-shadow: var(--sombraFlotante);
+    }
+
+    body:has(.perfil [data-pedir-clase]:not([hidden])) .pie {
+        padding-bottom: 5rem;
     }
 }
 
@@ -4945,6 +4948,11 @@ tr.resaltada td {
     .perfil .cifras li:last-child:nth-child(odd) {
         grid-column: 1 / -1;
     }
+
+    .perfil #botonHistorial {
+        flex: 1 1 100%;
+        justify-content: center;
+    }
 }
 
 /* Tarjetas de contenido: Sobre mí, Reseñas y Datos */
@@ -5040,10 +5048,33 @@ tr.resaltada td {
     }
 }
 
+/* El margen manda las estrellas (y el tacho, si está) a la derecha */
 .perfil .estrellas {
+    margin-left: auto;
     display: inline-flex;
     gap: .1rem;
     color: var(--colorCoral);
+}
+
+/* Con el tacho, estrellas y tacho no se separan: el nombre es el que hace salto de línea */
+.perfil .resena header:has(.borrarResena) {
+    flex-wrap: nowrap;
+}
+
+/* Mide 44 px para el toque, pero el margen negativo no agranda el encabezado */
+.perfil .resena .borrarResena {
+    flex-shrink: 0;
+    margin-block: -.5rem;
+    border-color: transparent;
+    background-color: transparent;
+    box-shadow: none;
+    color: var(--colorMagenta);
+}
+
+@media (hover: hover) {
+    .perfil .resena .borrarResena:hover {
+        background-color: rgba(213, 31, 71, .1);
+    }
 }
 
 .perfil .resena p {
@@ -5065,6 +5096,13 @@ tr.resaltada td {
     display: flex;
     flex-wrap: wrap;
     gap: .4rem;
+}
+
+/* Los badges de Bootstrap no cortan línea: un título largo se salía de la tarjeta */
+.perfil .datosPerfil .etiquetas > * {
+    max-width: 100%;
+    white-space: normal;
+    text-align: start;
 }
 
 .perfil .reportarPerfil {

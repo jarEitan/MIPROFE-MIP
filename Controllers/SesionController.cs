@@ -5,22 +5,31 @@ namespace MIP_MIPROFESOR.Controllers;
 
 public class SesionController : Controller
 {
-    public IActionResult IniciarSesion()
+    public IActionResult IniciarSesion(string? volver)
     {
         if (HttpContext.Session.GetString("idUsuario") != null) return RedirectToAction("Perfil", "Home");
+        ViewBag.volver = volver;
         return View();
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public IActionResult IniciarSesion(string mail, string contrasena)
+    public IActionResult IniciarSesion(string mail, string contrasena, string? volver)
     {
         Usuario cuenta = new BDsesion().iniciarSesion(mail, contrasena);
 
         if (cuenta.codigo == 0)
         {
             guardarSesion(HttpContext.Session, cuenta);
-            return RedirectToAction("Index", "Home");
+            // Solo rutas del propio sitio, para que nadie use el login para redirigir afuera
+            if (Url.IsLocalUrl(volver))
+            {
+                return Redirect(volver);
+            }
+            else
+            {
+                return RedirectToAction("Index", "Home");
+            }
         }
         else
         {
@@ -33,6 +42,7 @@ public class SesionController : Controller
                 ViewBag.mensaje = "La contraseña es incorrecta.";
             }
             ViewBag.mail = mail;
+            ViewBag.volver = volver;
             return View();
         }
     }

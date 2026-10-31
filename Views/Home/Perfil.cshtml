@@ -26,7 +26,7 @@
 
 <!-- ================= PERFIL ================= -->
 <section class="perfil" id="perfil" data-id-perfil="@idPerfil" data-perfil-propio="@(esPerfilPropio ? "true" : "false")"
-         data-hay-sesion="@(haySesion ? "true" : "false")" data-editar-al-cargar="@(abrirEdicion ? "true" : "false")">
+         data-hay-sesion="@(haySesion ? "true" : "false")" data-id-visitante="@Context.Session.GetString("idUsuario")" data-editar-al-cargar="@(abrirEdicion ? "true" : "false")">
     <div class="portadaPerfil" aria-hidden="true"></div>
 
     <div class="container">
@@ -67,9 +67,6 @@
                     <div class="titularPerfil">
                         <div class="etiquetasTitular">
                             <span class="pildora" id="tipoPerfil"></span>
-                            <span class="badge badge-subtle theme-success" id="estadoVerificadoPerfil" hidden>
-                                <i class="bi bi-patch-check-fill" aria-hidden="true"></i> Cuenta verificada
-                            </span>
                         </div>
                         <h1>
                             <span id="nombrePerfil"></span>
@@ -103,9 +100,12 @@
                         @* Botones sociales: salen de las tablas Amigos, Mensajes, Likes y Resenas. Sin sesión llevan a Iniciar sesión.
                            Mensaje abre el chat con esta persona en el Panel de Control (chat.js). Agregar amigo cambia según cómo
                            estén los dos (AmigosController) y la estrella abre "Dar reseña" (diálogo en _Layout, ResenasController). *@
-                        <button class="boton principal" type="button" data-pedir-clase data-id-profesor="@idPerfil" data-nombre-profesor="" data-solo-profesor hidden>
-                            <i class="bi bi-calendar-plus" aria-hidden="true"></i> Pedir clase
-                        </button>
+                        @if (!esProfesor)
+                        {
+                            <button class="boton principal" type="button" data-pedir-clase data-id-profesor="@idPerfil" data-nombre-profesor="" data-solo-profesor hidden>
+                                <i class="bi bi-calendar-plus" aria-hidden="true"></i> Pedir clase
+                            </button>
+                        }
                         <a class="boton contorno" asp-controller="Home" asp-action="PanelControl" asp-route-tab="chat" asp-route-chat="@idPerfil">
                             <i class="bi bi-chat-dots" aria-hidden="true"></i> Mensaje
                         </a>
@@ -129,9 +129,12 @@
                 @* Cifras a la izquierda y el botón Historial a la derecha (modal #dialogoHistorial, historial.js) *@
                 <div class="filaCifras">
                     <ul class="cifras" id="cifrasPerfil"></ul>
-                    <button class="boton contorno" type="button" id="botonHistorial" aria-haspopup="dialog">
-                        <i class="bi bi-clock-history" aria-hidden="true"></i> Historial
-                    </button>
+                    @if (haySesion)
+                    {
+                        <button class="boton contorno" type="button" id="botonHistorial" aria-haspopup="dialog">
+                            <i class="bi bi-clock-history" aria-hidden="true"></i> Historial
+                        </button>
+                    }
                 </div>
             </div>
 
@@ -199,6 +202,22 @@
         </div>
     </dialog>
 }
+
+<!-- ================= DIÁLOGO: BORRAR RESEÑA ================= -->
+@* Lo abre el tacho de una reseña (site.js: inicializarBorrarResenas). Lo ven quien la escribió y los moderadores *@
+<dialog class="dialog" id="dialogoBorrarResena" aria-labelledby="tituloBorrarResena">
+    <div class="dialog-header">
+        <h2 class="dialog-title" id="tituloBorrarResena">¿Borrar la reseña?</h2>
+        <button type="button" class="btn-close" data-bs-dismiss="dialog" aria-label="Cerrar"></button>
+    </div>
+    <div class="dialog-body">
+        <p>Se borra para siempre y deja de contar en la calificación.</p>
+    </div>
+    <div class="dialog-footer">
+        <button type="button" class="boton contorno chico" data-bs-dismiss="dialog">Volver</button>
+        <button type="button" class="boton oscuro chico" id="botonConfirmarBorrarResena">Sí, borrar</button>
+    </div>
+</dialog>
 
 <!-- ================= MODAL: HISTORIAL DE CLASES (Dialog de Bootstrap 6) ================= -->
 @* Lo abre #botonHistorial. historial.js pide las últimas 20 clases a /Historial/Obtener/{id} y dibuja la misma tabla del

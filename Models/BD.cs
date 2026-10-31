@@ -93,6 +93,15 @@ public class BD
         }
     }
 
+    // codigo: 0 = ok, 1 = la reseña no existe, 2 = no es tuya y no sos moderador
+    public int borrarResena(int idResena, int idUsuario)
+    {
+        using (var connection = new SqlConnection(connectionString))
+        {
+            return connection.QueryFirst<int>("EXEC borrarResena @idResena, @idUsuario", new { idResena = idResena, idUsuario = idUsuario });
+        }
+    }
+
     public OpcionesPerfil obtenerOpcionesPerfil()
     {
         using (var connection = new SqlConnection(connectionString))

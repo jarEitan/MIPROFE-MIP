@@ -105,7 +105,7 @@
 
                             @if (tipoUsuarioSesion == "")
                             {
-                                <a class="boton contorno" asp-controller="Sesion" asp-action="IniciarSesion">Iniciar sesión</a>
+                                <a class="boton contorno" asp-controller="Sesion" asp-action="IniciarSesion" asp-route-volver="@(Context.Request.Path + Context.Request.QueryString)">Iniciar sesión</a>
                                 <a class="boton principal" asp-controller="Sesion" asp-action="Registrarse">Crear cuenta</a>
                             }
                             else
@@ -203,7 +203,6 @@
                     <h5>Plataforma</h5>
                     <ul>
                         <li><a asp-controller="Catalogo" asp-action="Index">Catálogo</a></li>
-                        <li><a asp-controller="Catalogo" asp-action="Index" asp-route-colegio="Belgrano Day School">Filtro por colegios</a></li>
                         <li><a asp-controller="Sesion" asp-action="Registrarse">Crear cuenta</a></li>
                     </ul>
                 </div>
@@ -270,7 +269,7 @@
                             <div class="franjas" data-franjas role="group" aria-labelledby="pedidoEtiquetaHora" aria-live="polite">
                                 <p class="ayudaFranjas">Elegí primero un día.</p>
                             </div>
-                            <small>Cada clase dura 60 minutos. Las horas tachadas ya están ocupadas.</small>
+                            <small>Cada clase dura 60 minutos. Las horas tachadas no están disponibles (ocupadas o a menos de 1 hora).</small>
                         </div>
                     </div>
 

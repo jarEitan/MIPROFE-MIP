@@ -91,7 +91,10 @@ function mostrarResultados(datos) {
 
     document.getElementById("errorCatalogo").hidden = true;
     document.getElementById("sinResultados").hidden = datos.total > 0;
-    document.getElementById("cantidadResultados").textContent = datos.total === 1 ? "1 profesor" : `${datos.total} profesores`;
+    // Cada filtro cuenta una vez, aunque Nivel tenga varias opciones elegidas
+    const cantidadFiltros = new Set(filtrosAplicados.keys()).size;
+    const textoFiltros = cantidadFiltros === 0 ? "" : ` · ${cantidadFiltros} ${cantidadFiltros === 1 ? "filtro" : "filtros"}`;
+    document.getElementById("cantidadResultados").textContent = (datos.total === 1 ? "1 profesor" : `${datos.total} profesores`) + textoFiltros;
 
     document.getElementById("paginador").hidden = datos.total === 0;
     dibujarNumerosDePagina(paginaActual, totalPaginas);

@@ -141,7 +141,7 @@
 
                 @if (acciones.Count == 0)
                 {
-                    <p class="sinNotificaciones">No tenés nada pendiente. Acá vas a ver las solicitudes de amistad, los mensajes sin leer y las clases que esperan tu respuesta.</p>
+                    <p class="sinNotificaciones">No tenés nada pendiente.</p>
                 }
                 else
                 {
@@ -273,20 +273,14 @@
                             <p class="cargandoHistorial"><i class="bi bi-arrow-repeat" aria-hidden="true"></i> Cargando tus clases…</p>
                         </div>
                         <ul class="leyenda" aria-label="Referencias del calendario">
-                            <li><i class="linea azul" aria-hidden="true"></i> Está bien</li>
+                            <li><i class="linea azul" aria-hidden="true"></i> Confirmada</li>
                             <li><i class="linea azul punteada" aria-hidden="true"></i> Esperando al otro</li>
                             <li><i class="linea rojo" aria-hidden="true"></i> Necesita tu acción</li>
                             <li><i class="linea gris" aria-hidden="true"></i> No se dio o se canceló</li>
                         </ul>
                     </div>
 
-                    <div class="agendaDia" id="agendaDia" aria-live="polite"></div>
-
-                    @* Las clases a las que les toca responder a esta persona, de todo el calendario. Qué hacer lo dice la tarjeta de la clase *@
-                    <section class="requiereAccion" id="clasesRequierenAccion" aria-labelledby="tituloRequiereAccion" hidden>
-                        <h3 id="tituloRequiereAccion"><i class="bi bi-exclamation-circle" aria-hidden="true"></i> Clases que requieren tu atención <span class="badge theme-danger" id="cantidadRequiereAccion"></span></h3>
-                        <ul id="listaRequiereAccion"></ul>
-                    </section>
+                    <div class="agendaDia" id="agendaDia"></div>
                 </div>
             </div>
 
@@ -302,11 +296,12 @@
                             <div class="card">
                                 <h3>Horario semanal</h3>
                                 <p>Activá los días que das clases y elegí tus horarios. Cada clase dura 60 minutos.</p>
-                                <ul class="diasDeAgenda" id="listaDiasAgenda" aria-live="polite">
+                                <ul class="diasDeAgenda" id="listaDiasAgenda">
                                     <li class="avisoChat"><i class="bi bi-arrow-repeat" aria-hidden="true"></i> Cargando tu agenda…</li>
                                 </ul>
                                 <p class="mensajeError" id="mensajeAgenda" role="alert"></p>
-                                <button class="boton principal" type="button" id="botonGuardarAgenda"><i class="bi bi-check2" aria-hidden="true"></i> Guardar agenda</button>
+                                <p class="avisoSinAgenda" id="avisoCambiosAgenda" hidden><i class="bi bi-info-circle" aria-hidden="true"></i> Tenés cambios sin guardar.</p>
+                                <button class="boton principal" type="button" id="botonGuardarAgenda"><i class="bi bi-check2" aria-hidden="true"></i> <span>Guardar agenda</span></button>
                             </div>
                         </div>
                         <div class="col-12 lg:col-5">
@@ -350,6 +345,7 @@
                         <form class="redactar" id="formularioChat" novalidate hidden>
                             <label for="campoMensajeChat" class="visually-hidden">Escribí tu mensaje</label>
                             <input class="form-control" type="text" id="campoMensajeChat" placeholder="Escribí un mensaje..." autocomplete="off" maxlength="1000" />
+                            <small id="contadorChat" hidden></small>
                             <button class="boton principal chico" type="submit" id="botonEnviarChat"><i class="bi bi-send" aria-hidden="true"></i> Enviar</button>
                         </form>
                     </div>
@@ -422,7 +418,7 @@
                     <div class="franjas" data-franjas role="group" aria-labelledby="reubicarEtiquetaHora" aria-live="polite">
                         <p class="ayudaFranjas">Elegí primero un día.</p>
                     </div>
-                    <small>Cada clase dura 60 minutos. Las horas tachadas ya están ocupadas.</small>
+                    <small>Cada clase dura 60 minutos. Las horas tachadas no están disponibles (ocupadas o a menos de 1 hora).</small>
                 </div>
             </div>
             <div class="form-field">

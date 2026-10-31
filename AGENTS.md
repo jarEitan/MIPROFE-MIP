@@ -51,7 +51,7 @@ Reglas de código: **[Info/systemPrompt.md](Info/systemPrompt.md)** (obligatorio
 | Amigos | `AmigosController`: Estado, Cambiar, Lista | `obtenerAmistad`, `enviarAmistad`, `quitarAmistad`, `obtenerAmigos` |
 | Notificaciones | `NotificacionesController`: Contar, ResponderAmistad | `obtenerNotificaciones`, `contarNotificaciones`, `aceptarAmistad`, `rechazarAmistad` |
 | Chat | `MensajesController`: Conversaciones, Chat, Enviar | `enviarMensaje`, `obtenerConversaciones`, `obtenerChat` |
-| Reseñas | `ResenasController`: Dar | `darResena` |
+| Reseñas | `ResenasController`: Dar, Borrar | `darResena`, `borrarResena` |
 | Historial | `HistorialController`: Obtener | `obtenerHistorialClases` |
 | Soporte | `ConsultasController`: Enviar | `enviarConsulta` |
 | Moderación (`tipoUsuario = 'admin'`, se crean a mano en la BD) | `ModeracionController`: Index, Responder (la respuesta va por mensaje directo), Verificar, FotoDni (la pide "Ver DNI" del Perfil) | `obtenerConsultasPendientes`, `responderConsulta`, `obtenerUsuariosPorVerificar`, `verificarUsuario`, `obtenerFotoDni` |

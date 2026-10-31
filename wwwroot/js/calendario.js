@@ -62,7 +62,7 @@ function rangoDeLaGrilla(mes) {
     return { inicio, fin };
 }
 
-// Carga completa: la grilla del mes que se ve + una semana atrás y 90 días adelante (para "Requieren tu atención" y las
+// Carga completa: la grilla del mes que se ve + una semana atrás y 90 días adelante (para las
 // novedades). Reemplaza todo lo que había. Devuelve una promesa.
 function cargarCalendario() {
     if (!document.getElementById("misClases")) return Promise.resolve();
@@ -84,9 +84,22 @@ function cargarCalendario() {
         })
         .catch(error => {
             console.error(error);
-            const aviso = crearElemento("p", "mensajeErrorCalendario", "No pudimos cargar tus clases. Probá de nuevo en unos minutos.");
-            document.getElementById("diasMes").replaceChildren(aviso);
+            mostrarErrorDelCalendario();
         });
+}
+
+// Sin clases cargadas no se puede dibujar nada: se avisa y se deja reintentar
+function mostrarErrorDelCalendario() {
+    const aviso = crearElemento("p", "mensajeErrorCalendario", "No pudimos cargar tus clases. Probá de nuevo en unos minutos.");
+    const reintentar = crearElemento("button", "boton contorno chico", "Reintentar");
+    reintentar.type = "button";
+    reintentar.addEventListener("click", () => {
+        const cargando = crearElemento("p", "cargandoHistorial", " Cargando tus clases…");
+        cargando.prepend(crearIcono("bi-arrow-repeat"));
+        document.getElementById("diasMes").replaceChildren(cargando);
+        cargarCalendario();
+    });
+    document.getElementById("diasMes").replaceChildren(aviso, reintentar);
 }
 
 // Al cambiar de mes se pide solo la grilla nueva y se suma a lo que ya estaba
@@ -99,7 +112,10 @@ function cargarGrillaDelMes() {
             guardarClases(clases);
             dibujarTodo();
         })
-        .catch(error => console.error(error));
+        .catch(error => {
+            console.error(error);
+            if (!calendario.cargado) mostrarErrorDelCalendario();
+        });
 }
 
 // Hoy si se ve ese mes; si hoy no tiene clases, el próximo día con clases dentro del mes
@@ -159,7 +175,6 @@ function crearIcono(nombreIcono) {
 
 // ----- Dibujo -----
 function dibujarTodo() {
-    dibujarRequiereAccion();
     dibujarMes();
     dibujarAgendaDelDia();
 }
@@ -198,33 +213,6 @@ function dibujarMes() {
         dias.push(boton);
     }
     document.getElementById("diasMes").replaceChildren(...dias);
-}
-
-// "Clases que requieren tu atención": de todo el calendario, las más próximas primero. Sin ninguna no se muestra.
-// Solo avisan: qué hay que hacer lo dice la tarjeta de la clase
-function dibujarRequiereAccion() {
-    const seccion = document.getElementById("clasesRequierenAccion");
-    const lista = document.getElementById("listaRequiereAccion");
-    const pendientes = [...calendario.clases.values()]
-        .filter(clase => clase.requiereAccion)
-        .sort((una, otra) => una.fecha.localeCompare(otra.fecha));
-
-    seccion.hidden = pendientes.length === 0;
-    document.getElementById("cantidadRequiereAccion").textContent = pendientes.length;
-    lista.replaceChildren(...pendientes.map(clase => {
-        const item = crearElemento("li", "pedidoPendiente");
-        marcarComoClase(item, clase);
-        const texto = crearElemento("p", "textoPedido");
-        texto.append(
-            "Tu clase con ",
-            crearElemento("strong", "", nombreCompleto(clase)),
-            " del ",
-            crearElemento("strong", "", textoDiaLargo(leerFechaLocal(clase.fecha)).toLowerCase()),
-            " necesita de tu atención."
-        );
-        item.append(texto, crearBotonDeClase("irAClase", "principal", "bi-calendar-event", "Ir a la clase"));
-        return item;
-    }));
 }
 
 // Qué pasa con la clase, en su tarjeta: lo que pidió el otro o lo que pediste vos
@@ -304,6 +292,11 @@ function dibujarAgendaDelDia() {
             const buscar = crearElemento("a", "boton principal chico", "Buscar profesor");
             buscar.href = "/Catalogo";
             vacio.append(buscar);
+        } else {
+            const verAgenda = crearElemento("button", "boton contorno chico", "Ver mi agenda");
+            verAgenda.type = "button";
+            verAgenda.addEventListener("click", () => document.getElementById("botonTabAgenda")?.click());
+            vacio.append(verAgenda);
         }
         contenedor.append(vacio);
         return;
@@ -455,6 +448,8 @@ function mostrarClaseEnCalendario(idClase) {
         setTimeout(() => {
             destino.scrollIntoView({ behavior: "smooth", block: "center" });
             resaltarElemento(destino);
+            destino.tabIndex = -1;
+            destino.focus({ preventScroll: true });
         }, 150);
     }
     return true;
@@ -494,7 +489,6 @@ function inicializarAccionesDelCalendario() {
             case "reubicar": abrirReubicacionDeClase(); break;
             case "noSeDio": abrirNoSeDio(clase.id, nombreCompleto(clase), textoFechaCorta(leerFechaLocal(clase.fecha))); break;
             case "chat": abrirPestanaYClase(new URLSearchParams({ tab: "chat", chat: clase.idOtroUsuario })); break;
-            case "irAClase": mostrarClaseEnCalendario(clase.id); break;
         }
     });
 

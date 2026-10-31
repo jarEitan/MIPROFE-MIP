@@ -69,7 +69,7 @@ function mostrarSnackbar(texto, tipo = "info") {
     temporizadorSnackbar = setTimeout(() => {
         snackbar.classList.remove("visible");
         setTimeout(() => { snackbar.hidden = true; }, 300);
-    }, 3200);
+    }, tipo === "error" ? 7000 : 3200);
 }
 
 
@@ -650,7 +650,6 @@ function mostrarPerfil(perfil) {
     document.getElementById("tipoPerfil").textContent = nombresDeTipoUsuario[perfil.tipoUsuario] || "Usuario";
     document.getElementById("nombrePerfil").textContent = nombreCompleto;
     document.getElementById("tickPerfil").hidden = !perfil.verificado;
-    document.getElementById("estadoVerificadoPerfil").hidden = !perfil.verificado;
     document.getElementById("datosTitularPerfil").replaceChildren(...crearDatosTitular(perfil));
 
     // "Pedir clase" solo tiene sentido en el perfil de un profesor
@@ -780,7 +779,7 @@ function mostrarResenasPerfil(resenas) {
     if (resenas.length === 0) {
         const sinResenas = document.createElement("p");
         sinResenas.className = "vacio";
-        sinResenas.textContent = "Todavía no tiene reseñas.";
+        sinResenas.textContent = esPerfilPropio() ? "Todavía no tenés reseñas." : "Todavía no tiene reseñas.";
         resenasPerfil.append(sinResenas);
         return;
     }
@@ -807,6 +806,16 @@ function mostrarResenasPerfil(resenas) {
 
         const encabezadoResena = document.createElement("header");
         encabezadoResena.append(autorResena, estrellas);
+        // El tacho lo ven quien escribió la reseña y los moderadores; el SP borrarResena vuelve a revisarlo
+        if (String(resena.idEmisor) === document.getElementById("perfil").dataset.idVisitante || document.body.dataset.tipoUsuario === "admin") {
+            const borrar = document.createElement("button");
+            borrar.type = "button";
+            borrar.className = "boton botonIcono borrarResena";
+            borrar.dataset.idResena = resena.id;
+            borrar.setAttribute("aria-label", `Borrar la reseña de ${resena.nombre} ${resena.apellido}`);
+            borrar.innerHTML = '<i class="bi bi-trash3-fill" aria-hidden="true"></i>';
+            encabezadoResena.append(borrar);
+        }
         tarjetaResena.append(encabezadoResena);
 
         if (resena.descripcion) {
@@ -841,9 +850,10 @@ function mostrarDatosPerfil(perfil) {
     if (gruposConDatos.length === 0) {
         const sinDatos = document.createElement("p");
         sinDatos.className = "vacio";
+        const propio = esPerfilPropio();
         sinDatos.textContent = perfil.tipoUsuario === "profesor"
-            ? "Todavía no cargó sus materias, niveles ni colegios."
-            : "Todavía no cargó su colegio ni su nivel.";
+            ? (propio ? "Todavía no cargaste tus materias, niveles ni colegios. Tocá «Editar perfil»." : "Todavía no cargó sus materias, niveles ni colegios.")
+            : (propio ? "Todavía no cargaste tu colegio ni tu nivel. Tocá «Editar perfil»." : "Todavía no cargó su colegio ni su nivel.");
         datosPerfil.append(sinDatos);
         return;
     }
@@ -909,7 +919,7 @@ function inicializarBotonesProximamente() {
         boton.addEventListener("click", evento => {
             evento.preventDefault();
             if (!haySesion) {
-                window.location.href = "/Sesion/IniciarSesion";
+                window.location.href = "/Sesion/IniciarSesion?volver=" + encodeURIComponent(location.pathname + location.search);
                 return;
             }
             mostrarSnackbar(`«${boton.dataset.proximamente}» va a estar disponible muy pronto.`);
@@ -941,7 +951,7 @@ function inicializarMeGusta() {
 
     botonMeGusta.addEventListener("click", () => {
         if (!haySesion) {
-            window.location.href = "/Sesion/IniciarSesion";
+            window.location.href = "/Sesion/IniciarSesion?volver=" + encodeURIComponent(location.pathname + location.search);
             return;
         }
         respuestaInicialVigente = false;
@@ -1014,7 +1024,7 @@ function inicializarAmistad() {
 
     botonAmistad.addEventListener("click", () => {
         if (!haySesion) {
-            window.location.href = "/Sesion/IniciarSesion";
+            window.location.href = "/Sesion/IniciarSesion?volver=" + encodeURIComponent(location.pathname + location.search);
             return;
         }
         // Dejar de ser amigos se confirma; lo demás se puede deshacer con el mismo botón
@@ -1106,7 +1116,7 @@ function abrirAmigosDelPerfil() {
     pedirJson(`/Amigos/Lista/${document.getElementById("perfil").dataset.idPerfil}`)
         .then(amigos => {
             estadoAmigos.hidden = amigos.length > 0;
-            estadoAmigos.textContent = "Todavía no tiene amigos en MIP.";
+            estadoAmigos.textContent = esPerfilPropio() ? "Todavía no tenés amigos en MIP." : "Todavía no tiene amigos en MIP.";
             listaAmigos.replaceChildren(...amigos.map(crearItemAmigo));
         })
         .catch(error => {
@@ -1644,7 +1654,7 @@ function inicializarResenas() {
         // El diálogo solo está para alumnos y profesores: sin sesión se va a Iniciar sesión
         if (!document.getElementById("dialogoDarResena")) {
             if (document.getElementById("perfil")?.dataset.haySesion === "true") mostrarSnackbar("Solo los alumnos y los profesores pueden dejar reseñas.");
-            else window.location.href = "/Sesion/IniciarSesion";
+            else window.location.href = "/Sesion/IniciarSesion?volver=" + encodeURIComponent(location.pathname + location.search);
             return;
         }
         abrirResena(boton.dataset.idUsuario, boton.dataset.nombreUsuario);
@@ -1660,6 +1670,43 @@ function inicializarResenas() {
         if (evento.target.name !== "puntuacion") return;
         document.getElementById("textoPuntuacion").textContent = textosPuntuacion[evento.target.value];
         mostrarMensaje(document.getElementById("mensajeDarResena"), "");
+    });
+}
+
+// Tacho de una reseña del perfil: confirma con #dialogoBorrarResena y vuelve a cargar el perfil (promedio incluido)
+function inicializarBorrarResenas() {
+    const dialogo = document.getElementById("dialogoBorrarResena");
+    if (!dialogo) return;
+
+    document.getElementById("resenasPerfil").addEventListener("click", evento => {
+        const boton = evento.target.closest("[data-id-resena]");
+        if (!boton) return;
+        dialogo.dataset.idResena = boton.dataset.idResena;
+        dialogo.showModal();
+    });
+
+    document.getElementById("botonConfirmarBorrarResena").addEventListener("click", () => {
+        const token = document.querySelector("#perfil input[name='__RequestVerificationToken']");
+        dialogo.close();
+        pedirJson("/Resenas/Borrar", {
+            method: "POST",
+            headers: { "RequestVerificationToken": token ? token.value : "" },
+            body: new URLSearchParams({ idResena: dialogo.dataset.idResena })
+        })
+            .then(resultado => {
+                if (resultado.codigo == 0) {
+                    mostrarSnackbar("Borramos la reseña.", "exito");
+                } else if (resultado.codigo == 1) {
+                    mostrarSnackbar("Esa reseña ya no existe.", "error");
+                } else {
+                    mostrarSnackbar("Solo podés borrar tus propias reseñas.", "error");
+                }
+                cargarPerfil();
+            })
+            .catch(error => {
+                console.error(error);
+                mostrarSnackbar("No pudimos borrar la reseña. Probá de nuevo.", "error");
+            });
     });
 }
 
@@ -1860,6 +1907,7 @@ function inicializarSitio() {
     inicializarAccesosDelPanel();
     inicializarCierreDeDialogos();
     inicializarResenas();
+    inicializarBorrarResenas();
     inicializarPerfil();
     inicializarBuscadorDeUsuarios();
 }
