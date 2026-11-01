@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Mvc;
 using MIP_MIPROFESOR.Models;
 
@@ -5,6 +6,20 @@ namespace MIP_MIPROFESOR.Controllers;
 
 public class SesionController : Controller
 {
+    public const int edadMinimaProfesor = 18;
+
+    // Solo letras (con tildes y ñ) y números, con un espacio entre palabras. Los números sirven para diferenciar dos nombres iguales
+    public static string? limpiarNombre(string? texto)
+    {
+        string nombre = Regex.Replace(texto ?? "", @"\s+", " ").Trim();
+        return nombre.Length >= 2 && nombre.Length <= 50 && Regex.IsMatch(nombre, @"^[\p{L}0-9]+( [\p{L}0-9]+)*$") ? nombre : null;
+    }
+
+    public static bool esMayorDeEdad(DateTime? fechaNacimiento)
+    {
+        return fechaNacimiento != null && fechaNacimiento.Value.Date <= DateTime.Today.AddYears(-edadMinimaProfesor);
+    }
+
     public IActionResult IniciarSesion(string? volver)
     {
         if (HttpContext.Session.GetString("idUsuario") != null) return RedirectToAction("Perfil", "Home");
@@ -60,6 +75,23 @@ public class SesionController : Controller
     {
         // Para que nadie se registre como moderador (admin) desde el formulario
         registro.tipoUsuario = (registro.tipoUsuario == "profesor" ? "profesor" : "alumno");
+
+        string? nombre = limpiarNombre(registro.nombre);
+        string? apellido = limpiarNombre(registro.apellido);
+        if (nombre == null || apellido == null)
+        {
+            ViewBag.mensaje = "El nombre y el apellido solo pueden tener letras y números (de 2 a 50 caracteres).";
+            ViewBag.registro = registro;
+            return View();
+        }
+        if (registro.tipoUsuario == "profesor" && !esMayorDeEdad(registro.fechaNacimiento))
+        {
+            ViewBag.mensaje = $"Para dar clases tenés que tener al menos {edadMinimaProfesor} años.";
+            ViewBag.registro = registro;
+            return View();
+        }
+        registro.nombre = nombre;
+        registro.apellido = apellido;
 
         Usuario cuenta = new BDsesion().registrarUsuario(registro);
 

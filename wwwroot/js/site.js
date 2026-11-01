@@ -428,15 +428,35 @@ function validarRegistro() {
     const mensajeRegistro = document.getElementById("mensajeRegistro");
     const campo = id => document.getElementById(id);
 
-    if (campo("registroNombre").value.trim().length < 2) return mostrarErrorEnCampo(mensajeRegistro, campo("registroNombre"), "Ingresá tu nombre.");
-    if (campo("registroApellido").value.trim().length < 2) return mostrarErrorEnCampo(mensajeRegistro, campo("registroApellido"), "Ingresá tu apellido.");
+    if (!nombreValido(campo("registroNombre").value)) return mostrarErrorEnCampo(mensajeRegistro, campo("registroNombre"), mensajeNombreInvalido);
+    if (!nombreValido(campo("registroApellido").value)) return mostrarErrorEnCampo(mensajeRegistro, campo("registroApellido"), mensajeNombreInvalido);
     if (!correoValido(campo("registroCorreo").value.trim())) return mostrarErrorEnCampo(mensajeRegistro, campo("registroCorreo"), "Ingresá un correo electrónico válido.");
     if (campo("registroContrasena").value.length < 8) return mostrarErrorEnCampo(mensajeRegistro, campo("registroContrasena"), "La contraseña debe tener al menos 8 caracteres.");
     if (!fechaNacimientoValida(campo("registroFechaNacimiento").value)) return mostrarErrorEnCampo(mensajeRegistro, campo("registroFechaNacimiento"), "Ingresá una fecha de nacimiento válida.");
+    if (document.querySelector("input[name='tipoUsuario']:checked").value === "profesor" && !esMayorDeEdad(campo("registroFechaNacimiento").value)) {
+        return mostrarErrorEnCampo(mensajeRegistro, campo("registroFechaNacimiento"), mensajeProfesorMenor);
+    }
     if (!campo("registroTerminos").checked) return mostrarErrorEnCampo(mensajeRegistro, campo("registroTerminos"), "Tenés que aceptar los términos para continuar.");
 
     mostrarMensaje(mensajeRegistro, "");
     return true;
+}
+
+// Igual que SesionController.limpiarNombre: letras (con tildes y ñ) y números, un espacio entre palabras
+const mensajeNombreInvalido = "El nombre y el apellido solo pueden tener letras y números (de 2 a 50 caracteres).";
+const edadMinimaProfesor = 18;
+const mensajeProfesorMenor = `Para dar clases tenés que tener al menos ${edadMinimaProfesor} años.`;
+
+function nombreValido(valor) {
+    const nombre = valor.replace(/\s+/g, " ").trim();
+    return nombre.length >= 2 && nombre.length <= 50 && /^[\p{L}0-9]+( [\p{L}0-9]+)*$/u.test(nombre);
+}
+
+function esMayorDeEdad(valor) {
+    const limite = new Date();
+    limite.setHours(0, 0, 0, 0);
+    limite.setFullYear(limite.getFullYear() - edadMinimaProfesor);
+    return new Date(valor + "T00:00:00") <= limite;
 }
 
 function fechaNacimientoValida(valor) {
@@ -1555,11 +1575,14 @@ function guardarPerfil() {
     const campoPrecioHora = campo("edicionPrecioHora");
     const dniSinPuntos = campo("edicionDni").value.replace(/[\s.\-]/g, "");
 
-    if (campo("edicionNombre").value.trim() === "") return errorEnCampoDeEdicion(campo("edicionNombre"), "Ingresá tu nombre.");
-    if (campo("edicionApellido").value.trim() === "") return errorEnCampoDeEdicion(campo("edicionApellido"), "Ingresá tu apellido.");
+    if (!nombreValido(campo("edicionNombre").value)) return errorEnCampoDeEdicion(campo("edicionNombre"), mensajeNombreInvalido);
+    if (!nombreValido(campo("edicionApellido").value)) return errorEnCampoDeEdicion(campo("edicionApellido"), mensajeNombreInvalido);
     if (!correoValido(campo("edicionMail").value.trim())) return errorEnCampoDeEdicion(campo("edicionMail"), "Ingresá un correo electrónico válido.");
     if (dniSinPuntos !== "" && !/^\d{7,8}$/.test(dniSinPuntos)) return errorEnCampoDeEdicion(campo("edicionDni"), "El DNI tiene que tener 7 u 8 números.");
     if (campo("edicionFechaNacimiento").value !== "" && !fechaNacimientoValida(campo("edicionFechaNacimiento").value)) return errorEnCampoDeEdicion(campo("edicionFechaNacimiento"), "Ingresá una fecha de nacimiento válida.");
+    if (campo("edicionFechaNacimiento").value !== "" && document.body.dataset.tipoUsuario === "profesor" && !esMayorDeEdad(campo("edicionFechaNacimiento").value)) {
+        return errorEnCampoDeEdicion(campo("edicionFechaNacimiento"), mensajeProfesorMenor);
+    }
     if (textoDeLaDescripcion().length > largoMaximoDescripcion) return errorEnCampoDeEdicion(campo("editorDescripcion"), "La descripción puede tener hasta 1000 caracteres.");
     if (campoPrecioHora && campoPrecioHora.value !== "" && !(Number.isInteger(Number(campoPrecioHora.value)) && Number(campoPrecioHora.value) >= 0)) {
         return errorEnCampoDeEdicion(campoPrecioHora, "Ingresá un precio por hora válido (solo números).");
@@ -1608,6 +1631,10 @@ function guardarPerfil() {
                 errorEnCampoDeEdicion(campo("edicionMail"), "Ese correo ya lo usa otra cuenta.");
             } else if (respuesta.codigo == 2) {
                 errorEnCampoDeEdicion(campo("edicionDni"), "Ese DNI ya está registrado en otra cuenta.");
+            } else if (respuesta.codigo == 5) {
+                errorEnCampoDeEdicion(campo("edicionNombre"), mensajeNombreInvalido);
+            } else if (respuesta.codigo == 6) {
+                errorEnCampoDeEdicion(campo("edicionFechaNacimiento"), mensajeProfesorMenor);
             } else if (respuesta.codigo == 3) {
                 mostrarMensaje(mensajeEditarPerfil, "Revisá los datos: nombre y apellido de hasta 50 caracteres, dirección de hasta 200, hasta 10 títulos, hasta 10 materias y 5 colegios, y el año de cada colegio.");
             } else {

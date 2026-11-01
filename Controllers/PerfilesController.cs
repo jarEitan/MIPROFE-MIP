@@ -104,8 +104,13 @@ public class PerfilesController : Controller
         edicion.descripcion = limpiarDescripcion(edicion.descripcion);
         if (edicion.descripcion != null && edicion.descripcion.Length > 5000) return Json(new Usuario { codigo = 3 });
 
-        edicion.nombre = (edicion.nombre ?? "").Trim();
-        edicion.apellido = (edicion.apellido ?? "").Trim();
+        string? nombre = SesionController.limpiarNombre(edicion.nombre);
+        string? apellido = SesionController.limpiarNombre(edicion.apellido);
+        if (nombre == null || apellido == null) return Json(new Usuario { codigo = 5 });
+        edicion.nombre = nombre;
+        edicion.apellido = apellido;
+        // El tipo sale de la cuenta guardada, no del formulario
+        if (anteriores.tipoUsuario == "profesor" && edicion.fechaNacimiento != null && !SesionController.esMayorDeEdad(edicion.fechaNacimiento)) return Json(new Usuario { codigo = 6 });
         edicion.mail = (edicion.mail ?? "").Trim().ToLowerInvariant();
         edicion.dni = limpiarTexto(edicion.dni?.Replace(".", "").Replace("-", "").Replace(" ", ""));
         edicion.direccion = limpiarTexto(edicion.direccion);
