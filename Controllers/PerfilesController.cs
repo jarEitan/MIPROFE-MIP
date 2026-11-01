@@ -99,18 +99,19 @@ public class PerfilesController : Controller
         if (idSesion == null) return Unauthorized();
         int idUsuario = int.Parse(idSesion);
 
-        BD bd = new BD();
-        Usuario anteriores = bd.obtenerDatosEdicion(idUsuario);
-        edicion.descripcion = limpiarDescripcion(edicion.descripcion);
-        if (edicion.descripcion != null && edicion.descripcion.Length > 5000) return Json(new Usuario { codigo = 3 });
-
         string? nombre = SesionController.limpiarNombre(edicion.nombre);
         string? apellido = SesionController.limpiarNombre(edicion.apellido);
         if (nombre == null || apellido == null) return Json(new Usuario { codigo = 5 });
         edicion.nombre = nombre;
         edicion.apellido = apellido;
-        // El tipo sale de la cuenta guardada, no del formulario
-        if (anteriores.tipoUsuario == "profesor" && edicion.fechaNacimiento != null && !SesionController.esMayorDeEdad(edicion.fechaNacimiento)) return Json(new Usuario { codigo = 6 });
+        // Se valida antes de tocar la BD. El tipo sale de la sesión, no del formulario
+        if (HttpContext.Session.GetString("tipoUsuario") == "profesor" && edicion.fechaNacimiento != null && !SesionController.esMayorDeEdad(edicion.fechaNacimiento)) return Json(new Usuario { codigo = 6 });
+
+        BD bd = new BD();
+        Usuario anteriores = bd.obtenerDatosEdicion(idUsuario);
+        edicion.descripcion = limpiarDescripcion(edicion.descripcion);
+        if (edicion.descripcion != null && edicion.descripcion.Length > 5000) return Json(new Usuario { codigo = 3 });
+
         edicion.mail = (edicion.mail ?? "").Trim().ToLowerInvariant();
         edicion.dni = limpiarTexto(edicion.dni?.Replace(".", "").Replace("-", "").Replace(" ", ""));
         edicion.direccion = limpiarTexto(edicion.direccion);
