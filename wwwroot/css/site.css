@@ -1760,6 +1760,10 @@ fieldset {
     margin-right: .25rem;
 }
 
+.avisoVerificacion.suspendida {
+    background-color: var(--colorCoral);
+}
+
 
 /* ---------- Animaciones reutilizables ---------- */
 @keyframes desplazarCinta {
@@ -5071,6 +5075,11 @@ tr.resaltada td {
     color: var(--colorMagenta);
 }
 
+/* La bandera de reportar usa el mismo botón que el tacho, pero en gris */
+.perfil .resena .reportarResena {
+    color: var(--colorTextoSuave);
+}
+
 @media (hover: hover) {
     .perfil .resena .borrarResena:hover {
         background-color: rgba(213, 31, 71, .1);
@@ -5606,6 +5615,46 @@ tr.resaltada td {
 
 .moderacion .card .boton {
     align-self: flex-start;
+}
+
+/* Privacidad y Términos: texto largo en una sola columna angosta */
+.legal .card {
+    max-width: 46rem;
+    margin-inline: auto;
+    gap: .75rem;
+}
+
+.legal h2 {
+    margin-top: 1rem;
+    font-size: 1.25rem;
+}
+
+.legal h2:first-child {
+    margin-top: 0;
+}
+
+.legal ul {
+    display: grid;
+    gap: .4rem;
+    margin: 0;
+    padding-left: 1.25rem;
+}
+
+/* Mismo color para los párrafos y las listas (la tarjeta pone los párrafos en gris) */
+.legal .card p {
+    color: var(--colorTinta);
+}
+
+.legal .card .pieLegal {
+    margin-top: 1rem;
+    color: var(--colorTextoSuave);
+}
+
+.moderacion blockquote {
+    margin: 0;
+    padding-left: .75rem;
+    border-left: 3px solid var(--colorCeleste);
+    color: var(--colorTextoSuave);
 }
 
 

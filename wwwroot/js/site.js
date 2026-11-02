@@ -45,6 +45,8 @@ function crearElemento(etiqueta, clases, texto) {
 // fetch que devuelve el JSON o falla si el servidor respondió con error (401, 404, 500...)
 function pedirJson(url, opciones) {
     return fetch(url, opciones).then(respuesta => {
+        // 403 = la cuenta está suspendida (Program.cs): al recargar aparece el aviso arriba
+        if (respuesta.status === 403) window.location.reload();
         if (!respuesta.ok) throw new Error(`Error ${respuesta.status} en ${url}`);
         return respuesta.json();
     });
@@ -571,7 +573,7 @@ function inicializarCierreDeDialogos() {
 // La vista Home/Perfil solo trae el esqueleto: los datos llegan por fetch desde PerfilesController.
 // Los textos de la BD se ponen con textContent. La única excepción es "Sobre mí", que es HTML del
 // editor y llega limpio desde el servidor (HtmlSanitizer solo deja negrita, listas, enlaces, etc.).
-const nombresDeTipoUsuario = { alumno: "Alumno", profesor: "Profesor", admin: "Moderador" };
+const nombresDeTipoUsuario = { alumno: "Alumno", profesor: "Profesor", admin: "Moderador", alumnoBaneado: "Cuenta suspendida", profesorBaneado: "Cuenta suspendida" };
 const largoMaximoDescripcion = 1000;
 const pesoMaximoFoto = 5 * 1024 * 1024;
 const ladoFotoPerfil = 256;
@@ -599,7 +601,8 @@ function inicializarPerfil() {
 
     cargarPerfil();
     inicializarCopiarEnlacePerfil();
-    inicializarBotonesProximamente();
+    inicializarReportes();
+    inicializarSuspension();
     inicializarMeGusta();
     inicializarAmistad();
     inicializarEdicionPerfil();
@@ -668,6 +671,7 @@ function mostrarPerfil(perfil) {
 
     pintarAvatar(document.getElementById("avatarPerfil"), perfil.nombre, perfil.apellido, perfil.fotoPerfil);
     document.getElementById("tipoPerfil").textContent = nombresDeTipoUsuario[perfil.tipoUsuario] || "Usuario";
+    document.getElementById("tipoPerfil").dataset.tipo = perfil.tipoUsuario;
     document.getElementById("nombrePerfil").textContent = nombreCompleto;
     document.getElementById("tickPerfil").hidden = !perfil.verificado;
     document.getElementById("datosTitularPerfil").replaceChildren(...crearDatosTitular(perfil));
@@ -678,6 +682,13 @@ function mostrarPerfil(perfil) {
         boton.dataset.nombreProfesor = nombreCompleto;
     });
     document.querySelectorAll("#perfil [data-dar-resena]").forEach(boton => { boton.dataset.nombreUsuario = nombreCompleto; });
+
+    const botonSuspension = document.getElementById("botonSuspension");
+    if (botonSuspension) {
+        botonSuspension.hidden = false;
+        botonSuspension.dataset.suspendida = estaSuspendida(perfil.tipoUsuario);
+        botonSuspension.querySelector("span").textContent = estaSuspendida(perfil.tipoUsuario) ? "Quitar suspensión" : "Suspender cuenta";
+    }
 
     mostrarCifrasPerfil(perfil);
     mostrarDescripcionPerfil(perfil.descripcion);
@@ -787,6 +798,10 @@ function mostrarDescripcionPerfil(descripcion) {
         return;
     }
     descripcionPerfil.classList.add("vacio");
+    if (estaSuspendida(document.getElementById("tipoPerfil").dataset.tipo)) {
+        descripcionPerfil.textContent = "Esta cuenta está suspendida, así que no mostramos su información.";
+        return;
+    }
     descripcionPerfil.textContent = esPerfilPropio()
         ? "Todavía no escribiste nada sobre vos. Tocá «Editar perfil» para contarle a los demás quién sos."
         : "Todavía no escribió una descripción.";
@@ -835,6 +850,17 @@ function mostrarResenasPerfil(resenas) {
             borrar.setAttribute("aria-label", `Borrar la reseña de ${resena.nombre} ${resena.apellido}`);
             borrar.innerHTML = '<i class="bi bi-trash3-fill" aria-hidden="true"></i>';
             encabezadoResena.append(borrar);
+        } else if (document.getElementById("dialogoReportar")) {
+            // Con sesión, las reseñas de otros (también las de tu perfil) se pueden reportar
+            const reportar = document.createElement("button");
+            reportar.type = "button";
+            reportar.className = "boton botonIcono borrarResena reportarResena";
+            reportar.dataset.reportar = "resena";
+            reportar.dataset.idReportado = resena.id;
+            reportar.setAttribute("aria-label", `Reportar la reseña de ${resena.nombre} ${resena.apellido}`);
+            reportar.title = "Reportar reseña";
+            reportar.innerHTML = '<i class="bi bi-flag" aria-hidden="true"></i>';
+            encabezadoResena.append(reportar);
         }
         tarjetaResena.append(encabezadoResena);
 
@@ -871,7 +897,8 @@ function mostrarDatosPerfil(perfil) {
         const sinDatos = document.createElement("p");
         sinDatos.className = "vacio";
         const propio = esPerfilPropio();
-        sinDatos.textContent = perfil.tipoUsuario === "profesor"
+        sinDatos.textContent = estaSuspendida(perfil.tipoUsuario) ? "Esta cuenta está suspendida, así que no mostramos su información."
+            : perfil.tipoUsuario === "profesor"
             ? (propio ? "Todavía no cargaste tus materias, niveles ni colegios. Tocá «Editar perfil»." : "Todavía no cargó sus materias, niveles ni colegios.")
             : (propio ? "Todavía no cargaste tu colegio ni tu nivel. Tocá «Editar perfil»." : "Todavía no cargó su colegio ni su nivel.");
         datosPerfil.append(sinDatos);
@@ -931,20 +958,89 @@ function inicializarCopiarEnlacePerfil() {
     });
 }
 
-// Reportar todavía no hace nada (Pedir clase está en clases.js y Mensaje lleva al chat del Panel)
-function inicializarBotonesProximamente() {
-    const haySesion = document.getElementById("perfil").dataset.haySesion === "true";
+// ----- Reportar (perfil o reseña) -----
+// [data-reportar="perfil|resena"] con data-id-reportado abre #dialogoReportar. Las banderas de las reseñas se dibujan
+// con cada carga del perfil, por eso se escucha en toda la sección
+function inicializarReportes() {
+    const seccionPerfil = document.getElementById("perfil");
+    const dialogo = document.getElementById("dialogoReportar");
 
-    document.querySelectorAll("[data-proximamente]").forEach(boton => {
-        boton.addEventListener("click", evento => {
-            evento.preventDefault();
-            if (!haySesion) {
-                window.location.href = "/Sesion/IniciarSesion?volver=" + encodeURIComponent(location.pathname + location.search);
-                return;
-            }
-            mostrarSnackbar(`«${boton.dataset.proximamente}» va a estar disponible muy pronto.`);
-        });
+    seccionPerfil.addEventListener("click", evento => {
+        const boton = evento.target.closest("[data-reportar]");
+        if (!boton) return;
+        evento.preventDefault();
+        if (seccionPerfil.dataset.haySesion !== "true") {
+            window.location.href = "/Sesion/IniciarSesion?volver=" + encodeURIComponent(location.pathname + location.search);
+            return;
+        }
+        if (!dialogo) return;
+        document.getElementById("formularioReportar").reset();
+        mostrarMensaje(document.getElementById("mensajeReportar"), "");
+        dialogo.dataset.tipo = boton.dataset.reportar;
+        dialogo.dataset.idReportado = boton.dataset.idReportado;
+        document.getElementById("tituloReportar").textContent = boton.dataset.reportar === "perfil" ? "Reportar este perfil" : "Reportar esta reseña";
+        dialogo.showModal();
     });
+    if (!dialogo) return;
+
+    document.getElementById("motivoReporte").addEventListener("change", () => mostrarMensaje(document.getElementById("mensajeReportar"), ""));
+    const textosError = { 1: "Eso ya no existe.", 2: "Elegí un motivo.", 3: "No podés reportar algo tuyo.", 4: "Ya lo reportaste. Un moderador lo está revisando." };
+    document.getElementById("formularioReportar").addEventListener("submit", evento => {
+        evento.preventDefault();
+        const motivo = document.getElementById("motivoReporte");
+        const mensaje = document.getElementById("mensajeReportar");
+        if (motivo.value === "") return mostrarErrorEnCampo(mensaje, motivo, "Elegí un motivo.");
+
+        const detalle = document.getElementById("detalleReporte").value.trim();
+        const botonEnviar = document.getElementById("botonEnviarReporte");
+        botonEnviar.disabled = true;
+        enviarAccionDeClase("/Consultas/Reportar", {
+            tipo: dialogo.dataset.tipo,
+            idReportado: dialogo.dataset.idReportado,
+            mensaje: detalle ? `${motivo.value}: ${detalle}` : motivo.value
+        })
+            .then(resultado => {
+                if (resultado.codigo == 0) {
+                    dialogo.close();
+                    mostrarSnackbar("Gracias. Un moderador va a revisar el reporte.", "exito");
+                } else {
+                    mostrarMensaje(mensaje, textosError[resultado.codigo] || "No pudimos enviar el reporte.");
+                }
+            })
+            .catch(error => {
+                console.error(error);
+                mostrarMensaje(mensaje, "No pudimos enviar el reporte. Revisá tu conexión y probá de nuevo.");
+            })
+            .finally(() => { botonEnviar.disabled = false; });
+    });
+}
+
+// ----- Solo moderadores: suspender o quitar la suspensión (ModeracionController.Suspender) -----
+function inicializarSuspension() {
+    const boton = document.getElementById("botonSuspension");
+    if (!boton) return;
+
+    boton.addEventListener("click", () => {
+        const suspender = boton.dataset.suspendida !== "true";
+        if (suspender && !window.confirm("¿Suspender esta cuenta? Se cancelan sus clases que todavía no pasaron y no va a poder usar MiProfesor hasta que le quites la suspensión.")) return;
+        boton.disabled = true;
+        enviarAccionDeClase("/Moderacion/Suspender", { idUsuario: document.getElementById("perfil").dataset.idPerfil, suspender: suspender })
+            .then(resultado => {
+                if (resultado.codigo == 0) mostrarSnackbar(suspender ? "Cuenta suspendida." : "Le quitaste la suspensión.", "exito");
+                else mostrarSnackbar("La cuenta ya estaba así.", "error");
+                cargarPerfil();
+            })
+            .catch(error => {
+                console.error(error);
+                mostrarSnackbar("No pudimos cambiar la suspensión. Probá de nuevo.", "error");
+            })
+            .finally(() => { boton.disabled = false; });
+    });
+}
+
+// Cuentas suspendidas: alumnoBaneado / profesorBaneado
+function estaSuspendida(tipoUsuario) {
+    return (tipoUsuario || "").endsWith("Baneado");
 }
 
 // ----- Me gusta (LikesController: fetch) -----
@@ -1915,7 +2011,7 @@ function crearResultadoDeUsuario(usuario) {
         nombre.append(tick);
     }
     const datos = crearElemento("span", "datos");
-    datos.append(nombre, crearElemento("small", "", `${usuario.tipoUsuario === "profesor" ? "Profesor" : "Alumno"} · ID ${usuario.id}`));
+    datos.append(nombre, crearElemento("small", "", `${nombresDeTipoUsuario[usuario.tipoUsuario] || "Usuario"} · ID ${usuario.id}`));
 
     enlace.append(avatar, datos);
     const item = crearElemento("li");

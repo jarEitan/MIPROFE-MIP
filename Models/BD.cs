@@ -452,6 +452,15 @@ public class BD
         }
     }
 
+    // codigo: 0 = ok, 1 = no existe lo reportado, 2 = sin motivo, 3 = es tuyo, 4 = ya lo reportaste y sigue pendiente
+    public int enviarReporte(int idUsuario, string? tipo, int idReportado, string? mensaje)
+    {
+        using (var connection = new SqlConnection(connectionString))
+        {
+            return connection.QueryFirst<int>("EXEC enviarReporte @idUsuario, @tipo, @idReportado, @mensaje", new { idUsuario = idUsuario, tipo = tipo, idReportado = idReportado, mensaje = mensaje });
+        }
+    }
+
     public List<ConsultaSoporte> obtenerConsultasPendientes()
     {
         using (var connection = new SqlConnection(connectionString))
@@ -483,6 +492,33 @@ public class BD
         using (var connection = new SqlConnection(connectionString))
         {
             return connection.QueryFirst<int>("EXEC verificarUsuario @idUsuario", new { idUsuario = idUsuario });
+        }
+    }
+
+    // codigo: 0 = ok, 1 = el reporte ya se resolvió, 2 = esa acción ya no se puede (reseña borrada, cuenta ya suspendida)
+    public int resolverReporte(int idConsulta, string? accion)
+    {
+        using (var connection = new SqlConnection(connectionString))
+        {
+            return connection.QueryFirst<int>("EXEC resolverReporte @idConsulta, @accion", new { idConsulta = idConsulta, accion = accion });
+        }
+    }
+
+    // codigo: 0 = ok, 1 = no existe o es moderador, 2 = ya estaba así
+    public int cambiarSuspension(int idUsuario, bool suspender)
+    {
+        using (var connection = new SqlConnection(connectionString))
+        {
+            return connection.QueryFirst<int>("EXEC cambiarSuspension @idUsuario, @suspender", new { idUsuario = idUsuario, suspender = suspender });
+        }
+    }
+
+    // null si la cuenta ya no existe
+    public string? obtenerTipoUsuario(int idUsuario)
+    {
+        using (var connection = new SqlConnection(connectionString))
+        {
+            return connection.QueryFirst<string?>("EXEC obtenerTipoUsuario @idUsuario", new { idUsuario = idUsuario });
         }
     }
 

@@ -60,6 +60,7 @@ function enviarAccionDeClase(url, datos) {
         body: new URLSearchParams(datos)
     }).then(respuesta => {
         if (respuesta.status === 401) window.location.href = "/Sesion/IniciarSesion";
+        if (respuesta.status === 403) window.location.reload();
         if (!respuesta.ok) throw new Error(`Error ${respuesta.status} en ${url}`);
         return respuesta.json();
     });

@@ -43,7 +43,9 @@
 
     // En el perfil propio el aviso de verificación no va: ahí está el aviso completo dentro de la página
     bool ocultarAvisoVerificacion = ViewBag.ocultarAvisoVerificacion ?? false;
-    bool mostrarAvisoVerificacion = idUsuarioSesion != "" && tipoUsuarioSesion != "admin"
+    // Cuenta suspendida por un moderador (alumnoBaneado / profesorBaneado): Program.cs frena todas sus acciones
+    bool cuentaSuspendida = tipoUsuarioSesion.EndsWith("Baneado");
+    bool mostrarAvisoVerificacion = idUsuarioSesion != "" && tipoUsuarioSesion != "admin" && !cuentaSuspendida
         && Context.Session.GetString("verificado") != "true" && !ocultarAvisoVerificacion;
     string datosFaltantes = Context.Session.GetString("datosFaltantes") ?? "";
 }
@@ -179,6 +181,19 @@
         </div>
     }
 
+    @if (cuentaSuspendida)
+    {
+        <div class="avisoVerificacion suspendida" role="status">
+            <div class="container">
+                <div class="contenidoAviso">
+                    <span class="icono"><i class="bi bi-slash-circle" aria-hidden="true"></i></span>
+                    <p><strong>Tu cuenta está suspendida.</strong> <span>Un moderador la suspendió después de un reporte. Podés mirar el sitio, pero no pedir clases, escribir ni editar tu perfil.</span></p>
+                    <a class="boton oscuro chico" asp-controller="Home" asp-action="Soporte">Pedir que la revisen</a>
+                </div>
+            </div>
+        </div>
+    }
+
     <!-- ================= MAIN ================= -->
     <main role="main" id="contenido">
         @RenderBody()
@@ -213,6 +228,8 @@
                         <li><a asp-controller="Home" asp-action="QuienesSomos">Quiénes Somos</a></li>
                         <li><a asp-controller="Home" asp-action="QuienesSomos" asp-fragment="equipo">Equipo de Desarrollo</a></li>
                         <li><a class="destacado" asp-controller="Home" asp-action="Soporte">Soporte Técnico</a></li>
+                        <li><a asp-controller="Home" asp-action="Privacy">Privacidad</a></li>
+                        <li><a asp-controller="Home" asp-action="Terminos">Términos</a></li>
                     </ul>
                 </div>
 

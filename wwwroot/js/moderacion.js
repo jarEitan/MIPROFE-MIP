@@ -66,7 +66,34 @@ function inicializarVerificacionDeUsuarios() {
     });
 }
 
+// Botones de cada reporte (data-accion: borrarResena | suspender | descartar). Cualquiera cierra el reporte
+function inicializarReportes() {
+    const textosExito = { borrarResena: "Reseña borrada.", suspender: "Cuenta suspendida. Sus clases futuras se cancelaron.", descartar: "Reporte descartado." };
+    document.querySelectorAll("[data-id-reporte]").forEach(tarjeta => {
+        tarjeta.addEventListener("click", evento => {
+            const boton = evento.target.closest("[data-accion]");
+            if (!boton) return;
+            if (boton.dataset.accion === "suspender" && !window.confirm("¿Suspender esta cuenta? Se cancelan sus clases futuras y no va a poder usar MiProfesor hasta que le quites la suspensión desde su perfil.")) return;
+
+            tarjeta.querySelectorAll("button").forEach(otro => { otro.disabled = true; });
+            enviarAccionDeClase("/Moderacion/ResolverReporte", { idConsulta: tarjeta.dataset.idReporte, accion: boton.dataset.accion })
+                .then(resultado => {
+                    quitarTarjeta(tarjeta.closest(".col"), "No hay reportes sin revisar.");
+                    if (resultado.codigo == 0) mostrarSnackbar(textosExito[boton.dataset.accion], "exito");
+                    else if (resultado.codigo == 1) mostrarSnackbar("Ese reporte ya estaba resuelto.", "error");
+                    else mostrarSnackbar("Eso ya no se puede hacer: la reseña se borró o la cuenta ya está suspendida. Recargá la página.", "error");
+                })
+                .catch(error => {
+                    console.error(error);
+                    tarjeta.querySelectorAll("button").forEach(otro => { otro.disabled = false; });
+                    mostrarSnackbar("No pudimos resolver el reporte. Probá de nuevo.", "error");
+                });
+        });
+    });
+}
+
 function inicializarModeracion() {
+    inicializarReportes();
     inicializarRespuestasDeConsultas();
     inicializarVerificacionDeUsuarios();
 }

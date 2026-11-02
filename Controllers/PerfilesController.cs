@@ -57,6 +57,14 @@ public class PerfilesController : Controller
         Usuario perfil = new BD().obtenerPerfil(id);
         // Se vuelve a limpiar al mostrar, por si quedó algo cargado a mano en la base
         perfil.descripcion = limpiarDescripcion(perfil.descripcion);
+        // Cuenta suspendida: se ve el perfil, pero sin su información (queda guardada por si se quita la suspensión)
+        if (perfil.tipoUsuario != null && perfil.tipoUsuario.EndsWith("Baneado"))
+        {
+            perfil.descripcion = null;
+            perfil.materias = perfil.niveles = perfil.modalidades = perfil.colegios = null;
+            perfil.titulos = new List<string>();
+            perfil.precioHora = null;
+        }
         return Json(perfil);
     }
 

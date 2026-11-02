@@ -326,6 +326,8 @@ function crearTurno(clase, delDia) {
     const tarjeta = crearElemento("article", "tarjetaTurno");
     const enlace = crearElemento("a", "", nombreCompleto(clase));
     enlace.href = `/Home/Perfil/${clase.idOtroUsuario}`;
+    // Al volver con "Atrás", el Panel abre de nuevo esta clase (abrirPestanaYClase en clases.js)
+    enlace.addEventListener("click", () => history.replaceState(null, "", `/Home/PanelControl?tab=clases&clase=${clase.id}`));
     const nombre = crearElemento("h4");
     nombre.append(enlace);
     const rol = crearElemento("span", "rolTurno", clase.miRol === "alumno" ? "Profesor" : "Alumno");
@@ -387,7 +389,8 @@ function cambiarDeMes(desplazamiento) {
     calendario.mes = new Date(calendario.mes.getFullYear(), calendario.mes.getMonth() + desplazamiento, 1);
     const diaProvisorio = diaInicialDelMes(calendario.mes);
     calendario.diaElegido = diaProvisorio;
-    dibujarTodo();
+    // La agenda del día se dibuja recién con las clases del mes, para que no salte de un día a otro
+    dibujarMes();
     animarCambioDeMes(desplazamiento);
     // Con las clases del mes ya cargadas se elige el primer día con clases (si la persona no eligió otro mientras tanto)
     cargarGrillaDelMes().then(() => {

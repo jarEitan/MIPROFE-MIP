@@ -42,6 +42,26 @@ public class ModeracionController : Controller
         return Json(new BD().verificarUsuario(idUsuario));
     }
 
+    // Botones de cada reporte: accion = descartar | borrarResena | suspender
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult ResolverReporte(int idConsulta, string? accion)
+    {
+        if (HttpContext.Session.GetString("tipoUsuario") != "admin") return Unauthorized();
+
+        return Json(new { codigo = new BD().resolverReporte(idConsulta, accion) });
+    }
+
+    // "Suspender cuenta" / "Quitar suspensión" del perfil (site.js, inicializarSuspension)
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult Suspender(int idUsuario, bool suspender)
+    {
+        if (HttpContext.Session.GetString("tipoUsuario") != "admin") return Unauthorized();
+
+        return Json(new { codigo = new BD().cambiarSuspension(idUsuario, suspender) });
+    }
+
     // /userData/dni está bloqueada en Program.cs: la foto solo sale por acá. La pide el botón "Ver DNI" del Perfil (site.js)
     public IActionResult FotoDni(int id)
     {
