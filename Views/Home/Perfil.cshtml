@@ -164,7 +164,7 @@
                     @* Abre #dialogoReportar (site.js, inicializarReportes). Sin sesión lleva a Iniciar sesión *@
                     @if (!esPerfilPropio && !esModerador)
                     {
-                        <a class="reportarPerfil" href="#" data-reportar="perfil" data-id-reportado="@idPerfil">
+                        <a class="reportarPerfil" href="#" data-reportar="perfil" data-denunciado="el usuario con id @idPerfil fue denunciado">
                             <i class="bi bi-flag" aria-hidden="true"></i> Reportar este perfil
                         </a>
                     }
@@ -227,7 +227,8 @@
 @if (haySesion && !esModerador)
 {
     <!-- ================= DIÁLOGO: REPORTAR PERFIL O RESEÑA ================= -->
-    @* Lo abren "Reportar este perfil" y la bandera de cada reseña. Llega a Moderación (ConsultasController.Reportar) *@
+    @* Lo abren "Reportar este perfil" y la bandera de cada reseña. Se manda como consulta de Soporte (tipo "otro") que
+       empieza con "Denuncia:" y nombra el perfil; Moderación la muestra con un botón a ese perfil *@
     <dialog class="dialog" id="dialogoReportar" aria-labelledby="tituloReportar">
         <form id="formularioReportar" novalidate>
             <div class="dialog-header">
@@ -247,8 +248,8 @@
                     </select>
                 </div>
                 <div class="form-field">
-                    <label for="detalleReporte">Contanos qué pasó (opcional)</label>
-                    <textarea class="form-control" id="detalleReporte" rows="3" maxlength="900"></textarea>
+                    <label for="detalleReporte">Escribí la denuncia</label>
+                    <textarea class="form-control" id="detalleReporte" rows="4" maxlength="700" placeholder="Contá qué pasó para que el moderador lo pueda revisar."></textarea>
                 </div>
                 <p class="mensajeError" id="mensajeReportar" role="alert"></p>
             </div>

@@ -25,7 +25,7 @@ Objetivo: todo **refactorizado**. Cómo se hace: [guía](guiaDeEstilo.md), secci
 - Buscador de usuarios (header): refactorizado
 - Consulta de Soporte: sin hacer
 - Sugerencias del buscador: sin hacer
-- Moderación de reseñas: hecho (reportar perfil o reseña, borrar reseña, suspender y quitar suspensión)
+- Moderación de reseñas: hecho (denunciar perfil o reseña por Soporte, borrar reseña, suspender y quitar suspensión)
 - Filtros avanzados: sin hacer
 - Pedido de un alumno por un profesor: sin hacer
 

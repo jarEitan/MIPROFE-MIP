@@ -1,9 +1,7 @@
+@using System.Text.RegularExpressions
 @{
     ViewData["Title"] = "Moderación";
-    List<ConsultaSoporte> todas = ViewBag.consultas;
-    // Los reportes del perfil y de las reseñas llegan por la misma tabla, pero se resuelven con otros botones
-    List<ConsultaSoporte> reportes = todas.Where(consulta => consulta.esReporte).ToList();
-    List<ConsultaSoporte> consultas = todas.Where(consulta => !consulta.esReporte).ToList();
+    List<ConsultaSoporte> consultas = ViewBag.consultas;
     List<Usuario> usuarios = ViewBag.usuarios;
     Dictionary<string, string> nombresDeTipo = new Dictionary<string, string> { { "clases", "Problema con una clase" }, { "cuenta", "Cuenta y registro" }, { "sugerencia", "Sugerencia" }, { "otro", "Otro" } };
 }
@@ -16,7 +14,7 @@
 <section class="cabecera">
     <div class="container">
         <h1>Panel de <mark>moderación</mark></h1>
-        <p>Revisá los reportes, respondé las consultas de Soporte (le llegan al usuario como mensaje directo) y verificá las cuentas que ya cargaron todos sus datos.</p>
+        <p>Revisá las denuncias, respondé las consultas de Soporte (le llegan al usuario como mensaje directo) y verificá las cuentas que ya cargaron todos sus datos.</p>
         <form class="mt-4" method="post" asp-controller="Sesion" asp-action="CerrarSesion">
             <button class="boton oscuro" type="submit"><i class="bi bi-box-arrow-right" aria-hidden="true"></i> Cerrar sesión</button>
         </form>
@@ -27,55 +25,6 @@
 <section class="moderacion">
     <div class="container">
         @Html.AntiForgeryToken()
-
-        <h2>Reportes</h2>
-        @if (reportes.Count == 0)
-        {
-            <div class="card estadoVacio"><p>No hay reportes sin revisar.</p></div>
-        }
-        <div class="row row-cols-1 lg:row-cols-2 g-3 lg:g-4">
-            @foreach (ConsultaSoporte reporte in reportes)
-            {
-                bool esResena = reporte.tipo == "reporteResena";
-                bool yaSuspendida = reporte.tipoReportado != null && reporte.tipoReportado.EndsWith("Baneado");
-                <div class="col">
-                    @* moderacion.js la saca de la lista al tocar cualquier botón (ModeracionController.ResolverReporte) *@
-                    <div class="card" data-id-reporte="@reporte.id">
-                        <div class="d-flex flex-wrap align-items-center gap-2">
-                            <span class="badge theme-accent">@(esResena ? "Reseña reportada" : "Perfil reportado")</span>
-                            <time datetime="@reporte.fecha.ToString("s")">@reporte.fecha.ToString("dd/MM/yyyy HH:mm")</time>
-                        </div>
-                        <h3>
-                            @if (reporte.idUsuarioReportado != null)
-                            {
-                                <a asp-controller="Home" asp-action="Perfil" asp-route-id="@(esResena ? reporte.idPerfilResena : reporte.idUsuarioReportado)">@(esResena ? "Reseña de " : "")@reporte.nombreReportado</a>
-                            }
-                            else
-                            {
-                                <span>La reseña ya fue borrada</span>
-                            }
-                        </h3>
-                        @if (esResena && reporte.textoResena != null)
-                        {
-                            <blockquote>@reporte.puntuacionResena ★ · @reporte.textoResena</blockquote>
-                        }
-                        <p><strong>Motivo:</strong> @reporte.mensaje</p>
-                        <p>Lo reportó <a asp-controller="Home" asp-action="Perfil" asp-route-id="@reporte.idUsuario">@reporte.nombre</a>.@(yaSuspendida ? " La cuenta ya está suspendida." : "")</p>
-                        <div class="d-flex flex-wrap gap-2">
-                            @if (esResena && reporte.idUsuarioReportado != null)
-                            {
-                                <button class="boton principal chico" type="button" data-accion="borrarResena"><i class="bi bi-trash3" aria-hidden="true"></i> Borrar reseña</button>
-                            }
-                            @if (reporte.idUsuarioReportado != null && !yaSuspendida)
-                            {
-                                <button class="boton oscuro chico" type="button" data-accion="suspender"><i class="bi bi-slash-circle" aria-hidden="true"></i> @(esResena ? "Suspender al autor" : "Suspender cuenta")</button>
-                            }
-                            <button class="boton contorno chico" type="button" data-accion="descartar">Descartar</button>
-                        </div>
-                    </div>
-                </div>
-            }
-        </div>
 
         <h2>Consultas pendientes</h2>
         @if (consultas.Count == 0)
@@ -89,11 +38,21 @@
                     @* moderacion.js la saca de la lista cuando se responde *@
                     <form class="card" data-id-consulta="@consulta.id" novalidate>
                         <div class="d-flex flex-wrap align-items-center gap-2">
-                            <span class="badge theme-accent">@nombresDeTipo.GetValueOrDefault(consulta.tipo, consulta.tipo)</span>
+                            <span class="badge theme-accent">@(consulta.mensaje.StartsWith("Denuncia:") ? "Denuncia" : nombresDeTipo.GetValueOrDefault(consulta.tipo, consulta.tipo))</span>
                             <time datetime="@consulta.fecha.ToString("s")">@consulta.fecha.ToString("dd/MM/yyyy HH:mm")</time>
                         </div>
                         <h3><a asp-controller="Home" asp-action="Perfil" asp-route-id="@consulta.idUsuario">@consulta.nombre</a></h3>
                         <p>@consulta.mensaje</p>
+                        @* Las denuncias del Perfil son consultas que empiezan con "Denuncia:" y nombran el perfil ("usuario con id 5").
+                           Desde ese perfil se borra la reseña (tacho) o se suspende la cuenta *@
+                        @if (consulta.mensaje.StartsWith("Denuncia:"))
+                        {
+                            Match perfilDenunciado = Regex.Match(consulta.mensaje, @"usuario con id (\d+)");
+                            if (perfilDenunciado.Success)
+                            {
+                                <a class="boton oscuro chico" asp-controller="Home" asp-action="Perfil" asp-route-id="@perfilDenunciado.Groups[1].Value"><i class="bi bi-flag" aria-hidden="true"></i> Ver el perfil denunciado</a>
+                            }
+                        }
                         <div class="form-field">
                             <label for="respuesta@(consulta.id)">Tu respuesta</label>
                             <textarea class="form-control" id="respuesta@(consulta.id)" name="respuesta" rows="3" maxlength="900"></textarea>

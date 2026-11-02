@@ -856,7 +856,7 @@ function mostrarResenasPerfil(resenas) {
             reportar.type = "button";
             reportar.className = "boton botonIcono borrarResena reportarResena";
             reportar.dataset.reportar = "resena";
-            reportar.dataset.idReportado = resena.id;
+            reportar.dataset.denunciado = `en el perfil del usuario con id ${document.getElementById("perfil").dataset.idPerfil}, la reseña de ${resena.nombre} ${resena.apellido} (usuario con id ${resena.idEmisor}) fue denunciada`;
             reportar.setAttribute("aria-label", `Reportar la reseña de ${resena.nombre} ${resena.apellido}`);
             reportar.title = "Reportar reseña";
             reportar.innerHTML = '<i class="bi bi-flag" aria-hidden="true"></i>';
@@ -959,7 +959,7 @@ function inicializarCopiarEnlacePerfil() {
 }
 
 // ----- Reportar (perfil o reseña) -----
-// [data-reportar="perfil|resena"] con data-id-reportado abre #dialogoReportar. Las banderas de las reseñas se dibujan
+// [data-reportar="perfil|resena"] con data-denunciado (qué se denuncia, en texto) abre #dialogoReportar. Las banderas de las reseñas se dibujan
 // con cada carga del perfil, por eso se escucha en toda la sección
 function inicializarReportes() {
     const seccionPerfil = document.getElementById("perfil");
@@ -977,34 +977,35 @@ function inicializarReportes() {
         document.getElementById("formularioReportar").reset();
         mostrarMensaje(document.getElementById("mensajeReportar"), "");
         dialogo.dataset.tipo = boton.dataset.reportar;
-        dialogo.dataset.idReportado = boton.dataset.idReportado;
+        dialogo.dataset.denunciado = boton.dataset.denunciado;
         document.getElementById("tituloReportar").textContent = boton.dataset.reportar === "perfil" ? "Reportar este perfil" : "Reportar esta reseña";
         dialogo.showModal();
     });
     if (!dialogo) return;
 
     document.getElementById("motivoReporte").addEventListener("change", () => mostrarMensaje(document.getElementById("mensajeReportar"), ""));
-    const textosError = { 1: "Eso ya no existe.", 2: "Elegí un motivo.", 3: "No podés reportar algo tuyo.", 4: "Ya lo reportaste. Un moderador lo está revisando." };
     document.getElementById("formularioReportar").addEventListener("submit", evento => {
         evento.preventDefault();
         const motivo = document.getElementById("motivoReporte");
         const mensaje = document.getElementById("mensajeReportar");
         if (motivo.value === "") return mostrarErrorEnCampo(mensaje, motivo, "Elegí un motivo.");
 
-        const detalle = document.getElementById("detalleReporte").value.trim();
+        const detalle = document.getElementById("detalleReporte");
+        if (detalle.value.trim() === "") return mostrarErrorEnCampo(mensaje, detalle, "Escribí qué pasó.");
+
         const botonEnviar = document.getElementById("botonEnviarReporte");
         botonEnviar.disabled = true;
-        enviarAccionDeClase("/Consultas/Reportar", {
-            tipo: dialogo.dataset.tipo,
-            idReportado: dialogo.dataset.idReportado,
-            mensaje: detalle ? `${motivo.value}: ${detalle}` : motivo.value
+        // Va como una consulta de Soporte más (SP enviarConsulta). "Denuncia:" y "usuario con id N" los usa la vista de Moderación
+        enviarAccionDeClase("/Consultas/Enviar", {
+            tipo: "otro",
+            mensaje: `Denuncia: ${dialogo.dataset.denunciado}. Motivo: ${motivo.value}. ${detalle.value.trim()}`
         })
-            .then(resultado => {
-                if (resultado.codigo == 0) {
+            .then(codigo => {
+                if (codigo == 0) {
                     dialogo.close();
-                    mostrarSnackbar("Gracias. Un moderador va a revisar el reporte.", "exito");
+                    mostrarSnackbar("Gracias. Un moderador va a revisar la denuncia.", "exito");
                 } else {
-                    mostrarMensaje(mensaje, textosError[resultado.codigo] || "No pudimos enviar el reporte.");
+                    mostrarMensaje(mensaje, "No pudimos enviar la denuncia. Revisá el texto y probá de nuevo.");
                 }
             })
             .catch(error => {
