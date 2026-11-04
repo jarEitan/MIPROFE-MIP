@@ -10,7 +10,7 @@
 
 const segundosEntreActualizacionesDelChat = 10;
 const largoMaximoMensaje = 1000;
-const textoSinPermisoChat = "Para escribirle tienen que ser amigos o tener una clase.";
+const textoSinPermisoChat = "Necesitás ser amigo o haber tenido una clase para chatear";
 
 let idChatAbierto = null;
 let otroUsuarioDelChat = null;

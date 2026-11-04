@@ -690,7 +690,8 @@ function mostrarPerfil(perfil) {
     if (botonMensaje && document.getElementById("perfil").dataset.haySesion === "true" && !perfil.puedeEscribir) {
         botonMensaje.removeAttribute("href");
         botonMensaje.setAttribute("aria-disabled", "true");
-        botonMensaje.title = "Para escribirle tienen que ser amigos o tener una clase.";
+        botonMensaje.title = "Necesitás ser amigo o haber tenido una clase para chatear";
+        botonMensaje.addEventListener("click", () => mostrarSnackbar(botonMensaje.title, "error"));
     }
     // Reseña: solo con una clase terminada y realizada, y una por persona (el SP darResena vuelve a revisarlo)
     document.querySelectorAll("#perfil [data-dar-resena]").forEach(boton => {
