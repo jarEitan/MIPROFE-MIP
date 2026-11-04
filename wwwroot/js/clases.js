@@ -414,6 +414,8 @@ function cargarMateriasDelPedido(idProfesor) {
     const selectMateria = document.getElementById("materiaPedido");
     selectMateria.replaceChildren(new Option("Elegí una materia", ""));
     fetch("/Clases/MateriasProfesor?idProfesor=" + idProfesor).then(r => r.json()).then(materias => {
+        // Si mientras tanto se abrió el pedido para otro profesor, esta respuesta ya no sirve
+        if (document.getElementById("dialogoPedirClase").dataset.idProfesor !== String(idProfesor)) return;
         materias.forEach(materia => selectMateria.append(new Option(materia.nombre, materia.id)));
         if (materias.length == 1) selectMateria.value = materias[0].id;
     }).catch(e => console.error(e));

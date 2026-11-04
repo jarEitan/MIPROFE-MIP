@@ -338,13 +338,18 @@ function importarFeriados() {
     const hasta = fechaATexto(new Date(hoy.getFullYear() + 1, hoy.getMonth(), hoy.getDate()));
     const yaBloqueados = [...document.querySelectorAll("#listaDiasBloqueados li[data-fecha]")].map(item => item.dataset.fecha);
 
-    Promise.all([hoy.getFullYear(), hoy.getFullYear() + 1].map(anio => fetch(`https://api.argentinadatos.com/v1/feriados/${anio}`).then(respuesta => {
-        if (!respuesta.ok) throw new Error(`Error ${respuesta.status} al traer los feriados de ${anio}`);
+    // El año que viene puede no estar publicado todavía: si falla, se sigue con el actual
+    const anioActual = fetch(`https://api.argentinadatos.com/v1/feriados/${hoy.getFullYear()}`).then(respuesta => {
+        if (!respuesta.ok) throw new Error(`Error ${respuesta.status} al traer los feriados`);
         return respuesta.json();
-    })))
+    });
+    const anioSiguiente = fetch(`https://api.argentinadatos.com/v1/feriados/${hoy.getFullYear() + 1}`).then(respuesta => respuesta.ok ? respuesta.json() : []).catch(() => []);
+
+    Promise.all([anioActual, anioSiguiente])
         .then(listas => {
             const fechas = [...new Set(listas.flat().map(feriado => feriado.fecha))].filter(fecha => fecha >= desde && fecha <= hasta && !yaBloqueados.includes(fecha));
-            return Promise.all(fechas.map(fecha => enviarAccionDeClase("/Clases/BloquearDia", { fecha })));
+            // Si un día no se pudo bloquear, los demás igual quedan
+            return Promise.all(fechas.map(fecha => enviarAccionDeClase("/Clases/BloquearDia", { fecha }).catch(() => ({ codigo: -1 }))));
         })
         .then(resultados => {
             const bloqueados = resultados.filter(resultado => resultado.codigo == 0);

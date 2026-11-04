@@ -692,7 +692,11 @@ function mostrarPerfil(perfil) {
         botonMensaje.setAttribute("aria-disabled", "true");
         botonMensaje.title = "Para escribirle tienen que ser amigos o tener una clase.";
     }
-    document.querySelectorAll("#perfil [data-dar-resena]").forEach(boton => { boton.dataset.nombreUsuario = nombreCompleto; });
+    // Reseña: solo con una clase terminada y realizada, y una por persona (el SP darResena vuelve a revisarlo)
+    document.querySelectorAll("#perfil [data-dar-resena]").forEach(boton => {
+        boton.dataset.nombreUsuario = nombreCompleto;
+        boton.hidden = !perfil.puedeDarResena;
+    });
 
     const botonSuspension = document.getElementById("botonSuspension");
     if (botonSuspension) {

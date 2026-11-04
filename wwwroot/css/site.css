@@ -3700,6 +3700,7 @@ fieldset {
     border-color: var(--colorCeleste);
     background-color: var(--colorCelesteSuave);
     color: var(--colorTinta);
+    min-height: 6.5rem;
 }
 
 .diasMes .dia.otroMes .numero {
@@ -3745,10 +3746,6 @@ fieldset {
 }
 
 /* Semana de hoy: más alta, y cada clase es una línea de texto con el color y el trazo de su línea (calendario.js: crearResumenDeClase) */
-.diasMes .dia.semanaActual {
-    min-height: 6.5rem;
-}
-
 /* En el día elegido (fondo tinta) la etiqueta sigue blanca, así que su borde azul no pasa a blanco */
 .diasMes .dia[aria-pressed="true"] .resumen.azul {
     --colorLinea: var(--colorTinta);

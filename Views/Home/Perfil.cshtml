@@ -118,7 +118,7 @@
                         </button>
                         @* El token lo usan los me gusta y el borrado de reseñas (site.js lo manda en el encabezado). *@
                         @Html.AntiForgeryToken()
-                        <button class="boton contorno botonIcono" type="button" data-dar-resena data-id-usuario="@idPerfil" data-nombre-usuario="" aria-label="Dejar reseña" title="Dejar reseña">
+                        <button class="boton contorno botonIcono" type="button" hidden data-dar-resena data-id-usuario="@idPerfil" data-nombre-usuario="" aria-label="Dejar reseña" title="Dejar reseña">
                             <i class="bi bi-star" aria-hidden="true"></i>
                         </button>
                         <button class="boton contorno botonIcono" type="button" id="botonCopiarEnlace" aria-label="Copiar enlace" title="Copiar enlace">
