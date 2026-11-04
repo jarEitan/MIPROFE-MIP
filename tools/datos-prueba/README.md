@@ -16,7 +16,7 @@ Atajos: `Ctrl+G` genera, `Ctrl+P` hace vista previa (arma todo en memoria y mues
 | Fechas y clases | Fecha de referencia (vacío = ahora), años de historia, días a futuro, porcentajes de estados de clases pasadas y futuras (se normalizan), precios |
 | Listas | Casillas para elegir qué materias y colegios entran; abrir `recursos/` y recargar las listas |
 | Perfiles armados | Cuentas fijas para probar casos puntuales y una cuenta propia |
-| Imágenes | % con foto y con DNI, fotos propias, texturas de avatar, copia al sitio y vista previa de avatares |
+| Imágenes | % con foto y con DNI, avatares de userData, texturas de avatar, copia al sitio y vista previa de avatares |
 | Base de datos | Servidor, base y credenciales para cargar con `sqlcmd` |
 
 Después de generar, abajo se ven el **Resumen** (conteos y problemas de verificación), las **Cuentas** (filtrables, con "Copiar mail") y las primeras 300 líneas del **SQL**. Si la verificación encuentra problemas no se exporta nada.
@@ -37,7 +37,7 @@ La cuenta propia (nombre, apellido, mail y tipo) recibe el trato de `alumno.comp
 Las demás cuentas son `nombre.apellido@mip.edu.ar` sin tildes (si se repite, lleva número).
 Un alumno con DNI subido queda verificado; un profesor verificado siempre tiene DNI.
 
-## Listas y fotos propias
+## Listas y avatares
 
 Todo el texto sale de `recursos/*.txt`: una entrada por línea, UTF-8, se ignoran las líneas vacías y las que empiezan con `#`. Se pueden editar y se recargan con el botón "Recargar listas".
 
@@ -50,11 +50,11 @@ Todo el texto sale de `recursos/*.txt`: una entrada por línea, UTF-8, se ignora
 | `chats` | conversaciones separadas por una línea `---`; cada línea es un mensaje y se alterna quién habla; `{m}` materia, `{n}` nombre del otro |
 | `consultas` | `tipo\|mensaje` (tipos: `cuenta`, `clases`, `sugerencia`, `otro`) |
 
-Fotos propias: poné `.jpg`, `.jpeg`, `.png` o `.webp` en `recursos/fotos/`. Se reparten primero entre los usuarios con foto (sin repetir); cuando no alcanzan, el resto lleva un avatar SVG con iniciales. No se generan denuncias.
+Avatares: cada usuario con foto recibe uno al azar (se pueden repetir) de los que ya están en `wwwroot/userData/fotos-perfil/` (los `perfil-*.webp` del repo; para sumar más, poné `.jpg`, `.png` o `.webp` en esa carpeta). No se copian: el `.sql` apunta directo a ese archivo. Solo si la carpeta está vacía se dibuja un avatar SVG con iniciales. No se generan denuncias.
 
 ## Imágenes
 
-Se escriben en `salida/userData/fotos-perfil/` (`prueba-<n>.<ext>`) y `salida/userData/dni/` (`prueba-dni-<n>.png`). "Copiar al sitio" las pasa a `wwwroot/userData/...` (por defecto el `wwwroot` del repo) y antes borra **solo** los archivos que empiezan con `prueba-`, nunca las fotos reales de usuarios.
+Se escriben en `salida/userData/fotos-perfil/` (solo los SVG de reserva, `prueba-<n>.svg`) y `salida/userData/dni/` (`prueba-dni-<n>.png`). "Copiar al sitio" las pasa a `wwwroot/userData/...` (por defecto el `wwwroot` del repo) y antes borra **solo** los archivos que empiezan con `prueba-`, nunca las fotos reales de usuarios.
 
 ## Cargar en SQL Server
 
@@ -92,7 +92,7 @@ Genera `salida/MIP-datos-prueba.sql` y las imágenes al lado (`salida/` no se su
 | `--precio-min`, `--precio-max`, `--precio-paso` | 3000, 9000, 500 | Precio por hora |
 | `--prob-profesor-verificado` | 0.85 | Profesores verificados |
 | `--prob-foto`, `--prob-dni` | 0.75, 0.6 | Usuarios con foto y con DNI |
-| `--usar-fotos-propias`, `--patrones` | sí | Admiten `--no-...` |
+| `--usar-fotos-propias`, `--patrones` | sí | Usar avatares de userData / texturas en los SVG de reserva. Admiten `--no-...` |
 | `--perfil-profe-estrella` y los otros perfiles | sí | Admiten `--no-...` |
 | `--cuenta-nombre`, `--cuenta-apellido`, `--cuenta-mail`, `--cuenta-tipo` | vacío | Cuenta propia |
 | `--base` | `MIP` | Base de la línea `USE` y de la carga |

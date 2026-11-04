@@ -125,9 +125,10 @@ def cargar_recursos(carpeta=None):
         rec["consultas"].append((tipo.strip(), msg.strip()))
     if not rec["chats"]:
         raise ErrorGenerador("chats.txt no tiene conversaciones válidas")
-    fotos = os.path.join(carpeta, "fotos")
-    rec["fotos"] = sorted(os.path.join(fotos, f) for f in os.listdir(fotos)
-                          if f.lower().endswith(EXT_FOTOS)) if os.path.isdir(fotos) else []
+    # Avatares predeterminados que ya están en el sitio (wwwroot/userData/fotos-perfil), sin los generados
+    fotos = os.path.join(detectar_wwwroot(), *CARPETA_FOTOS_PERFIL.split("/"))
+    rec["fotos"] = sorted(f for f in os.listdir(fotos) if f.lower().endswith(EXT_FOTOS)
+                          and not f.startswith("prueba-")) if os.path.isdir(fotos) else []
     return rec
 
 
@@ -639,22 +640,17 @@ class _Gen:
     # -- imágenes --
     def asignar_imagenes(self):
         r, c = self.rnd, self.c
-        propias = list(self.rec["fotos"]) if c["usar_fotos_propias"] else []
-        r.shuffle(propias)
+        avatares = self.rec["fotos"] if c["usar_fotos_propias"] else []
         for n, u in enumerate(self.usuarios, 1):
             forzada = u["foto_forzada"]
             if forzada is True or (forzada is None and r.random() < c["prob_foto"]):
-                if propias:
-                    ruta = propias.pop()
-                    ext = os.path.splitext(ruta)[1].lower()
-                    with open(ruta, "rb") as f:
-                        contenido = f.read()
+                if avatares:  # se repiten: el archivo ya está en el sitio, solo se referencia
+                    u["foto"] = "/%s/%s" % (CARPETA_FOTOS_PERFIL, r.choice(avatares))
                 else:
-                    ext = ".svg"
                     fondo, patron = estilo_avatar(r, c["patrones"])
                     contenido = svg_avatar((u["nombre"][:1] + u["apellido"][:1]).upper(), fondo, patron)
-                u["foto"] = "/%s/prueba-%d%s" % (CARPETA_FOTOS_PERFIL, n, ext)
-                self.imagenes.append(("%s/prueba-%d%s" % (CARPETA_FOTOS_PERFIL, n, ext), contenido))
+                    u["foto"] = "/%s/prueba-%d.svg" % (CARPETA_FOTOS_PERFIL, n)
+                    self.imagenes.append(("%s/prueba-%d.svg" % (CARPETA_FOTOS_PERFIL, n), contenido))
             if u["tiene_dni"]:
                 u["fotoDni"] = "/%s/prueba-dni-%d.png" % (CARPETA_DNI, n)
                 self.imagenes.append(("%s/prueba-dni-%d.png" % (CARPETA_DNI, n), png_dni(r)))

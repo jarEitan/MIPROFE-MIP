@@ -47,9 +47,18 @@ class TestGenerador(unittest.TestCase):
             with open(ruta, "rb") as f:
                 self.assertEqual(f.read(3), b"\xef\xbb\xbf")
 
+    def test_avatares_de_userdata(self):
+        avatares = g.cargar_recursos()["fotos"]
+        self.assertTrue(avatares, "no hay avatares en wwwroot/userData/fotos-perfil")
+        fotos = [u["foto"] for u in self.d["usuarios"] if u["foto"]]
+        self.assertTrue(fotos)
+        for f in fotos:
+            self.assertIn(f.rsplit("/", 1)[1], avatares)
+
     def test_imagenes(self):
-        pngs = [c for r, c in self.res.imagenes if r.endswith(".png")]
-        svgs = [c for r, c in self.res.imagenes if r.endswith(".svg")]
+        res = g.generar(dict(CONFIG, usar_fotos_propias=False))  # sin avatares de userData: SVG de reserva
+        pngs = [c for r, c in res.imagenes if r.endswith(".png")]
+        svgs = [c for r, c in res.imagenes if r.endswith(".svg")]
         self.assertTrue(pngs and svgs)
         for p in pngs:
             self.assertEqual(p[:8], b"\x89PNG\r\n\x1a\n")

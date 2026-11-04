@@ -324,7 +324,7 @@ class Ventana(tk.Tk):
                 v.set(len(nombres[clave]))
         if r:
             self.lbl_conteo.config(text="Cargados: %d nombres, %d apellidos, %d títulos, %d descripciones, %d reseñas, "
-                                        "%d conversaciones, %d consultas, %d fotos propias" % (
+                                        "%d conversaciones, %d consultas, %d avatares en userData" % (
                 len(r["nombres"]), len(r["apellidos"]), len(r["titulos"]),
                 len(r["descripciones_profesor"]) + len(r["descripciones_alumno"]),
                 sum(len(r[k]) for k in ("resenas_5", "resenas_4", "resenas_3", "resenas_1y2")),
@@ -334,7 +334,7 @@ class Ventana(tk.Tk):
             self.lbl_conteo.config(text=self.error_recursos, style="Peligro.TLabel")
             self.n_fotos_propias = 0
         if hasattr(self, "lbl_fotos"):
-            self.lbl_fotos.config(text="Fotos propias en recursos/fotos: %d" % self.n_fotos_propias)
+            self.lbl_fotos.config(text="Avatares en wwwroot/userData/fotos-perfil: %d" % self.n_fotos_propias)
 
     def recargar_listas(self):
         marcadas = {k: self.items_marcados(a) for k, a in self.arboles.items()}
@@ -384,11 +384,11 @@ class Ventana(tk.Tk):
         a = self.tarjeta(marco, "Fotos y DNI", row=0, column=0, pady=(0, 8))
         self.prob(a, 1, "prob_foto")
         self.prob(a, 2, "prob_dni")
-        self.check(a, 3, "usar_fotos_propias", "Usar mis fotos de recursos/fotos primero (el resto lleva avatar)")
+        self.check(a, 3, "usar_fotos_propias", "Usar avatares al azar de wwwroot/userData/fotos-perfil (si no hay, se dibujan)")
         self.check(a, 4, "patrones", "Avatares con textura (rayas, puntos u ondas)")
         self.lbl_fotos = ttk.Label(a, style="Suave.TLabel")
         self.lbl_fotos.grid(row=5, column=0, columnspan=3, sticky="w")
-        self.lbl_fotos.config(text="Fotos propias en recursos/fotos: %d" % getattr(self, "n_fotos_propias", 0))
+        self.lbl_fotos.config(text="Avatares en wwwroot/userData/fotos-perfil: %d" % getattr(self, "n_fotos_propias", 0))
         b = self.tarjeta(marco, "Sitio (wwwroot)", row=1, column=0, pady=(0, 8))
         self.entrada(b, 1, "Carpeta wwwroot", "wwwroot", defecto=motor.detectar_wwwroot())
         ttk.Button(b, text="Elegir…", command=self.elegir_wwwroot).grid(row=1, column=2, padx=(8, 0))
