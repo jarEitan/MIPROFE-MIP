@@ -143,10 +143,17 @@ function franjasEnTexto() {
 }
 
 // ----- Acciones de la lista de días -----
+// Los cambios no se guardan hasta apretar Guardar: el botón y el aviso lo recuerdan
+function marcarCambiosDeAgenda(hayCambios) {
+    document.getElementById("avisoCambiosAgenda").hidden = !hayCambios;
+    document.querySelector("#botonGuardarAgenda span").textContent = hayCambios ? "Guardar cambios" : "Guardar agenda";
+}
+
 function inicializarListaDeDias() {
     const lista = document.getElementById("listaDiasAgenda");
 
     lista.addEventListener("change", evento => {
+        marcarCambiosDeAgenda(true);
         const casilla = evento.target.closest("[data-interruptor-dia]");
         if (!casilla) return;
         diasDeAgenda = leerDiasDeLaPantalla();
@@ -169,16 +176,18 @@ function inicializarListaDeDias() {
             diasDeAgenda = leerDiasDeLaPantalla();
             const nueva = proximaFranjaLibre(diasDeAgenda[indice].franjas);
             if (!nueva) {
-                mostrarMensaje(document.getElementById("mensajeAgenda"), `No hay lugar para otra franja el ${nombresDeDiasDeAgenda[indice].toLowerCase()}.`);
+                mostrarSnackbar(`No hay lugar para otra franja el ${nombresDeDiasDeAgenda[indice].toLowerCase()}.`, "error");
                 return;
             }
             mostrarMensaje(document.getElementById("mensajeAgenda"), "");
+            marcarCambiosDeAgenda(true);
             diasDeAgenda[indice].franjas.push(nueva);
             dibujarDiasDeAgenda();
             const selects = document.querySelectorAll(`#listaDiasAgenda .diaDeAgenda[data-indice='${indice}'] .franjaDeAgenda:last-of-type select`);
             selects[0]?.focus();
         } else if (evento.target.closest("[data-quitar-franja]")) {
             const posicion = Number(evento.target.closest(".franjaDeAgenda").dataset.posicion);
+            marcarCambiosDeAgenda(true);
             diasDeAgenda = leerDiasDeLaPantalla();
             diasDeAgenda[indice].franjas.splice(posicion, 1);
             // Sin franjas el día queda apagado
@@ -214,6 +223,7 @@ function cargarMiAgenda() {
             });
             dibujarDiasDeAgenda();
             dibujarDiasBloqueados(agenda.diasBloqueados);
+            marcarCambiosDeAgenda(false);
             actualizarAvisosDeAgenda(agenda.franjas.length > 0);
         })
         .catch(error => {
@@ -238,6 +248,7 @@ function guardarMiAgenda() {
         .then(cuerpo => {
             if (cuerpo.codigo == 0) {
                 mostrarSnackbar("Guardamos tu agenda.", "exito");
+                marcarCambiosDeAgenda(false);
                 actualizarAvisosDeAgenda(true);
             } else if (cuerpo.codigo == 1) {
                 mostrarMensaje(document.getElementById("mensajeAgenda"), "Solo los profesores tienen agenda.");

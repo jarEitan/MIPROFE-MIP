@@ -25,10 +25,13 @@
                 </form>
                 <p class="mensajeError" id="mensajeErrorBusqueda" role="alert"></p>
 
-                <div class="acciones">
-                    <a class="boton secundario" asp-controller="Sesion" asp-action="Registrarse" asp-route-rol="alumno">Soy alumno</a>
-                    <a class="boton contorno" asp-controller="Sesion" asp-action="Registrarse" asp-route-rol="profesor">Quiero enseñar</a>
-                </div>
+                @if (Context.Session.GetString("idUsuario") == null)
+                {
+                    <div class="acciones">
+                        <a class="boton secundario" asp-controller="Sesion" asp-action="Registrarse" asp-route-rol="alumno">Soy alumno</a>
+                        <a class="boton contorno" asp-controller="Sesion" asp-action="Registrarse" asp-route-rol="profesor">Quiero enseñar</a>
+                    </div>
+                }
             </div>
 
             @* Plancha de pegatinas de ejemplo, solo decorativa. La clase de cada una la ubica *@
@@ -133,7 +136,10 @@
                         <li>Chat directo para coordinar horarios</li>
                         <li>Historial de todas tus clases</li>
                     </ul>
-                    <a class="boton" asp-controller="Sesion" asp-action="Registrarse" asp-route-rol="alumno">Registrarme como alumno</a>
+                    @if (Context.Session.GetString("idUsuario") == null)
+                    {
+                        <a class="boton" asp-controller="Sesion" asp-action="Registrarse" asp-route-rol="alumno">Registrarme como alumno</a>
+                    }
                 </div>
             </div>
             <div class="col-12 lg:col-6">
@@ -147,7 +153,10 @@
                         <li>Administrá clases, cancelaciones y reubicaciones</li>
                         <li>Recibí reseñas de tus alumnos</li>
                     </ul>
-                    <a class="boton secundario" asp-controller="Sesion" asp-action="Registrarse" asp-route-rol="profesor">Registrarme como profesor</a>
+                    @if (Context.Session.GetString("idUsuario") == null)
+                    {
+                        <a class="boton secundario" asp-controller="Sesion" asp-action="Registrarse" asp-route-rol="profesor">Registrarme como profesor</a>
+                    }
                 </div>
             </div>
         </div>
@@ -249,7 +258,7 @@
             <a class="badge badge-outline theme-inverse" asp-controller="Catalogo" asp-action="Index" asp-route-colegio="Belgrano Day School"><i class="bi bi-building"></i> Belgrano Day School</a>
             <a class="badge badge-outline theme-inverse" asp-controller="Catalogo" asp-action="Index" asp-route-colegio="Colegio San Martín"><i class="bi bi-building"></i> Colegio San Martín</a>
             <a class="badge badge-outline theme-inverse" asp-controller="Catalogo" asp-action="Index" asp-route-colegio="Nacional Buenos Aires"><i class="bi bi-building"></i> Nacional Buenos Aires</a>
-            <a class="boton oscuro chico" asp-controller="Catalogo" asp-action="Index">Ver todos</a>
+            <a class="boton contorno chico" asp-controller="Catalogo" asp-action="Index">Ver todos</a>
         </div>
     </div>
 </section>
@@ -340,7 +349,14 @@
                 <p>Sumate a MiProfesor y empezá a aprender con docentes de tu propia comunidad educativa.</p>
             </div>
             <div class="col-12 lg:col-5 acciones">
-                <a class="boton secundario" asp-controller="Sesion" asp-action="Registrarse">Crear cuenta gratis</a>
+                @if (Context.Session.GetString("idUsuario") == null)
+                {
+                    <a class="boton secundario" asp-controller="Sesion" asp-action="Registrarse">Crear cuenta gratis</a>
+                }
+                else
+                {
+                    <a class="boton secundario" asp-controller="Home" asp-action="PanelControl">Ir al Panel de Control</a>
+                }
                 <a class="boton claro" asp-controller="Catalogo" asp-action="Index">Ver catálogo</a>
             </div>
         </div>

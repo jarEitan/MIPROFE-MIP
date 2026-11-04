@@ -1,4 +1,5 @@
 using System.Globalization;
+using MIP_MIPROFESOR.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,6 +27,27 @@ app.UseStatusCodePagesWithReExecute("/Home/NoEncontrado");
 app.UseHttpsRedirection();
 app.UseRouting();
 app.UseSession();
+
+// Cuentas suspendidas (alumnoBaneado / profesorBaneado): pueden iniciar sesión y mirar, pero no hacer nada.
+// Todas las acciones son POST: en cada una se vuelve a leer el tipo de la base, así la suspensión (o quitarla) vale enseguida.
+// Se dejan pasar la sesión y Soporte, para que puedan pedir que se revise.
+app.Use(async (contexto, siguiente) =>
+{
+    string? idUsuario = contexto.Session.GetString("idUsuario");
+    if (HttpMethods.IsPost(contexto.Request.Method) && idUsuario != null)
+    {
+        string tipoUsuario = new BD().obtenerTipoUsuario(int.Parse(idUsuario)) ?? "";
+        contexto.Session.SetString("tipoUsuario", tipoUsuario);
+        bool permitida = contexto.Request.Path.StartsWithSegments("/Sesion") || contexto.Request.Path.StartsWithSegments("/Consultas/Enviar");
+        if (tipoUsuario.EndsWith("Baneado") && !permitida)
+        {
+            contexto.Response.StatusCode = StatusCodes.Status403Forbidden;
+            await contexto.Response.WriteAsJsonAsync(new { codigo = -1, mensaje = "Tu cuenta está suspendida." });
+            return;
+        }
+    }
+    await siguiente();
+});
 
 app.UseAuthorization();
 

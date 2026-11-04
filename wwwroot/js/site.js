@@ -45,6 +45,8 @@ function crearElemento(etiqueta, clases, texto) {
 // fetch que devuelve el JSON o falla si el servidor respondió con error (401, 404, 500...)
 function pedirJson(url, opciones) {
     return fetch(url, opciones).then(respuesta => {
+        // 403 = la cuenta está suspendida (Program.cs): al recargar aparece el aviso arriba
+        if (respuesta.status === 403) window.location.reload();
         if (!respuesta.ok) throw new Error(`Error ${respuesta.status} en ${url}`);
         return respuesta.json();
     });
@@ -69,7 +71,7 @@ function mostrarSnackbar(texto, tipo = "info") {
     temporizadorSnackbar = setTimeout(() => {
         snackbar.classList.remove("visible");
         setTimeout(() => { snackbar.hidden = true; }, 300);
-    }, 3200);
+    }, tipo === "error" ? 7000 : 3200);
 }
 
 
@@ -428,15 +430,35 @@ function validarRegistro() {
     const mensajeRegistro = document.getElementById("mensajeRegistro");
     const campo = id => document.getElementById(id);
 
-    if (campo("registroNombre").value.trim().length < 2) return mostrarErrorEnCampo(mensajeRegistro, campo("registroNombre"), "Ingresá tu nombre.");
-    if (campo("registroApellido").value.trim().length < 2) return mostrarErrorEnCampo(mensajeRegistro, campo("registroApellido"), "Ingresá tu apellido.");
+    if (!nombreValido(campo("registroNombre").value)) return mostrarErrorEnCampo(mensajeRegistro, campo("registroNombre"), mensajeNombreInvalido);
+    if (!nombreValido(campo("registroApellido").value)) return mostrarErrorEnCampo(mensajeRegistro, campo("registroApellido"), mensajeNombreInvalido);
     if (!correoValido(campo("registroCorreo").value.trim())) return mostrarErrorEnCampo(mensajeRegistro, campo("registroCorreo"), "Ingresá un correo electrónico válido.");
     if (campo("registroContrasena").value.length < 8) return mostrarErrorEnCampo(mensajeRegistro, campo("registroContrasena"), "La contraseña debe tener al menos 8 caracteres.");
     if (!fechaNacimientoValida(campo("registroFechaNacimiento").value)) return mostrarErrorEnCampo(mensajeRegistro, campo("registroFechaNacimiento"), "Ingresá una fecha de nacimiento válida.");
+    if (document.querySelector("input[name='tipoUsuario']:checked").value === "profesor" && !esMayorDeEdad(campo("registroFechaNacimiento").value)) {
+        return mostrarErrorEnCampo(mensajeRegistro, campo("registroFechaNacimiento"), mensajeProfesorMenor);
+    }
     if (!campo("registroTerminos").checked) return mostrarErrorEnCampo(mensajeRegistro, campo("registroTerminos"), "Tenés que aceptar los términos para continuar.");
 
     mostrarMensaje(mensajeRegistro, "");
     return true;
+}
+
+// Igual que SesionController.limpiarNombre: letras (con tildes y ñ) y números, un espacio entre palabras
+const mensajeNombreInvalido = "El nombre y el apellido solo pueden tener letras y números (de 2 a 50 caracteres).";
+const edadMinimaProfesor = 18;
+const mensajeProfesorMenor = `Para dar clases tenés que tener al menos ${edadMinimaProfesor} años.`;
+
+function nombreValido(valor) {
+    const nombre = valor.replace(/\s+/g, " ").trim();
+    return nombre.length >= 2 && nombre.length <= 50 && /^[\p{L}0-9]+( [\p{L}0-9]+)*$/u.test(nombre);
+}
+
+function esMayorDeEdad(valor) {
+    const limite = new Date();
+    limite.setHours(0, 0, 0, 0);
+    limite.setFullYear(limite.getFullYear() - edadMinimaProfesor);
+    return new Date(valor + "T00:00:00") <= limite;
 }
 
 function fechaNacimientoValida(valor) {
@@ -551,7 +573,7 @@ function inicializarCierreDeDialogos() {
 // La vista Home/Perfil solo trae el esqueleto: los datos llegan por fetch desde PerfilesController.
 // Los textos de la BD se ponen con textContent. La única excepción es "Sobre mí", que es HTML del
 // editor y llega limpio desde el servidor (HtmlSanitizer solo deja negrita, listas, enlaces, etc.).
-const nombresDeTipoUsuario = { alumno: "Alumno", profesor: "Profesor", admin: "Moderador" };
+const nombresDeTipoUsuario = { alumno: "Alumno", profesor: "Profesor", admin: "Moderador", alumnoBaneado: "Cuenta suspendida", profesorBaneado: "Cuenta suspendida" };
 const largoMaximoDescripcion = 1000;
 const pesoMaximoFoto = 5 * 1024 * 1024;
 const ladoFotoPerfil = 256;
@@ -579,7 +601,8 @@ function inicializarPerfil() {
 
     cargarPerfil();
     inicializarCopiarEnlacePerfil();
-    inicializarBotonesProximamente();
+    inicializarReportes();
+    inicializarSuspension();
     inicializarMeGusta();
     inicializarAmistad();
     inicializarEdicionPerfil();
@@ -648,9 +671,9 @@ function mostrarPerfil(perfil) {
 
     pintarAvatar(document.getElementById("avatarPerfil"), perfil.nombre, perfil.apellido, perfil.fotoPerfil);
     document.getElementById("tipoPerfil").textContent = nombresDeTipoUsuario[perfil.tipoUsuario] || "Usuario";
+    document.getElementById("tipoPerfil").dataset.tipo = perfil.tipoUsuario;
     document.getElementById("nombrePerfil").textContent = nombreCompleto;
     document.getElementById("tickPerfil").hidden = !perfil.verificado;
-    document.getElementById("estadoVerificadoPerfil").hidden = !perfil.verificado;
     document.getElementById("datosTitularPerfil").replaceChildren(...crearDatosTitular(perfil));
 
     // "Pedir clase" solo tiene sentido en el perfil de un profesor
@@ -659,6 +682,13 @@ function mostrarPerfil(perfil) {
         boton.dataset.nombreProfesor = nombreCompleto;
     });
     document.querySelectorAll("#perfil [data-dar-resena]").forEach(boton => { boton.dataset.nombreUsuario = nombreCompleto; });
+
+    const botonSuspension = document.getElementById("botonSuspension");
+    if (botonSuspension) {
+        botonSuspension.hidden = false;
+        botonSuspension.dataset.suspendida = estaSuspendida(perfil.tipoUsuario);
+        botonSuspension.querySelector("span").textContent = estaSuspendida(perfil.tipoUsuario) ? "Quitar suspensión" : "Suspender cuenta";
+    }
 
     mostrarCifrasPerfil(perfil);
     mostrarDescripcionPerfil(perfil.descripcion);
@@ -768,6 +798,10 @@ function mostrarDescripcionPerfil(descripcion) {
         return;
     }
     descripcionPerfil.classList.add("vacio");
+    if (estaSuspendida(document.getElementById("tipoPerfil").dataset.tipo)) {
+        descripcionPerfil.textContent = "Esta cuenta está suspendida, así que no mostramos su información.";
+        return;
+    }
     descripcionPerfil.textContent = esPerfilPropio()
         ? "Todavía no escribiste nada sobre vos. Tocá «Editar perfil» para contarle a los demás quién sos."
         : "Todavía no escribió una descripción.";
@@ -780,7 +814,7 @@ function mostrarResenasPerfil(resenas) {
     if (resenas.length === 0) {
         const sinResenas = document.createElement("p");
         sinResenas.className = "vacio";
-        sinResenas.textContent = "Todavía no tiene reseñas.";
+        sinResenas.textContent = esPerfilPropio() ? "Todavía no tenés reseñas." : "Todavía no tiene reseñas.";
         resenasPerfil.append(sinResenas);
         return;
     }
@@ -807,6 +841,27 @@ function mostrarResenasPerfil(resenas) {
 
         const encabezadoResena = document.createElement("header");
         encabezadoResena.append(autorResena, estrellas);
+        // El tacho lo ven quien escribió la reseña y los moderadores; el SP borrarResena vuelve a revisarlo
+        if (String(resena.idEmisor) === document.getElementById("perfil").dataset.idVisitante || document.body.dataset.tipoUsuario === "admin") {
+            const borrar = document.createElement("button");
+            borrar.type = "button";
+            borrar.className = "boton botonIcono borrarResena";
+            borrar.dataset.idResena = resena.id;
+            borrar.setAttribute("aria-label", `Borrar la reseña de ${resena.nombre} ${resena.apellido}`);
+            borrar.innerHTML = '<i class="bi bi-trash3-fill" aria-hidden="true"></i>';
+            encabezadoResena.append(borrar);
+        } else if (document.getElementById("dialogoReportar")) {
+            // Con sesión, las reseñas de otros (también las de tu perfil) se pueden reportar
+            const reportar = document.createElement("button");
+            reportar.type = "button";
+            reportar.className = "boton botonIcono borrarResena reportarResena";
+            reportar.dataset.reportar = "resena";
+            reportar.dataset.denunciado = `en el perfil del usuario con id ${document.getElementById("perfil").dataset.idPerfil}, la reseña de ${resena.nombre} ${resena.apellido} (usuario con id ${resena.idEmisor}) fue denunciada`;
+            reportar.setAttribute("aria-label", `Reportar la reseña de ${resena.nombre} ${resena.apellido}`);
+            reportar.title = "Reportar reseña";
+            reportar.innerHTML = '<i class="bi bi-flag" aria-hidden="true"></i>';
+            encabezadoResena.append(reportar);
+        }
         tarjetaResena.append(encabezadoResena);
 
         if (resena.descripcion) {
@@ -841,9 +896,11 @@ function mostrarDatosPerfil(perfil) {
     if (gruposConDatos.length === 0) {
         const sinDatos = document.createElement("p");
         sinDatos.className = "vacio";
-        sinDatos.textContent = perfil.tipoUsuario === "profesor"
-            ? "Todavía no cargó sus materias, niveles ni colegios."
-            : "Todavía no cargó su colegio ni su nivel.";
+        const propio = esPerfilPropio();
+        sinDatos.textContent = estaSuspendida(perfil.tipoUsuario) ? "Esta cuenta está suspendida, así que no mostramos su información."
+            : perfil.tipoUsuario === "profesor"
+            ? (propio ? "Todavía no cargaste tus materias, niveles ni colegios. Tocá «Editar perfil»." : "Todavía no cargó sus materias, niveles ni colegios.")
+            : (propio ? "Todavía no cargaste tu colegio ni tu nivel. Tocá «Editar perfil»." : "Todavía no cargó su colegio ni su nivel.");
         datosPerfil.append(sinDatos);
         return;
     }
@@ -901,20 +958,90 @@ function inicializarCopiarEnlacePerfil() {
     });
 }
 
-// Reportar todavía no hace nada (Pedir clase está en clases.js y Mensaje lleva al chat del Panel)
-function inicializarBotonesProximamente() {
-    const haySesion = document.getElementById("perfil").dataset.haySesion === "true";
+// ----- Reportar (perfil o reseña) -----
+// [data-reportar="perfil|resena"] con data-denunciado (qué se denuncia, en texto) abre #dialogoReportar. Las banderas de las reseñas se dibujan
+// con cada carga del perfil, por eso se escucha en toda la sección
+function inicializarReportes() {
+    const seccionPerfil = document.getElementById("perfil");
+    const dialogo = document.getElementById("dialogoReportar");
 
-    document.querySelectorAll("[data-proximamente]").forEach(boton => {
-        boton.addEventListener("click", evento => {
-            evento.preventDefault();
-            if (!haySesion) {
-                window.location.href = "/Sesion/IniciarSesion";
-                return;
-            }
-            mostrarSnackbar(`«${boton.dataset.proximamente}» va a estar disponible muy pronto.`);
-        });
+    seccionPerfil.addEventListener("click", evento => {
+        const boton = evento.target.closest("[data-reportar]");
+        if (!boton) return;
+        evento.preventDefault();
+        if (seccionPerfil.dataset.haySesion !== "true") {
+            window.location.href = "/Sesion/IniciarSesion?volver=" + encodeURIComponent(location.pathname + location.search);
+            return;
+        }
+        if (!dialogo) return;
+        document.getElementById("formularioReportar").reset();
+        mostrarMensaje(document.getElementById("mensajeReportar"), "");
+        dialogo.dataset.tipo = boton.dataset.reportar;
+        dialogo.dataset.denunciado = boton.dataset.denunciado;
+        document.getElementById("tituloReportar").textContent = boton.dataset.reportar === "perfil" ? "Reportar este perfil" : "Reportar esta reseña";
+        dialogo.showModal();
     });
+    if (!dialogo) return;
+
+    document.getElementById("motivoReporte").addEventListener("change", () => mostrarMensaje(document.getElementById("mensajeReportar"), ""));
+    document.getElementById("formularioReportar").addEventListener("submit", evento => {
+        evento.preventDefault();
+        const motivo = document.getElementById("motivoReporte");
+        const mensaje = document.getElementById("mensajeReportar");
+        if (motivo.value === "") return mostrarErrorEnCampo(mensaje, motivo, "Elegí un motivo.");
+
+        const detalle = document.getElementById("detalleReporte");
+        if (detalle.value.trim() === "") return mostrarErrorEnCampo(mensaje, detalle, "Escribí qué pasó.");
+
+        const botonEnviar = document.getElementById("botonEnviarReporte");
+        botonEnviar.disabled = true;
+        // Va como una consulta de Soporte más (SP enviarConsulta). "Denuncia:" y "usuario con id N" los usa la vista de Moderación
+        enviarAccionDeClase("/Consultas/Enviar", {
+            tipo: "otro",
+            mensaje: `Denuncia: ${dialogo.dataset.denunciado}. Motivo: ${motivo.value}. ${detalle.value.trim()}`
+        })
+            .then(codigo => {
+                if (codigo == 0) {
+                    dialogo.close();
+                    mostrarSnackbar("Gracias. Un moderador va a revisar la denuncia.", "exito");
+                } else {
+                    mostrarMensaje(mensaje, "No pudimos enviar la denuncia. Revisá el texto y probá de nuevo.");
+                }
+            })
+            .catch(error => {
+                console.error(error);
+                mostrarMensaje(mensaje, "No pudimos enviar el reporte. Revisá tu conexión y probá de nuevo.");
+            })
+            .finally(() => { botonEnviar.disabled = false; });
+    });
+}
+
+// ----- Solo moderadores: suspender o quitar la suspensión (ModeracionController.Suspender) -----
+function inicializarSuspension() {
+    const boton = document.getElementById("botonSuspension");
+    if (!boton) return;
+
+    boton.addEventListener("click", () => {
+        const suspender = boton.dataset.suspendida !== "true";
+        if (suspender && !window.confirm("¿Suspender esta cuenta? Se cancelan sus clases que todavía no pasaron y no va a poder usar MiProfesor hasta que le quites la suspensión.")) return;
+        boton.disabled = true;
+        enviarAccionDeClase("/Moderacion/Suspender", { idUsuario: document.getElementById("perfil").dataset.idPerfil, suspender: suspender })
+            .then(resultado => {
+                if (resultado.codigo == 0) mostrarSnackbar(suspender ? "Cuenta suspendida." : "Le quitaste la suspensión.", "exito");
+                else mostrarSnackbar("La cuenta ya estaba así.", "error");
+                cargarPerfil();
+            })
+            .catch(error => {
+                console.error(error);
+                mostrarSnackbar("No pudimos cambiar la suspensión. Probá de nuevo.", "error");
+            })
+            .finally(() => { boton.disabled = false; });
+    });
+}
+
+// Cuentas suspendidas: alumnoBaneado / profesorBaneado
+function estaSuspendida(tipoUsuario) {
+    return (tipoUsuario || "").endsWith("Baneado");
 }
 
 // ----- Me gusta (LikesController: fetch) -----
@@ -941,7 +1068,7 @@ function inicializarMeGusta() {
 
     botonMeGusta.addEventListener("click", () => {
         if (!haySesion) {
-            window.location.href = "/Sesion/IniciarSesion";
+            window.location.href = "/Sesion/IniciarSesion?volver=" + encodeURIComponent(location.pathname + location.search);
             return;
         }
         respuestaInicialVigente = false;
@@ -1014,7 +1141,7 @@ function inicializarAmistad() {
 
     botonAmistad.addEventListener("click", () => {
         if (!haySesion) {
-            window.location.href = "/Sesion/IniciarSesion";
+            window.location.href = "/Sesion/IniciarSesion?volver=" + encodeURIComponent(location.pathname + location.search);
             return;
         }
         // Dejar de ser amigos se confirma; lo demás se puede deshacer con el mismo botón
@@ -1106,7 +1233,7 @@ function abrirAmigosDelPerfil() {
     pedirJson(`/Amigos/Lista/${document.getElementById("perfil").dataset.idPerfil}`)
         .then(amigos => {
             estadoAmigos.hidden = amigos.length > 0;
-            estadoAmigos.textContent = "Todavía no tiene amigos en MIP.";
+            estadoAmigos.textContent = esPerfilPropio() ? "Todavía no tenés amigos en MIP." : "Todavía no tiene amigos en MIP.";
             listaAmigos.replaceChildren(...amigos.map(crearItemAmigo));
         })
         .catch(error => {
@@ -1545,11 +1672,14 @@ function guardarPerfil() {
     const campoPrecioHora = campo("edicionPrecioHora");
     const dniSinPuntos = campo("edicionDni").value.replace(/[\s.\-]/g, "");
 
-    if (campo("edicionNombre").value.trim() === "") return errorEnCampoDeEdicion(campo("edicionNombre"), "Ingresá tu nombre.");
-    if (campo("edicionApellido").value.trim() === "") return errorEnCampoDeEdicion(campo("edicionApellido"), "Ingresá tu apellido.");
+    if (!nombreValido(campo("edicionNombre").value)) return errorEnCampoDeEdicion(campo("edicionNombre"), mensajeNombreInvalido);
+    if (!nombreValido(campo("edicionApellido").value)) return errorEnCampoDeEdicion(campo("edicionApellido"), mensajeNombreInvalido);
     if (!correoValido(campo("edicionMail").value.trim())) return errorEnCampoDeEdicion(campo("edicionMail"), "Ingresá un correo electrónico válido.");
     if (dniSinPuntos !== "" && !/^\d{7,8}$/.test(dniSinPuntos)) return errorEnCampoDeEdicion(campo("edicionDni"), "El DNI tiene que tener 7 u 8 números.");
     if (campo("edicionFechaNacimiento").value !== "" && !fechaNacimientoValida(campo("edicionFechaNacimiento").value)) return errorEnCampoDeEdicion(campo("edicionFechaNacimiento"), "Ingresá una fecha de nacimiento válida.");
+    if (campo("edicionFechaNacimiento").value !== "" && document.body.dataset.tipoUsuario === "profesor" && !esMayorDeEdad(campo("edicionFechaNacimiento").value)) {
+        return errorEnCampoDeEdicion(campo("edicionFechaNacimiento"), mensajeProfesorMenor);
+    }
     if (textoDeLaDescripcion().length > largoMaximoDescripcion) return errorEnCampoDeEdicion(campo("editorDescripcion"), "La descripción puede tener hasta 1000 caracteres.");
     if (campoPrecioHora && campoPrecioHora.value !== "" && !(Number.isInteger(Number(campoPrecioHora.value)) && Number(campoPrecioHora.value) >= 0)) {
         return errorEnCampoDeEdicion(campoPrecioHora, "Ingresá un precio por hora válido (solo números).");
@@ -1598,6 +1728,10 @@ function guardarPerfil() {
                 errorEnCampoDeEdicion(campo("edicionMail"), "Ese correo ya lo usa otra cuenta.");
             } else if (respuesta.codigo == 2) {
                 errorEnCampoDeEdicion(campo("edicionDni"), "Ese DNI ya está registrado en otra cuenta.");
+            } else if (respuesta.codigo == 5) {
+                errorEnCampoDeEdicion(campo("edicionNombre"), mensajeNombreInvalido);
+            } else if (respuesta.codigo == 6) {
+                errorEnCampoDeEdicion(campo("edicionFechaNacimiento"), mensajeProfesorMenor);
             } else if (respuesta.codigo == 3) {
                 mostrarMensaje(mensajeEditarPerfil, "Revisá los datos: nombre y apellido de hasta 50 caracteres, dirección de hasta 200, hasta 10 títulos, hasta 10 materias y 5 colegios, y el año de cada colegio.");
             } else {
@@ -1644,7 +1778,7 @@ function inicializarResenas() {
         // El diálogo solo está para alumnos y profesores: sin sesión se va a Iniciar sesión
         if (!document.getElementById("dialogoDarResena")) {
             if (document.getElementById("perfil")?.dataset.haySesion === "true") mostrarSnackbar("Solo los alumnos y los profesores pueden dejar reseñas.");
-            else window.location.href = "/Sesion/IniciarSesion";
+            else window.location.href = "/Sesion/IniciarSesion?volver=" + encodeURIComponent(location.pathname + location.search);
             return;
         }
         abrirResena(boton.dataset.idUsuario, boton.dataset.nombreUsuario);
@@ -1660,6 +1794,43 @@ function inicializarResenas() {
         if (evento.target.name !== "puntuacion") return;
         document.getElementById("textoPuntuacion").textContent = textosPuntuacion[evento.target.value];
         mostrarMensaje(document.getElementById("mensajeDarResena"), "");
+    });
+}
+
+// Tacho de una reseña del perfil: confirma con #dialogoBorrarResena y vuelve a cargar el perfil (promedio incluido)
+function inicializarBorrarResenas() {
+    const dialogo = document.getElementById("dialogoBorrarResena");
+    if (!dialogo) return;
+
+    document.getElementById("resenasPerfil").addEventListener("click", evento => {
+        const boton = evento.target.closest("[data-id-resena]");
+        if (!boton) return;
+        dialogo.dataset.idResena = boton.dataset.idResena;
+        dialogo.showModal();
+    });
+
+    document.getElementById("botonConfirmarBorrarResena").addEventListener("click", () => {
+        const token = document.querySelector("#perfil input[name='__RequestVerificationToken']");
+        dialogo.close();
+        pedirJson("/Resenas/Borrar", {
+            method: "POST",
+            headers: { "RequestVerificationToken": token ? token.value : "" },
+            body: new URLSearchParams({ idResena: dialogo.dataset.idResena })
+        })
+            .then(resultado => {
+                if (resultado.codigo == 0) {
+                    mostrarSnackbar("Borramos la reseña.", "exito");
+                } else if (resultado.codigo == 1) {
+                    mostrarSnackbar("Esa reseña ya no existe.", "error");
+                } else {
+                    mostrarSnackbar("Solo podés borrar tus propias reseñas.", "error");
+                }
+                cargarPerfil();
+            })
+            .catch(error => {
+                console.error(error);
+                mostrarSnackbar("No pudimos borrar la reseña. Probá de nuevo.", "error");
+            });
     });
 }
 
@@ -1841,7 +2012,7 @@ function crearResultadoDeUsuario(usuario) {
         nombre.append(tick);
     }
     const datos = crearElemento("span", "datos");
-    datos.append(nombre, crearElemento("small", "", `${usuario.tipoUsuario === "profesor" ? "Profesor" : "Alumno"} · ID ${usuario.id}`));
+    datos.append(nombre, crearElemento("small", "", `${nombresDeTipoUsuario[usuario.tipoUsuario] || "Usuario"} · ID ${usuario.id}`));
 
     enlace.append(avatar, datos);
     const item = crearElemento("li");
@@ -1860,6 +2031,7 @@ function inicializarSitio() {
     inicializarAccesosDelPanel();
     inicializarCierreDeDialogos();
     inicializarResenas();
+    inicializarBorrarResenas();
     inicializarPerfil();
     inicializarBuscadorDeUsuarios();
 }

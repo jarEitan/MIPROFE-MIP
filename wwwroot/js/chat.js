@@ -26,6 +26,14 @@ function inicializarChat() {
         enviarMensajeDelChat();
     });
 
+    // El campo corta a 1000 sin avisar: desde 800 se muestra cuánto va
+    const campoMensaje = document.getElementById("campoMensajeChat");
+    const contadorChat = document.getElementById("contadorChat");
+    campoMensaje.addEventListener("input", () => {
+        contadorChat.hidden = campoMensaje.value.length < 800;
+        contadorChat.textContent = `${campoMensaje.value.length} / ${largoMaximoMensaje}`;
+    });
+
     document.getElementById("conversacionesChat").addEventListener("click", evento => {
         const conversacion = evento.target.closest("[data-id-chat]");
         if (conversacion) abrirChatCon(conversacion.dataset.idChat);
@@ -307,6 +315,7 @@ function enviarMensajeDelChat() {
         .then(cuerpo => {
             if (cuerpo.codigo == 0) {
                 campoMensaje.value = "";
+                document.getElementById("contadorChat").hidden = true;
                 return cargarChatAbierto(true).then(cargarConversaciones);
             } else if (cuerpo.codigo == 1) {
                 mostrarSnackbar("No podés mandarte mensajes a vos mismo.", "error");

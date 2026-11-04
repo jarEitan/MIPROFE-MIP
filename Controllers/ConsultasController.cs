@@ -15,4 +15,5 @@ public class ConsultasController : Controller
 
         return Json(new BD().enviarConsulta(int.Parse(idUsuario), tipo, mensaje));
     }
+
 }

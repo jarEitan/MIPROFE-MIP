@@ -57,6 +57,14 @@ public class PerfilesController : Controller
         Usuario perfil = new BD().obtenerPerfil(id);
         // Se vuelve a limpiar al mostrar, por si quedó algo cargado a mano en la base
         perfil.descripcion = limpiarDescripcion(perfil.descripcion);
+        // Cuenta suspendida: se ve el perfil, pero sin su información (queda guardada por si se quita la suspensión)
+        if (perfil.tipoUsuario != null && perfil.tipoUsuario.EndsWith("Baneado"))
+        {
+            perfil.descripcion = null;
+            perfil.materias = perfil.niveles = perfil.modalidades = perfil.colegios = null;
+            perfil.titulos = new List<string>();
+            perfil.precioHora = null;
+        }
         return Json(perfil);
     }
 
@@ -99,13 +107,19 @@ public class PerfilesController : Controller
         if (idSesion == null) return Unauthorized();
         int idUsuario = int.Parse(idSesion);
 
+        string? nombre = SesionController.limpiarNombre(edicion.nombre);
+        string? apellido = SesionController.limpiarNombre(edicion.apellido);
+        if (nombre == null || apellido == null) return Json(new Usuario { codigo = 5 });
+        edicion.nombre = nombre;
+        edicion.apellido = apellido;
+        // Se valida antes de tocar la BD. El tipo sale de la sesión, no del formulario
+        if (HttpContext.Session.GetString("tipoUsuario") == "profesor" && edicion.fechaNacimiento != null && !SesionController.esMayorDeEdad(edicion.fechaNacimiento)) return Json(new Usuario { codigo = 6 });
+
         BD bd = new BD();
         Usuario anteriores = bd.obtenerDatosEdicion(idUsuario);
         edicion.descripcion = limpiarDescripcion(edicion.descripcion);
         if (edicion.descripcion != null && edicion.descripcion.Length > 5000) return Json(new Usuario { codigo = 3 });
 
-        edicion.nombre = (edicion.nombre ?? "").Trim();
-        edicion.apellido = (edicion.apellido ?? "").Trim();
         edicion.mail = (edicion.mail ?? "").Trim().ToLowerInvariant();
         edicion.dni = limpiarTexto(edicion.dni?.Replace(".", "").Replace("-", "").Replace(" ", ""));
         edicion.direccion = limpiarTexto(edicion.direccion);

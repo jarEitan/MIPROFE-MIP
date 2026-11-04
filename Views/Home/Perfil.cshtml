@@ -1,7 +1,7 @@
 @* Perfil de un usuario. La página es el esqueleto: inicializarPerfil() (site.js) trae los datos con
    fetch a /Perfiles/ObtenerPerfil/{id} y completa cada parte.
    - Perfil propio: aviso de verificación, "Editar perfil" (modal), "Copiar enlace" y "Cerrar sesión".
-   - Perfil de otro: botones sociales (todavía sin funcionalidad) y "Copiar enlace". *@
+   - Perfil de otro: botones sociales, "Copiar enlace" y "Reportar". *@
 @{
     int idPerfil = ViewBag.idPerfil;
     bool esPerfilPropio = ViewBag.esPerfilPropio;
@@ -26,7 +26,7 @@
 
 <!-- ================= PERFIL ================= -->
 <section class="perfil" id="perfil" data-id-perfil="@idPerfil" data-perfil-propio="@(esPerfilPropio ? "true" : "false")"
-         data-hay-sesion="@(haySesion ? "true" : "false")" data-editar-al-cargar="@(abrirEdicion ? "true" : "false")">
+         data-hay-sesion="@(haySesion ? "true" : "false")" data-id-visitante="@Context.Session.GetString("idUsuario")" data-editar-al-cargar="@(abrirEdicion ? "true" : "false")">
     <div class="portadaPerfil" aria-hidden="true"></div>
 
     <div class="container">
@@ -67,9 +67,6 @@
                     <div class="titularPerfil">
                         <div class="etiquetasTitular">
                             <span class="pildora" id="tipoPerfil"></span>
-                            <span class="badge badge-subtle theme-success" id="estadoVerificadoPerfil" hidden>
-                                <i class="bi bi-patch-check-fill" aria-hidden="true"></i> Cuenta verificada
-                            </span>
                         </div>
                         <h1>
                             <span id="nombrePerfil"></span>
@@ -99,13 +96,20 @@
                             <button class="boton oscuro" type="button" id="botonVerDni" data-bs-toggle="dialog" data-bs-target="#dialogoDni">
                                 <i class="bi bi-person-vcard" aria-hidden="true"></i> Ver DNI
                             </button>
+                            @* site.js (inicializarSuspension) le pone "Suspender cuenta" o "Quitar suspensión" según el perfil *@
+                            <button class="boton contorno" type="button" id="botonSuspension" hidden>
+                                <i class="bi bi-slash-circle" aria-hidden="true"></i> <span>Suspender cuenta</span>
+                            </button>
                         }
                         @* Botones sociales: salen de las tablas Amigos, Mensajes, Likes y Resenas. Sin sesión llevan a Iniciar sesión.
                            Mensaje abre el chat con esta persona en el Panel de Control (chat.js). Agregar amigo cambia según cómo
                            estén los dos (AmigosController) y la estrella abre "Dar reseña" (diálogo en _Layout, ResenasController). *@
-                        <button class="boton principal" type="button" data-pedir-clase data-id-profesor="@idPerfil" data-nombre-profesor="" data-solo-profesor hidden>
-                            <i class="bi bi-calendar-plus" aria-hidden="true"></i> Pedir clase
-                        </button>
+                        @if (!esProfesor)
+                        {
+                            <button class="boton principal" type="button" data-pedir-clase data-id-profesor="@idPerfil" data-nombre-profesor="" data-solo-profesor hidden>
+                                <i class="bi bi-calendar-plus" aria-hidden="true"></i> Pedir clase
+                            </button>
+                        }
                         <a class="boton contorno" asp-controller="Home" asp-action="PanelControl" asp-route-tab="chat" asp-route-chat="@idPerfil">
                             <i class="bi bi-chat-dots" aria-hidden="true"></i> Mensaje
                         </a>
@@ -129,9 +133,12 @@
                 @* Cifras a la izquierda y el botón Historial a la derecha (modal #dialogoHistorial, historial.js) *@
                 <div class="filaCifras">
                     <ul class="cifras" id="cifrasPerfil"></ul>
-                    <button class="boton contorno" type="button" id="botonHistorial" aria-haspopup="dialog">
-                        <i class="bi bi-clock-history" aria-hidden="true"></i> Historial
-                    </button>
+                    @if (haySesion)
+                    {
+                        <button class="boton contorno" type="button" id="botonHistorial" aria-haspopup="dialog">
+                            <i class="bi bi-clock-history" aria-hidden="true"></i> Historial
+                        </button>
+                    }
                 </div>
             </div>
 
@@ -154,9 +161,10 @@
                         <div id="datosPerfil"></div>
                     </aside>
 
-                    @if (!esPerfilPropio)
+                    @* Abre #dialogoReportar (site.js, inicializarReportes). Sin sesión lleva a Iniciar sesión *@
+                    @if (!esPerfilPropio && !esModerador)
                     {
-                        <a class="reportarPerfil" href="#" data-proximamente="Reportar perfil">
+                        <a class="reportarPerfil" href="#" data-reportar="perfil" data-denunciado="el usuario con id @idPerfil fue denunciado">
                             <i class="bi bi-flag" aria-hidden="true"></i> Reportar este perfil
                         </a>
                     }
@@ -197,6 +205,59 @@
             <button type="button" class="boton contorno chico" data-bs-dismiss="dialog">Volver</button>
             <button type="button" class="boton oscuro chico" id="botonConfirmarQuitarAmigo">Sí, quitar</button>
         </div>
+    </dialog>
+}
+
+<!-- ================= DIÁLOGO: BORRAR RESEÑA ================= -->
+@* Lo abre el tacho de una reseña (site.js: inicializarBorrarResenas). Lo ven quien la escribió y los moderadores *@
+<dialog class="dialog" id="dialogoBorrarResena" aria-labelledby="tituloBorrarResena">
+    <div class="dialog-header">
+        <h2 class="dialog-title" id="tituloBorrarResena">¿Borrar la reseña?</h2>
+        <button type="button" class="btn-close" data-bs-dismiss="dialog" aria-label="Cerrar"></button>
+    </div>
+    <div class="dialog-body">
+        <p>Se borra para siempre y deja de contar en la calificación.</p>
+    </div>
+    <div class="dialog-footer">
+        <button type="button" class="boton contorno chico" data-bs-dismiss="dialog">Volver</button>
+        <button type="button" class="boton oscuro chico" id="botonConfirmarBorrarResena">Sí, borrar</button>
+    </div>
+</dialog>
+
+@if (haySesion && !esModerador)
+{
+    <!-- ================= DIÁLOGO: REPORTAR PERFIL O RESEÑA ================= -->
+    @* Lo abren "Reportar este perfil" y la bandera de cada reseña. Se manda como consulta de Soporte (tipo "otro") que
+       empieza con "Denuncia:" y nombra el perfil; Moderación la muestra con un botón a ese perfil *@
+    <dialog class="dialog" id="dialogoReportar" aria-labelledby="tituloReportar">
+        <form id="formularioReportar" novalidate>
+            <div class="dialog-header">
+                <h2 class="dialog-title" id="tituloReportar">Reportar</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="dialog" aria-label="Cerrar"></button>
+            </div>
+            <div class="dialog-body">
+                <p>Un moderador lo va a revisar. La otra persona no se entera de que fuiste vos.</p>
+                <div class="form-field">
+                    <label for="motivoReporte">Motivo</label>
+                    <select class="form-control" id="motivoReporte" required>
+                        <option value="">Elegí un motivo</option>
+                        <option>Datos falsos</option>
+                        <option>Trato inapropiado u ofensivo</option>
+                        <option>Spam o publicidad</option>
+                        <option>Otro</option>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label for="detalleReporte">Escribí la denuncia</label>
+                    <textarea class="form-control" id="detalleReporte" rows="4" maxlength="700" placeholder="Contá qué pasó para que el moderador lo pueda revisar."></textarea>
+                </div>
+                <p class="mensajeError" id="mensajeReportar" role="alert"></p>
+            </div>
+            <div class="dialog-footer">
+                <button type="button" class="boton contorno chico" data-bs-dismiss="dialog">Cancelar</button>
+                <button type="submit" class="boton oscuro chico" id="botonEnviarReporte"><i class="bi bi-flag" aria-hidden="true"></i> Enviar reporte</button>
+            </div>
+        </form>
     </dialog>
 }
 

@@ -43,7 +43,9 @@
 
     // En el perfil propio el aviso de verificación no va: ahí está el aviso completo dentro de la página
     bool ocultarAvisoVerificacion = ViewBag.ocultarAvisoVerificacion ?? false;
-    bool mostrarAvisoVerificacion = idUsuarioSesion != "" && tipoUsuarioSesion != "admin"
+    // Cuenta suspendida por un moderador (alumnoBaneado / profesorBaneado): Program.cs frena todas sus acciones
+    bool cuentaSuspendida = tipoUsuarioSesion.EndsWith("Baneado");
+    bool mostrarAvisoVerificacion = idUsuarioSesion != "" && tipoUsuarioSesion != "admin" && !cuentaSuspendida
         && Context.Session.GetString("verificado") != "true" && !ocultarAvisoVerificacion;
     string datosFaltantes = Context.Session.GetString("datosFaltantes") ?? "";
 }
@@ -105,7 +107,7 @@
 
                             @if (tipoUsuarioSesion == "")
                             {
-                                <a class="boton contorno" asp-controller="Sesion" asp-action="IniciarSesion">Iniciar sesión</a>
+                                <a class="boton contorno" asp-controller="Sesion" asp-action="IniciarSesion" asp-route-volver="@(Context.Request.Path + Context.Request.QueryString)">Iniciar sesión</a>
                                 <a class="boton principal" asp-controller="Sesion" asp-action="Registrarse">Crear cuenta</a>
                             }
                             else
@@ -179,6 +181,19 @@
         </div>
     }
 
+    @if (cuentaSuspendida)
+    {
+        <div class="avisoVerificacion suspendida" role="status">
+            <div class="container">
+                <div class="contenidoAviso">
+                    <span class="icono"><i class="bi bi-slash-circle" aria-hidden="true"></i></span>
+                    <p><strong>Tu cuenta está suspendida.</strong> <span>Un moderador la suspendió después de un reporte. Podés mirar el sitio, pero no pedir clases, escribir ni editar tu perfil.</span></p>
+                    <a class="boton oscuro chico" asp-controller="Home" asp-action="Soporte">Pedir que la revisen</a>
+                </div>
+            </div>
+        </div>
+    }
+
     <!-- ================= MAIN ================= -->
     <main role="main" id="contenido">
         @RenderBody()
@@ -203,7 +218,6 @@
                     <h5>Plataforma</h5>
                     <ul>
                         <li><a asp-controller="Catalogo" asp-action="Index">Catálogo</a></li>
-                        <li><a asp-controller="Catalogo" asp-action="Index" asp-route-colegio="Belgrano Day School">Filtro por colegios</a></li>
                         <li><a asp-controller="Sesion" asp-action="Registrarse">Crear cuenta</a></li>
                     </ul>
                 </div>
@@ -214,6 +228,8 @@
                         <li><a asp-controller="Home" asp-action="QuienesSomos">Quiénes Somos</a></li>
                         <li><a asp-controller="Home" asp-action="QuienesSomos" asp-fragment="equipo">Equipo de Desarrollo</a></li>
                         <li><a class="destacado" asp-controller="Home" asp-action="Soporte">Soporte Técnico</a></li>
+                        <li><a asp-controller="Home" asp-action="Privacy">Privacidad</a></li>
+                        <li><a asp-controller="Home" asp-action="Terminos">Términos</a></li>
                     </ul>
                 </div>
 
@@ -270,7 +286,7 @@
                             <div class="franjas" data-franjas role="group" aria-labelledby="pedidoEtiquetaHora" aria-live="polite">
                                 <p class="ayudaFranjas">Elegí primero un día.</p>
                             </div>
-                            <small>Cada clase dura 60 minutos. Las horas tachadas ya están ocupadas.</small>
+                            <small>Cada clase dura 60 minutos. Las horas tachadas no están disponibles (ocupadas o a menos de 1 hora).</small>
                         </div>
                     </div>
 

@@ -25,14 +25,14 @@ Objetivo: todo **refactorizado**. Cómo se hace: [guía](guiaDeEstilo.md), secci
 - Buscador de usuarios (header): refactorizado
 - Consulta de Soporte: sin hacer
 - Sugerencias del buscador: sin hacer
-- Moderación de reseñas: sin hacer
+- Moderación de reseñas: hecho (denunciar perfil o reseña por Soporte, borrar reseña, suspender y quitar suspensión)
 - Filtros avanzados: sin hacer
 - Pedido de un alumno por un profesor: sin hacer
 
 ## Con qué seguir
 
 1. **Consulta de Soporte** y **sugerencias del buscador**: tienen `TODO BD`.
-2. Lo de la V2: moderación de reseñas, filtros avanzados y pedido de un alumno por un profesor.
+2. Lo de la V2: filtros avanzados y pedido de un alumno por un profesor.
 
 ## Qué falta probar
 

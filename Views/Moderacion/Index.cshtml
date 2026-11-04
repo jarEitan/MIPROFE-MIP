@@ -1,3 +1,4 @@
+@using System.Text.RegularExpressions
 @{
     ViewData["Title"] = "Moderación";
     List<ConsultaSoporte> consultas = ViewBag.consultas;
@@ -13,7 +14,7 @@
 <section class="cabecera">
     <div class="container">
         <h1>Panel de <mark>moderación</mark></h1>
-        <p>Respondé las consultas de Soporte (le llegan al usuario como mensaje directo) y verificá las cuentas que ya cargaron todos sus datos.</p>
+        <p>Revisá las denuncias, respondé las consultas de Soporte (le llegan al usuario como mensaje directo) y verificá las cuentas que ya cargaron todos sus datos.</p>
         <form class="mt-4" method="post" asp-controller="Sesion" asp-action="CerrarSesion">
             <button class="boton oscuro" type="submit"><i class="bi bi-box-arrow-right" aria-hidden="true"></i> Cerrar sesión</button>
         </form>
@@ -37,11 +38,21 @@
                     @* moderacion.js la saca de la lista cuando se responde *@
                     <form class="card" data-id-consulta="@consulta.id" novalidate>
                         <div class="d-flex flex-wrap align-items-center gap-2">
-                            <span class="badge theme-accent">@nombresDeTipo.GetValueOrDefault(consulta.tipo, consulta.tipo)</span>
+                            <span class="badge theme-accent">@(consulta.mensaje.StartsWith("Denuncia:") ? "Denuncia" : nombresDeTipo.GetValueOrDefault(consulta.tipo, consulta.tipo))</span>
                             <time datetime="@consulta.fecha.ToString("s")">@consulta.fecha.ToString("dd/MM/yyyy HH:mm")</time>
                         </div>
                         <h3><a asp-controller="Home" asp-action="Perfil" asp-route-id="@consulta.idUsuario">@consulta.nombre</a></h3>
                         <p>@consulta.mensaje</p>
+                        @* Las denuncias del Perfil son consultas que empiezan con "Denuncia:" y nombran el perfil ("usuario con id 5").
+                           Desde ese perfil se borra la reseña (tacho) o se suspende la cuenta *@
+                        @if (consulta.mensaje.StartsWith("Denuncia:"))
+                        {
+                            Match perfilDenunciado = Regex.Match(consulta.mensaje, @"usuario con id (\d+)");
+                            if (perfilDenunciado.Success)
+                            {
+                                <a class="boton oscuro chico" asp-controller="Home" asp-action="Perfil" asp-route-id="@perfilDenunciado.Groups[1].Value"><i class="bi bi-flag" aria-hidden="true"></i> Ver el perfil denunciado</a>
+                            }
+                        }
                         <div class="form-field">
                             <label for="respuesta@(consulta.id)">Tu respuesta</label>
                             <textarea class="form-control" id="respuesta@(consulta.id)" name="respuesta" rows="3" maxlength="900"></textarea>

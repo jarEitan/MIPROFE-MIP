@@ -2,6 +2,7 @@
     ViewData["Title"] = "Iniciar sesión";
     string mensaje = ViewBag.mensaje ?? "";
     string mail = ViewBag.mail ?? "";
+    string volver = ViewBag.volver ?? "";
 }
 
 <!-- ================= LOGIN ================= -->
@@ -16,6 +17,7 @@
                     </header>
 
                     <form id="formularioIngreso" method="post" asp-controller="Sesion" asp-action="IniciarSesion" onsubmit="return validarIngreso()" novalidate>
+                        <input type="hidden" name="volver" value="@volver" />
                         <div class="form-field">
                             <label for="ingresoCorreo">Correo electrónico</label>
                             <div class="campoConIcono">

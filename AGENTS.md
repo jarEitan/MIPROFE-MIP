@@ -44,20 +44,22 @@ Reglas de código: **[Info/systemPrompt.md](Info/systemPrompt.md)** (obligatorio
 | Módulo | Controller → acciones | `BD.cs` |
 |---|---|---|
 | Sesión | `SesionController`: IniciarSesion, Registrarse, CerrarSesion | `registrarUsuario`, `iniciarSesion` (en `BDsesion.cs`) |
-| Navegación / páginas | `HomeController`: Index, Soporte, QuienesSomos, Perfil, PanelControl, Privacy, NoEncontrado | — |
+| Navegación / páginas | `HomeController`: Index, Soporte, QuienesSomos, Perfil, PanelControl, Privacy, Terminos, NoEncontrado | — |
 | Perfil | `PerfilesController`: ObtenerPerfil, Buscar, ObtenerOpcionesPerfil, ObtenerDatosEdicion, GuardarPerfil | `obtenerPerfil`, `buscarUsuarios`, `obtenerOpcionesPerfil`, `obtenerDatosEdicion`, `obtenerFaltantesVerificacion`, `guardarPerfilCompleto`, `guardarAnioEscuela` |
 | Catálogo | `CatalogoController`: Index, Buscar | `obtenerIdsCatalogo`, `obtenerProfesoresCatalogo` |
 | Likes | `LikesController`: ObtenerLike, AlternarLike | `obtenerLike`, `alternarLike` |
 | Amigos | `AmigosController`: Estado, Cambiar, Lista | `obtenerAmistad`, `enviarAmistad`, `quitarAmistad`, `obtenerAmigos` |
 | Notificaciones | `NotificacionesController`: Contar, ResponderAmistad | `obtenerNotificaciones`, `contarNotificaciones`, `aceptarAmistad`, `rechazarAmistad` |
 | Chat | `MensajesController`: Conversaciones, Chat, Enviar | `enviarMensaje`, `obtenerConversaciones`, `obtenerChat` |
-| Reseñas | `ResenasController`: Dar | `darResena` |
+| Reseñas | `ResenasController`: Dar, Borrar | `darResena`, `borrarResena` |
 | Historial | `HistorialController`: Obtener | `obtenerHistorialClases` |
-| Soporte | `ConsultasController`: Enviar | `enviarConsulta` |
-| Moderación (`tipoUsuario = 'admin'`, se crean a mano en la BD) | `ModeracionController`: Index, Responder (la respuesta va por mensaje directo), Verificar, FotoDni (la pide "Ver DNI" del Perfil) | `obtenerConsultasPendientes`, `responderConsulta`, `obtenerUsuariosPorVerificar`, `verificarUsuario`, `obtenerFotoDni` |
+| Soporte y denuncias | `ConsultasController`: Enviar (las denuncias del Perfil también: tipo `otro`, texto que empieza con "Denuncia:" y nombra "usuario con id N") | `enviarConsulta` |
+| Moderación (`tipoUsuario = 'admin'`, se crean a mano en la BD) | `ModeracionController`: Index, Responder (la respuesta va por mensaje directo), Verificar, FotoDni (la pide "Ver DNI" del Perfil), Suspender (suspender / quitar suspensión, desde el Perfil) | `obtenerConsultasPendientes`, `responderConsulta`, `obtenerUsuariosPorVerificar`, `verificarUsuario`, `obtenerFotoDni`, `cambiarSuspension`, `obtenerTipoUsuario` (Program.cs, frena los POST de cuentas suspendidas) |
 | Clases (pedidos) | `ClasesController`: EnviarPedido, Responder, Cancelar, Reubicar, ResponderSolicitud, RetirarSolicitud, NoSeDio | `enviarPedidoClase`, `aceptarPedidoClase`, `rechazarPedidoClase`, `cancelarClase`, `reubicarClase`, `aceptarSolicitudClase`, `rechazarSolicitudClase`, `retirarSolicitudClase`, `marcarClaseNoConcretada` |
 | Agenda / calendario | `ClasesController`: Calendario, HorariosOcupados, DiasConAgenda, MiAgenda, GuardarAgenda, BloquearDia, DesbloquearDia | `obtenerCalendarioClases`, `obtenerContadoresClases`, `obtenerHorariosOcupados`, `obtenerDisponibilidad`, `borrarDisponibilidadSemanal`, `agregarFranja`, `bloquearDia`, `desbloquearDia` |
 
-Pendiente (sin hacer): sugerencias del buscador, moderación de reseñas, filtros avanzados, pedido de un alumno por un profesor. Detalle en [progreso.md](Info/progreso.md).
+Cuentas suspendidas: `tipoUsuario` = `alumnoBaneado` / `profesorBaneado`. Pueden iniciar sesión y mirar; Program.cs les devuelve 403 en todo POST salvo Sesión y Soporte.
+
+Pendiente (sin hacer): sugerencias del buscador, filtros avanzados, pedido de un alumno por un profesor. Detalle en [progreso.md](Info/progreso.md).
 
 Mantener este índice al día: si agregás o renombrás un controlador, acción o método de `BD.cs`, actualizá la tabla.

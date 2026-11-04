@@ -245,7 +245,14 @@
             </div>
             <div class="col-12 lg:col-5 acciones">
                 <a class="boton secundario" asp-controller="Home" asp-action="Soporte">Ir a Soporte</a>
-                <a class="boton claro" asp-controller="Sesion" asp-action="Registrarse">Crear cuenta gratis</a>
+                @if (Context.Session.GetString("idUsuario") == null)
+                {
+                    <a class="boton claro" asp-controller="Sesion" asp-action="Registrarse">Crear cuenta gratis</a>
+                }
+                else
+                {
+                    <a class="boton claro" asp-controller="Home" asp-action="PanelControl">Ir al Panel de Control</a>
+                }
             </div>
         </div>
     </div>

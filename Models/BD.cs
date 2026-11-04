@@ -93,6 +93,15 @@ public class BD
         }
     }
 
+    // codigo: 0 = ok, 1 = la reseña no existe, 2 = no es tuya y no sos moderador
+    public int borrarResena(int idResena, int idUsuario)
+    {
+        using (var connection = new SqlConnection(connectionString))
+        {
+            return connection.QueryFirst<int>("EXEC borrarResena @idResena, @idUsuario", new { idResena = idResena, idUsuario = idUsuario });
+        }
+    }
+
     public OpcionesPerfil obtenerOpcionesPerfil()
     {
         using (var connection = new SqlConnection(connectionString))
@@ -474,6 +483,24 @@ public class BD
         using (var connection = new SqlConnection(connectionString))
         {
             return connection.QueryFirst<int>("EXEC verificarUsuario @idUsuario", new { idUsuario = idUsuario });
+        }
+    }
+
+    // codigo: 0 = ok, 1 = no existe o es moderador, 2 = ya estaba así
+    public int cambiarSuspension(int idUsuario, bool suspender)
+    {
+        using (var connection = new SqlConnection(connectionString))
+        {
+            return connection.QueryFirst<int>("EXEC cambiarSuspension @idUsuario, @suspender", new { idUsuario = idUsuario, suspender = suspender });
+        }
+    }
+
+    // null si la cuenta ya no existe
+    public string? obtenerTipoUsuario(int idUsuario)
+    {
+        using (var connection = new SqlConnection(connectionString))
+        {
+            return connection.QueryFirst<string?>("EXEC obtenerTipoUsuario @idUsuario", new { idUsuario = idUsuario });
         }
     }
 
