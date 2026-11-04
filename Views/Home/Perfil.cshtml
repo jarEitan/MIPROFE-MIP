@@ -147,7 +147,11 @@
                     </article>
 
                     <article class="card">
-                        <h2><i class="bi bi-star" aria-hidden="true"></i> Reseñas</h2>
+                        @* Promedio y cantidad de reseñas a la derecha del título (site.js, mostrarResumenResenas) *@
+                        <header class="encabezadoResenas">
+                            <h2><i class="bi bi-star" aria-hidden="true"></i> Reseñas</h2>
+                            <div class="resumenResenas" id="resumenResenas" hidden></div>
+                        </header>
                         <div class="resenas" id="resenasPerfil"></div>
                     </article>
                 </div>

@@ -708,6 +708,7 @@ function mostrarPerfil(perfil) {
 
     mostrarCifrasPerfil(perfil);
     mostrarDescripcionPerfil(perfil.descripcion);
+    mostrarResumenResenas(perfil);
     mostrarResenasPerfil(perfil.resenas);
     mostrarDatosPerfil(perfil);
     mostrarContenidoCargado(document.getElementById("contenidoPerfil"));
@@ -822,6 +823,24 @@ function mostrarDescripcionPerfil(descripcion) {
         : "Todavía no escribió una descripción.";
 }
 
+// Promedio grande, estrellas y cantidad (el promedio redondeado decide cuántas estrellas se pintan)
+function mostrarResumenResenas(perfil) {
+    const resumen = document.getElementById("resumenResenas");
+    resumen.hidden = perfil.cantidadResenas === 0 || perfil.calificacion === null;
+    if (resumen.hidden) return;
+
+    const promedio = perfil.calificacion.toLocaleString("es-AR", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+    const estrellas = crearElemento("span", "estrellas");
+    for (let posicion = 1; posicion <= 5; posicion++) {
+        estrellas.append(crearElemento("i", posicion <= Math.round(perfil.calificacion) ? "bi bi-star-fill" : "bi bi-star"));
+    }
+    const detalle = crearElemento("span", "detalle");
+    detalle.append(estrellas, crearElemento("small", "", perfil.cantidadResenas === 1 ? "1 reseña" : `${perfil.cantidadResenas} reseñas`));
+    resumen.replaceChildren(crearElemento("strong", "", promedio), detalle);
+    resumen.setAttribute("aria-label", `${promedio} de 5 estrellas, ${perfil.cantidadResenas === 1 ? "1 reseña" : perfil.cantidadResenas + " reseñas"}`);
+    resumen.setAttribute("role", "img");
+}
+
 function mostrarResenasPerfil(resenas) {
     const resenasPerfil = document.getElementById("resenasPerfil");
     resenasPerfil.replaceChildren();
@@ -837,6 +856,7 @@ function mostrarResenasPerfil(resenas) {
     resenas.forEach(resena => {
         const tarjetaResena = document.createElement("div");
         tarjetaResena.className = "resena";
+        tarjetaResena.id = `resena-${resena.idEmisor}`;
 
         // El nombre de quien escribió la reseña lleva a su perfil
         const autorResena = document.createElement("a");
@@ -899,6 +919,16 @@ function mostrarResenasPerfil(resenas) {
         }
         resenasPerfil.append(tarjetaResena);
     });
+
+    // "Ir a la reseña" del historial llega con #resena-{autor}
+    const resenaBuscada = location.hash.startsWith("#resena-") ? document.getElementById(location.hash.slice(1)) : null;
+    // Espera a que el perfil termine de mostrarse para poder bajar hasta la reseña
+    if (resenaBuscada) {
+        setTimeout(() => {
+            resenaBuscada.scrollIntoView({ behavior: "smooth", block: "center" });
+            resaltarElemento(resenaBuscada);
+        }, 300);
+    }
 }
 
 function crearTickVerificado() {

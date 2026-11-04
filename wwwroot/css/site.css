@@ -4213,6 +4213,13 @@ tr.resaltada td {
     color: var(--colorCoral);
 }
 
+.tabla .irAResena {
+    display: block;
+    font-size: .8rem;
+    font-weight: 600;
+    color: var(--colorMagenta);
+}
+
 .tabla .table td .boton {
     white-space: nowrap;
 }
@@ -5085,6 +5092,47 @@ tr.resaltada td {
 /* Texto de "todavía no hay nada" en descripción, reseñas y datos */
 .perfil .vacio {
     font-style: italic;
+    color: var(--colorTextoSuave);
+}
+
+/* Título a la izquierda y el resumen (4,9 ★★★★★ 32 reseñas) a la derecha */
+.perfil .encabezadoResenas {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: .5rem 1rem;
+    margin-bottom: .5rem;
+}
+
+.perfil .encabezadoResenas h2 {
+    margin: 0;
+}
+
+.perfil .resumenResenas {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+
+.perfil .resumenResenas strong {
+    font: 2rem/1 var(--fuenteTitulos);
+    color: var(--colorTinta);
+}
+
+.perfil .resumenResenas .detalle {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+}
+
+.perfil .resumenResenas .estrellas {
+    margin-left: 0;
+    font-size: .8rem;
+}
+
+.perfil .resumenResenas small {
+    font-size: .75rem;
     color: var(--colorTextoSuave);
 }
 

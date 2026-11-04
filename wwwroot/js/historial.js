@@ -44,7 +44,7 @@ function dibujarHistorial(contenedor, resultado, opciones) {
     encabezado.append(filaTitulos);
 
     const cuerpo = crearElemento("tbody");
-    resultado.clases.forEach(clase => cuerpo.append(crearFilaHistorial(clase, columnaContraparte, conAccion, opciones, resultado.tipoUsuario)));
+    resultado.clases.forEach(clase => cuerpo.append(crearFilaHistorial(clase, columnaContraparte, conAccion, opciones, resultado.tipoUsuario, resultado.id)));
 
     const tabla = crearElemento("table", "table");
     tabla.append(encabezado, cuerpo);
@@ -76,7 +76,7 @@ function crearPieDelHistorial(resultado, cuerpo, columnaContraparte, conAccion, 
         boton.disabled = true;
         pedirHistorial(resultado.id, cuerpo.children.length)
             .then(pagina => {
-                pagina.clases.forEach(clase => cuerpo.append(crearFilaHistorial(clase, columnaContraparte, conAccion, opciones, resultado.tipoUsuario)));
+                pagina.clases.forEach(clase => cuerpo.append(crearFilaHistorial(clase, columnaContraparte, conAccion, opciones, resultado.tipoUsuario, resultado.id)));
                 resultado.total = pagina.total;
                 actualizar();
                 // El foco queda en la primera fila nueva para no perder el lugar al agregar contenido
@@ -91,7 +91,7 @@ function crearPieDelHistorial(resultado, cuerpo, columnaContraparte, conAccion, 
     return pie;
 }
 
-function crearFilaHistorial(clase, columnaContraparte, conAccion, opciones, tipoUsuarioDueno) {
+function crearFilaHistorial(clase, columnaContraparte, conAccion, opciones, tipoUsuarioDueno, idDueno) {
     const nombreOtro = `${clase.nombreOtro} ${clase.apellidoOtro}`;
     const fila = crearElemento("tr");
     if (opciones.esPanel) fila.id = `historial-${clase.id}`;
@@ -116,7 +116,7 @@ function crearFilaHistorial(clase, columnaContraparte, conAccion, opciones, tipo
         celdaContraparte,
         crearCeldaHistorial("Materia", clase.materia),
         crearCeldaHistorial("Colegio", clase.colegios || "–"),
-        crearCeldaPuntuacionHistorial(clase, nombreOtro),
+        crearCeldaPuntuacionHistorial(clase, nombreOtro, idDueno),
         celdaDia
     );
 
@@ -152,7 +152,7 @@ function crearFilaHistorial(clase, columnaContraparte, conAccion, opciones, tipo
 }
 
 // Las estrellas de la última reseña; si no hay, "Dar reseña" (solo en el historial propio) o un guion
-function crearCeldaPuntuacionHistorial(clase, nombreOtro) {
+function crearCeldaPuntuacionHistorial(clase, nombreOtro, idDueno) {
     const celda = crearCeldaHistorial("Puntuación");
 
     if (clase.puntuacion) {
@@ -161,7 +161,10 @@ function crearCeldaPuntuacionHistorial(clase, nombreOtro) {
         for (let posicion = 1; posicion <= 5; posicion++) {
             estrellas.append(crearIconoHistorial(posicion <= clase.puntuacion ? "bi-star-fill" : "bi-star"));
         }
-        celda.append(estrellas);
+        // La reseña la escribió el dueño del historial: está en el perfil del otro (ahí se puede borrar)
+        const irAResena = crearElemento("a", "irAResena", "Ir a la reseña");
+        irAResena.href = `/Home/Perfil/${clase.idOtroUsuario}#resena-${idDueno}`;
+        celda.append(estrellas, irAResena);
     } else if (clase.puedeDarResena) {
         const botonResena = crearElemento("button", "boton contorno chico");
         botonResena.type = "button";
