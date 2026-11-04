@@ -491,6 +491,8 @@ function inicializarBuscadorDeAyuda() {
     const mensajeAyuda = document.getElementById("mensajeAyuda");
     const sinCoincidencias = document.getElementById("sinCoincidencias");
 
+    mensajeAyuda?.addEventListener("click", verPreguntasDeAyuda);
+
     campoAyuda.addEventListener("input", () => {
         const textoBuscado = normalizarTexto(campoAyuda.value);
         let cantidadVisible = 0;
@@ -502,7 +504,9 @@ function inicializarBuscadorDeAyuda() {
         });
 
         sinCoincidencias.hidden = cantidadVisible > 0;
-        mostrarMensaje(mensajeAyuda, textoBuscado === "" ? "" : `${cantidadVisible} ${cantidadVisible === 1 ? "pregunta encontrada" : "preguntas encontradas"}.`);
+        const hayBusquedaConResultados = textoBuscado !== "" && cantidadVisible > 0;
+        mostrarMensaje(mensajeAyuda, hayBusquedaConResultados ? `${cantidadVisible} ${cantidadVisible === 1 ? "pregunta encontrada" : "preguntas encontradas"}.` : "");
+        if (mensajeAyuda) mensajeAyuda.hidden = !hayBusquedaConResultados;
     });
 }
 

@@ -3160,14 +3160,17 @@ fieldset {
 .cabecera .resultadoAyuda {
     width: fit-content;
     margin-top: 1rem;
+    padding: .35rem 1rem;
+    border: 0;
     border-radius: 999px;
+    background-color: var(--colorCelesteSuave);
     color: var(--colorTinta);
     font: 600 1rem var(--fuenteMarca);
+    cursor: pointer;
 }
 
-.cabecera .resultadoAyuda:not(:empty) {
-    padding: .35rem 1rem;
-    background-color: var(--colorCelesteSuave);
+.cabecera .resultadoAyuda[hidden] {
+    display: none;
 }
 
 .ayuda {
