@@ -47,10 +47,10 @@ Reglas de código: **[Info/systemPrompt.md](Info/systemPrompt.md)** (obligatorio
 | Navegación / páginas | `HomeController`: Index, Soporte, QuienesSomos, Perfil, PanelControl, Privacy, NoEncontrado | — |
 | Perfil | `PerfilesController`: ObtenerPerfil, Buscar, ObtenerOpcionesPerfil, ObtenerDatosEdicion, GuardarPerfil | `obtenerPerfil`, `buscarUsuarios`, `obtenerOpcionesPerfil`, `obtenerDatosEdicion`, `obtenerFaltantesVerificacion`, `guardarPerfilCompleto`, `guardarAnioEscuela` |
 | Catálogo | `CatalogoController`: Index, Buscar | `obtenerIdsCatalogo`, `obtenerProfesoresCatalogo` |
-| Likes | `LikesController`: ObtenerLike, AlternarLike | `obtenerLike`, `alternarLike` |
+| Likes (solo en reseñas) | `LikesController`: AlternarResena | `alternarLikeResena` |
 | Amigos | `AmigosController`: Estado, Cambiar, Lista | `obtenerAmistad`, `enviarAmistad`, `quitarAmistad`, `obtenerAmigos` |
 | Notificaciones | `NotificacionesController`: Contar, ResponderAmistad | `obtenerNotificaciones`, `contarNotificaciones`, `aceptarAmistad`, `rechazarAmistad` |
-| Chat | `MensajesController`: Conversaciones, Chat, Enviar | `enviarMensaje`, `obtenerConversaciones`, `obtenerChat` |
+| Chat (solo con amistad, clase o mensaje previo; el moderador siempre puede) | `MensajesController`: Conversaciones, Chat, Enviar | `enviarMensaje`, `obtenerConversaciones`, `obtenerChat` |
 | Reseñas | `ResenasController`: Dar | `darResena` |
 | Historial | `HistorialController`: Obtener | `obtenerHistorialClases` |
 | Soporte | `ConsultasController`: Enviar | `enviarConsulta` |

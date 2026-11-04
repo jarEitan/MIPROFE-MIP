@@ -607,7 +607,7 @@ function inicializarPerfil() {
     inicializarCopiarEnlacePerfil();
     inicializarReportes();
     inicializarSuspension();
-    inicializarMeGusta();
+    inicializarMeGustaResenas();
     inicializarAmistad();
     inicializarEdicionPerfil();
     inicializarVerDni();
@@ -685,6 +685,13 @@ function mostrarPerfil(perfil) {
         boton.hidden = perfil.tipoUsuario !== "profesor";
         boton.dataset.nombreProfesor = nombreCompleto;
     });
+    // Solo se puede escribir a quien es amigo, tiene una clase con vos o ya te escribió (sin sesión, el botón lleva a iniciar sesión)
+    const botonMensaje = document.getElementById("botonMensaje");
+    if (botonMensaje && document.getElementById("perfil").dataset.haySesion === "true" && !perfil.puedeEscribir) {
+        botonMensaje.removeAttribute("href");
+        botonMensaje.setAttribute("aria-disabled", "true");
+        botonMensaje.title = "Para escribirle tienen que ser amigos o tener una clase.";
+    }
     document.querySelectorAll("#perfil [data-dar-resena]").forEach(boton => { boton.dataset.nombreUsuario = nombreCompleto; });
 
     const botonSuspension = document.getElementById("botonSuspension");
@@ -756,7 +763,6 @@ function mostrarCifrasPerfil(perfil) {
         : "–";
     const textoResenas = perfil.cantidadResenas === 1 ? "1 reseña" : `${perfil.cantidadResenas} reseñas`;
     cifrasPerfil.append(crearCifraPerfil("bi-star-fill", calificacion, textoResenas));
-    cifrasPerfil.append(crearCifraPerfil("bi-heart-fill", perfil.cantidadLikes, "me gusta", "cantidadLikesPerfil"));
 
     // Amigos: la cifra es un botón que abre la lista
     const cifraAmigos = crearCifraPerfil("bi-people-fill", perfil.cantidadAmigos, perfil.cantidadAmigos === 1 ? "amigo" : "amigos", "cantidadAmigosPerfil");
@@ -872,6 +878,19 @@ function mostrarResenasPerfil(resenas) {
             const textoResena = document.createElement("p");
             textoResena.textContent = resena.descripcion;
             tarjetaResena.append(textoResena);
+        }
+
+        // Tu propia reseña no se puede likear (el SP alternarLikeResena lo vuelve a revisar)
+        if (String(resena.idEmisor) !== document.getElementById("perfil").dataset.idVisitante) {
+            const meGusta = document.createElement("button");
+            meGusta.type = "button";
+            meGusta.className = "boton contorno chico botonMeGusta";
+            meGusta.dataset.idResena = resena.id;
+            meGusta.setAttribute("aria-label", "Me gusta");
+            meGusta.innerHTML = '<i class="bi bi-heart" aria-hidden="true"></i> <span></span>';
+            meGusta.querySelector("span").textContent = resena.cantidadLikes;
+            pintarEstadoMeGusta(meGusta, resena.leGusta);
+            tarjetaResena.append(meGusta);
         }
         resenasPerfil.append(tarjetaResena);
     });
@@ -1048,76 +1067,55 @@ function estaSuspendida(tipoUsuario) {
     return (tipoUsuario || "").endsWith("Baneado");
 }
 
-// ----- Me gusta (LikesController: fetch) -----
+// ----- Me gusta en reseñas (LikesController: fetch) -----
 const coloresExplosionLike = ["#FF5757", "#5CE1E6", "#D51F47", "#FFB4B4"];
 
-function inicializarMeGusta() {
-    const botonMeGusta = document.getElementById("botonMeGusta");
-    if (!botonMeGusta) return;
+function inicializarMeGustaResenas() {
+    document.getElementById("resenasPerfil").addEventListener("click", evento => {
+        const boton = evento.target.closest(".botonMeGusta");
+        if (!boton) return;
 
-    const seccionPerfil = document.getElementById("perfil");
-    const idPerfil = seccionPerfil.dataset.idPerfil;
-    const haySesion = seccionPerfil.dataset.haySesion === "true";
-
-    // Si ya le diste me gusta, el corazón arranca lleno (sin sesión no hay nada que averiguar).
-    // Si hacés clic antes de que llegue esta respuesta, se ignora para no pisar el estado nuevo.
-    let respuestaInicialVigente = true;
-    if (haySesion) {
-        pedirJson(`/Likes/ObtenerLike/${idPerfil}`)
-            .then(resultado => {
-                if (respuestaInicialVigente) pintarEstadoMeGusta(botonMeGusta, resultado.leGusta);
-            })
-            .catch(error => console.error(error));
-    }
-
-    botonMeGusta.addEventListener("click", () => {
-        if (!haySesion) {
+        if (document.getElementById("perfil").dataset.haySesion !== "true") {
             window.location.href = "/Sesion/IniciarSesion?volver=" + encodeURIComponent(location.pathname + location.search);
             return;
         }
-        respuestaInicialVigente = false;
-        alternarMeGusta(botonMeGusta, idPerfil);
+        alternarMeGustaResena(boton);
     });
 }
 
-function alternarMeGusta(botonMeGusta, idPerfil) {
-    // Mientras viaja el pedido el botón queda bloqueado: dos clics seguidos no se pisan
-    botonMeGusta.disabled = true;
-    const token = document.querySelector("#perfil input[name='__RequestVerificationToken']");
-    const datos = new URLSearchParams({ idReceptor: idPerfil });
+function alternarMeGustaResena(boton) {
+    boton.disabled = true;
+    const token = document.querySelector("input[name='__RequestVerificationToken']");
 
-    pedirJson("/Likes/AlternarLike", {
+    pedirJson("/Likes/AlternarResena", {
         method: "POST",
         headers: { "RequestVerificationToken": token ? token.value : "" },
-        body: datos
+        body: new URLSearchParams({ idResena: boton.dataset.idResena })
     })
         .then(resultado => {
-            pintarEstadoMeGusta(botonMeGusta, resultado.leGusta);
-            actualizarCantidadLikes(resultado.cantidadLikes);
-            animarMeGusta(botonMeGusta, resultado.leGusta);
+            if (resultado.codigo == 0) {
+                pintarEstadoMeGusta(boton, resultado.leGusta);
+                boton.querySelector("span").textContent = resultado.cantidadLikes;
+                animarMeGusta(boton, resultado.leGusta);
+            } else if (resultado.codigo == 1) {
+                mostrarSnackbar("Esa reseña ya no existe.", "error");
+            } else {
+                mostrarSnackbar("No podés darle me gusta a tu propia reseña.", "error");
+            }
         })
         .catch(error => {
             console.error(error);
             mostrarSnackbar("No pudimos guardar tu me gusta. Probá de nuevo.", "error");
         })
-        .finally(() => { botonMeGusta.disabled = false; });
+        .finally(() => { boton.disabled = false; });
 }
 
-function pintarEstadoMeGusta(botonMeGusta, leGusta) {
-    botonMeGusta.classList.toggle("activo", leGusta);
-    botonMeGusta.setAttribute("aria-pressed", leGusta ? "true" : "false");
-    const icono = botonMeGusta.querySelector(".bi");
+function pintarEstadoMeGusta(boton, leGusta) {
+    boton.classList.toggle("activo", leGusta);
+    boton.setAttribute("aria-pressed", leGusta ? "true" : "false");
+    const icono = boton.querySelector(".bi");
     icono.classList.toggle("bi-heart-fill", leGusta);
     icono.classList.toggle("bi-heart", !leGusta);
-}
-
-function actualizarCantidadLikes(cantidadLikes) {
-    const cantidad = document.getElementById("cantidadLikesPerfil");
-    if (!cantidad) return;
-    cantidad.textContent = cantidadLikes;
-    cantidad.classList.remove("rebote");
-    void cantidad.offsetWidth;
-    cantidad.classList.add("rebote");
 }
 
 // ----- Amigos (AmigosController: fetch) -----
@@ -1807,7 +1805,7 @@ function inicializarBorrarResenas() {
     if (!dialogo) return;
 
     document.getElementById("resenasPerfil").addEventListener("click", evento => {
-        const boton = evento.target.closest("[data-id-resena]");
+        const boton = evento.target.closest(".borrarResena[data-id-resena]");
         if (!boton) return;
         dialogo.dataset.idResena = boton.dataset.idResena;
         dialogo.showModal();

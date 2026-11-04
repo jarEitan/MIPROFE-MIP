@@ -101,7 +101,7 @@
                                 <i class="bi bi-slash-circle" aria-hidden="true"></i> <span>Suspender cuenta</span>
                             </button>
                         }
-                        @* Botones sociales: salen de las tablas Amigos, Mensajes, Likes y Resenas. Sin sesión llevan a Iniciar sesión.
+                        @* Botones sociales: salen de las tablas Amigos, Mensajes y Resenas. Sin sesión llevan a Iniciar sesión.
                            Mensaje abre el chat con esta persona en el Panel de Control (chat.js). Agregar amigo cambia según cómo
                            estén los dos (AmigosController) y la estrella abre "Dar reseña" (diálogo en _Layout, ResenasController). *@
                         @if (!esProfesor)
@@ -110,17 +110,14 @@
                                 <i class="bi bi-calendar-plus" aria-hidden="true"></i> Pedir clase
                             </button>
                         }
-                        <a class="boton contorno" asp-controller="Home" asp-action="PanelControl" asp-route-tab="chat" asp-route-chat="@idPerfil">
+                        <a class="boton contorno" id="botonMensaje" asp-controller="Home" asp-action="PanelControl" asp-route-tab="chat" asp-route-chat="@idPerfil">
                             <i class="bi bi-chat-dots" aria-hidden="true"></i> Mensaje
                         </a>
                         <button class="boton contorno" type="button" id="botonAmistad" data-estado-amistad="ninguna">
                             <i class="bi bi-person-plus" aria-hidden="true"></i> <span>Agregar amigo</span>
                         </button>
-                        @* Me gusta: LikesController (fetch). El token va en un campo oculto y site.js lo manda en el encabezado. *@
+                        @* El token lo usan los me gusta y el borrado de reseñas (site.js lo manda en el encabezado). *@
                         @Html.AntiForgeryToken()
-                        <button class="boton contorno botonIcono botonMeGusta" type="button" id="botonMeGusta" aria-pressed="false" aria-label="Me gusta" title="Me gusta">
-                            <i class="bi bi-heart" aria-hidden="true"></i>
-                        </button>
                         <button class="boton contorno botonIcono" type="button" data-dar-resena data-id-usuario="@idPerfil" data-nombre-usuario="" aria-label="Dejar reseña" title="Dejar reseña">
                             <i class="bi bi-star" aria-hidden="true"></i>
                         </button>

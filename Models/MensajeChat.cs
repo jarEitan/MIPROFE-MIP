@@ -11,7 +11,7 @@ public class MensajeChat
 }
 
 // codigo: 0 = ok, 1 = sos vos, 2 = la persona no existe
-// Los datos son de la otra persona. marcados = cuántos mensajes suyos se acaban de marcar como Visto
+// Los datos son de la otra persona. puedeEscribir = son amigos, tienen una clase o ya le escribió. marcados = cuántos mensajes suyos se acaban de marcar como Visto
 public class ResultadoChat
 {
     public int codigo { get; set; }
@@ -21,6 +21,7 @@ public class ResultadoChat
     public string? fotoPerfil { get; set; }
     public string tipoUsuario { get; set; } = "";
     public int marcados { get; set; }
+    public bool puedeEscribir { get; set; }
     public List<MensajeChat> mensajes { get; set; } = new List<MensajeChat>();
     public int cantidadNotificaciones { get; set; }
 }
@@ -38,7 +39,7 @@ public class ConversacionChat
     public int sinLeer { get; set; }
 }
 
-// codigo: 0 = ok, 1 = sos vos, 2 = la persona no existe, 3 = mensaje vacío o de más de 1000 caracteres
+// codigo: 0 = ok, 1 = sos vos, 2 = la persona no existe, 3 = mensaje vacío o de más de 1000 caracteres, 4 = sin amistad, clase ni mensaje previo
 public class ResultadoMensaje
 {
     public int codigo { get; set; }

@@ -524,6 +524,11 @@ function abrirPestanaYClase(parametros) {
         return;
     }
 
+    if (parametros.get("tab") === "agenda") {
+        document.getElementById("botonTabAgenda")?.click();
+        return;
+    }
+
     const esHistorial = parametros.get("tab") === "historial";
     const idClase = parametros.get("clase");
     if (!parametros.has("tab") && !idClase) return;

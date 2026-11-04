@@ -11,4 +11,6 @@ public class ResenaPerfil
     public bool verificadoEmisor { get; set; }
     public int puntuacion { get; set; }
     public string? descripcion { get; set; }
+    public int cantidadLikes { get; set; }
+    public bool leGusta { get; set; }
 }

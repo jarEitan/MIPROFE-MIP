@@ -171,11 +171,11 @@ END
 ### BD.cs
 
 ```csharp
-public ResultadoLike alternarLike(int idEmisor, int idReceptor)
+public ResultadoLike alternarLikeResena(int idUsuario, int idResena)
 {
     using (var connection = new SqlConnection(connectionString))
     {
-        return connection.QueryFirst<ResultadoLike>("EXEC alternarLike @idEmisor, @idReceptor", new { idEmisor = idEmisor, idReceptor = idReceptor });
+        return connection.QueryFirst<ResultadoLike>("EXEC alternarLikeResena @idUsuario, @idResena", new { idUsuario = idUsuario, idResena = idResena });
     }
 }
 ```
@@ -200,7 +200,7 @@ public class ResultadoMensaje
 }
 ```
 
-Si no hay ningún error posible, no hay `codigo`: Likes devuelve solo `cantidadLikes` y `leGusta`.
+Si no hay ningún error posible, el SP no devuelve `codigo` y el modelo tampoco.
 
 Los modelos tienen solo propiedades `{ get; set; }`: nada de métodos ni propiedades calculadas (`=>`). Lo que se calcula va en la vista, el JS o el controlador.
 
@@ -238,7 +238,7 @@ public IActionResult IniciarSesion(string mail, string contrasena)
 - El usuario siempre sale de la sesión:
   - En un GET: `int.Parse(HttpContext.Session.GetString("idUsuario") ?? "0")` (0 = sin sesión).
   - En un POST: `if (idUsuario == null) return Unauthorized();`.
-- Los que se llaman con fetch devuelven tal cual lo que vino de la BD: `return Json(new BD().alternarLike(…));`.
+- Los que se llaman con fetch devuelven tal cual lo que vino de la BD: `return Json(new BD().alternarLikeResena(…));`.
 - Se mantiene `[ValidateAntiForgeryToken]` en todos los POST. También lo que cuida los datos, como `tipoUsuario`, que desde el formulario solo puede ser `alumno` o `profesor`.
 - Sin banners `// ======` ni comentarios que repiten el nombre de la acción. En `BD.cs` los banners se van borrando a medida que se refactoriza cada sección.
 

@@ -10,6 +10,7 @@
 
 const segundosEntreActualizacionesDelChat = 10;
 const largoMaximoMensaje = 1000;
+const textoSinPermisoChat = "Para escribirle tienen que ser amigos o tener una clase.";
 
 let idChatAbierto = null;
 let otroUsuarioDelChat = null;
@@ -195,6 +196,7 @@ function cargarChatAbierto(bajarAlFinal) {
                     mostrarCabeceraDelChat(chat.id, chat.nombre, chat.apellido, chat.fotoPerfil, chat.tipoUsuario);
                     document.getElementById("formularioChat").hidden = false;
                 }
+                bloquearRedaccionDelChat(!chat.puedeEscribir);
                 dibujarMensajes(chat.mensajes, bajarAlFinal);
                 if (chat.marcados > 0) quitarNotificacionDelChat(chat.id, chat.cantidadNotificaciones);
             } else if (chat.codigo == 1) {
@@ -210,6 +212,15 @@ function cargarChatAbierto(bajarAlFinal) {
             if (otroUsuarioDelChat !== null) return;
             mostrarErrorDelChat("No pudimos cargar el chat. Probá de nuevo en unos minutos.");
         });
+}
+
+// Sin amistad, clase ni mensaje previo no se puede escribir: el campo muestra el motivo
+function bloquearRedaccionDelChat(bloqueada) {
+    const campoMensaje = document.getElementById("campoMensajeChat");
+    campoMensaje.disabled = bloqueada;
+    document.getElementById("botonEnviarChat").disabled = bloqueada;
+    campoMensaje.placeholder = bloqueada ? textoSinPermisoChat : "Escribí un mensaje...";
+    campoMensaje.title = bloqueada ? textoSinPermisoChat : "";
 }
 
 function mostrarErrorDelChat(texto) {
@@ -321,8 +332,10 @@ function enviarMensajeDelChat() {
                 mostrarSnackbar("No podés mandarte mensajes a vos mismo.", "error");
             } else if (cuerpo.codigo == 2) {
                 mostrarSnackbar("Esta persona no existe o no se le pueden mandar mensajes.", "error");
-            } else {
+            } else if (cuerpo.codigo == 3) {
                 mostrarSnackbar("El mensaje no puede estar vacío ni pasar los 1000 caracteres.", "error");
+            } else {
+                mostrarSnackbar(textoSinPermisoChat, "error");
             }
         })
         .catch(error => {
@@ -330,7 +343,7 @@ function enviarMensajeDelChat() {
             mostrarSnackbar("No pudimos enviar el mensaje. Probá de nuevo.", "error");
         })
         .finally(() => {
-            botonEnviar.disabled = false;
+            botonEnviar.disabled = campoMensaje.disabled;
             campoMensaje.focus();
         });
 }

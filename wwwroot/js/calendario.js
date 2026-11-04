@@ -215,12 +215,19 @@ function dibujarMes() {
 
         boton.append(crearElemento("span", "numero", String(dia.getDate())));
         const lineas = crearElemento("span", "lineas");
-        clases.slice(0, maximoLineasPorDia).forEach(clase => lineas.append(crearElemento("i", `linea ${lineaDeClase(clase)}`)));
+        clases.slice(0, maximoLineasPorDia).forEach(clase => lineas.append(boton.classList.contains("semanaActual") ? crearResumenDeClase(clase) : crearElemento("i", `linea ${lineaDeClase(clase)}`)));
         if (clases.length > maximoLineasPorDia) lineas.append(crearElemento("span", "mas", `+${clases.length - maximoLineasPorDia}`));
         boton.append(lineas);
         dias.push(boton);
     }
     document.getElementById("diasMes").replaceChildren(...dias);
+}
+
+// En la semana de hoy cada clase muestra "12:00 · Julián · Matemática" con el color de su línea
+function crearResumenDeClase(clase) {
+    const resumen = crearElemento("span", `resumen ${lineaDeClase(clase)}`);
+    resumen.append(crearElemento("strong", "", textoHoraDe(leerFechaLocal(clase.fecha))), crearElemento("span", "alumno", clase.nombreOtro), crearElemento("span", "materia", clase.materia));
+    return resumen;
 }
 
 // Qué pasa con la clase, en su tarjeta: lo que pidió el otro o lo que pediste vos

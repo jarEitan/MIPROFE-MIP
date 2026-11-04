@@ -329,6 +329,42 @@ function desbloquearUnDia(fecha) {
         });
 }
 
+// Bloquea los feriados de Argentina de hoy a un año (api.argentinadatos.com, desde el navegador), menos los que ya estaban bloqueados
+function importarFeriados() {
+    const boton = document.getElementById("botonImportarFeriados");
+    boton.disabled = true;
+    const hoy = new Date();
+    const desde = fechaATexto(hoy);
+    const hasta = fechaATexto(new Date(hoy.getFullYear() + 1, hoy.getMonth(), hoy.getDate()));
+    const yaBloqueados = [...document.querySelectorAll("#listaDiasBloqueados li[data-fecha]")].map(item => item.dataset.fecha);
+
+    Promise.all([hoy.getFullYear(), hoy.getFullYear() + 1].map(anio => fetch(`https://api.argentinadatos.com/v1/feriados/${anio}`).then(respuesta => {
+        if (!respuesta.ok) throw new Error(`Error ${respuesta.status} al traer los feriados de ${anio}`);
+        return respuesta.json();
+    })))
+        .then(listas => {
+            const fechas = [...new Set(listas.flat().map(feriado => feriado.fecha))].filter(fecha => fecha >= desde && fecha <= hasta && !yaBloqueados.includes(fecha));
+            return Promise.all(fechas.map(fecha => enviarAccionDeClase("/Clases/BloquearDia", { fecha })));
+        })
+        .then(resultados => {
+            const bloqueados = resultados.filter(resultado => resultado.codigo == 0);
+            const conClases = bloqueados.filter(resultado => resultado.clasesEseDia > 0).length;
+            if (bloqueados.length === 0) {
+                mostrarSnackbar("Ya tenías todos los feriados bloqueados.", "info");
+                return;
+            }
+            let texto = `Bloqueamos ${bloqueados.length} ${bloqueados.length === 1 ? "feriado" : "feriados"}.`;
+            if (conClases > 0) texto += ` Tenés clases en ${conClases} de esos días: revisalas en Mis clases.`;
+            mostrarSnackbar(texto, conClases > 0 ? "info" : "exito");
+            return cargarMiAgenda();
+        })
+        .catch(error => {
+            console.error(error);
+            mostrarSnackbar("No pudimos traer los feriados. Probá de nuevo más tarde.", "error");
+        })
+        .finally(() => { boton.disabled = false; });
+}
+
 
 // ================= INICIALIZACIÓN =================
 function inicializarMiAgenda() {
@@ -342,6 +378,7 @@ function inicializarMiAgenda() {
     inicializarListaDeDias();
     document.getElementById("botonGuardarAgenda").addEventListener("click", guardarMiAgenda);
     document.getElementById("formularioBloquearDia").addEventListener("submit", bloquearUnDia);
+    document.getElementById("botonImportarFeriados").addEventListener("click", importarFeriados);
     document.getElementById("listaDiasBloqueados").addEventListener("click", evento => {
         const boton = evento.target.closest("[data-desbloquear-dia]");
         if (boton) desbloquearUnDia(boton.dataset.desbloquearDia);

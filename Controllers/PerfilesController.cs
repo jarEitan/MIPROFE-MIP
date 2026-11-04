@@ -54,7 +54,8 @@ public class PerfilesController : Controller
 
     public IActionResult ObtenerPerfil(int id)
     {
-        Usuario perfil = new BD().obtenerPerfil(id);
+        int idVisitante = int.Parse(HttpContext.Session.GetString("idUsuario") ?? "0");
+        Usuario perfil = new BD().obtenerPerfil(id, idVisitante);
         // Se vuelve a limpiar al mostrar, por si quedó algo cargado a mano en la base
         perfil.descripcion = limpiarDescripcion(perfil.descripcion);
         // Cuenta suspendida: se ve el perfil, pero sin su información (queda guardada por si se quita la suspensión)

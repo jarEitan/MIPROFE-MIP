@@ -48,6 +48,11 @@
     bool mostrarAvisoVerificacion = idUsuarioSesion != "" && tipoUsuarioSesion != "admin" && !cuentaSuspendida
         && Context.Session.GetString("verificado") != "true" && !ocultarAvisoVerificacion;
     string datosFaltantes = Context.Session.GetString("datosFaltantes") ?? "";
+
+    // Las cuentas suspendidas ven el mismo menú que su tipo base. Mis clases, Mi agenda y Chat son pestañas del Panel de Control (?tab=)
+    bool esAlumno = tipoUsuarioSesion == "alumno" || tipoUsuarioSesion == "alumnoBaneado";
+    bool esProfesor = tipoUsuarioSesion == "profesor" || tipoUsuarioSesion == "profesorBaneado";
+    string pestanaPanel = (controladorActual == "Home" && accionActual == "PanelControl") ? (Context.Request.Query["tab"].ToString() == "" ? "clases" : Context.Request.Query["tab"].ToString()) : "";
 }
 <body data-tipo-usuario="@tipoUsuarioSesion">
     <a class="saltarContenido" href="#contenido">Saltar al contenido</a>
@@ -78,16 +83,40 @@
                             <li class="nav-item">
                                 <a class="nav-link @((controladorActual == "Home" && accionActual == "Index") ? "active" : "")" aria-current="@((controladorActual == "Home" && accionActual == "Index") ? "page" : null)" asp-controller="Home" asp-action="Index">Inicio</a>
                             </li>
-                            @if (tipoUsuarioSesion != "profesor")
+                            @if (tipoUsuarioSesion != "admin")
                             {
                                 <li class="nav-item">
                                     <a class="nav-link @(controladorActual == "Catalogo" ? "active" : "")" aria-current="@(controladorActual == "Catalogo" ? "page" : null)" asp-controller="Catalogo" asp-action="Index">Catálogo</a>
                                 </li>
                             }
-                            @if (tipoUsuarioSesion == "" || tipoUsuarioSesion == "alumno")
+                            @if (tipoUsuarioSesion == "")
                             {
                                 <li class="nav-item">
                                     <a class="nav-link @(accionActual == "QuienesSomos" ? "active" : "")" aria-current="@(accionActual == "QuienesSomos" ? "page" : null)" asp-controller="Home" asp-action="QuienesSomos">Quiénes somos</a>
+                                </li>
+                            }
+                            @if (tipoUsuarioSesion == "admin")
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link @(controladorActual == "Moderacion" ? "active" : "")" aria-current="@(controladorActual == "Moderacion" ? "page" : null)" asp-controller="Moderacion" asp-action="Index">Moderación</a>
+                                </li>
+                            }
+                            @if (esAlumno || esProfesor)
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link @(pestanaPanel == "clases" ? "active" : "")" aria-current="@(pestanaPanel == "clases" ? "page" : null)" asp-controller="Home" asp-action="PanelControl" asp-route-tab="clases">Mis clases</a>
+                                </li>
+                            }
+                            @if (esProfesor)
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link @(pestanaPanel == "agenda" ? "active" : "")" aria-current="@(pestanaPanel == "agenda" ? "page" : null)" asp-controller="Home" asp-action="PanelControl" asp-route-tab="agenda">Mi agenda</a>
+                                </li>
+                            }
+                            @if (esAlumno || esProfesor)
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link @(pestanaPanel == "chat" ? "active" : "")" aria-current="@(pestanaPanel == "chat" ? "page" : null)" asp-controller="Home" asp-action="PanelControl" asp-route-tab="chat">Chat</a>
                                 </li>
                             }
                             <li class="nav-item">
@@ -112,14 +141,8 @@
                             }
                             else
                             {
-                                @* El moderador (admin) tiene Moderación en lugar del Panel de Control *@
-                                @if (tipoUsuarioSesion == "admin")
-                                {
-                                    <a class="boton secundario" asp-controller="Moderacion" asp-action="Index">
-                                        <i class="bi bi-shield-check" aria-hidden="true"></i> Moderación
-                                    </a>
-                                }
-                                else
+                                @* El moderador (admin) no tiene Panel de Control: su acceso es Moderación, en el menú *@
+                                @if (tipoUsuarioSesion != "admin")
                                 {
                                     <a class="boton secundario" asp-controller="Home" asp-action="PanelControl">
                                         <i class="bi bi-bar-chart-line" aria-hidden="true"></i> Panel de Control

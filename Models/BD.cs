@@ -8,11 +8,11 @@ public class BD
 {
     private static string connectionString = @"Server=localhost;Database=MIP;Integrated Security=True;TrustServerCertificate=True;";
 
-    public Usuario obtenerPerfil(int idUsuario)
+    public Usuario obtenerPerfil(int idUsuario, int idVisitante)
     {
         using (var connection = new SqlConnection(connectionString))
         {
-            using (var tablas = connection.QueryMultiple("EXEC obtenerPerfil @idUsuario", new { idUsuario = idUsuario }))
+            using (var tablas = connection.QueryMultiple("EXEC obtenerPerfil @idUsuario, @idVisitante", new { idUsuario = idUsuario, idVisitante = idVisitante }))
             {
                 Usuario perfil = tablas.ReadFirst<Usuario>();
                 if (perfil.codigo == 0)
@@ -25,19 +25,11 @@ public class BD
         }
     }
 
-    public ResultadoLike obtenerLike(int idEmisor, int idReceptor)
+    public ResultadoLike alternarLikeResena(int idUsuario, int idResena)
     {
         using (var connection = new SqlConnection(connectionString))
         {
-            return connection.QueryFirst<ResultadoLike>("EXEC obtenerLike @idEmisor, @idReceptor", new { idEmisor = idEmisor, idReceptor = idReceptor });
-        }
-    }
-
-    public ResultadoLike alternarLike(int idEmisor, int idReceptor)
-    {
-        using (var connection = new SqlConnection(connectionString))
-        {
-            return connection.QueryFirst<ResultadoLike>("EXEC alternarLike @idEmisor, @idReceptor", new { idEmisor = idEmisor, idReceptor = idReceptor });
+            return connection.QueryFirst<ResultadoLike>("EXEC alternarLikeResena @idUsuario, @idResena", new { idUsuario = idUsuario, idResena = idResena });
         }
     }
 
