@@ -47,15 +47,18 @@ El script borra todas las tablas (igual que `03_datos_prueba`) y después insert
 
 - Usuarios (profesores y alumnos), perfiles, títulos, materias, niveles, modalidades y colegios.
 - Agenda semanal y días bloqueados de cada profesor. Las clases caen dentro de la agenda.
-- Clases: pasadas (Completada, No concretada, Cancelada); futuras (Pendiente, Confirmada, Rechazada, Pide cambio, Pide cancelar).
-- Mensajes entre quienes tuvieron clase, con estado Visto o No visto.
-- Amigos, Me gusta, reseñas (solo de clases Completadas, una por par) y consultas de soporte.
+- Clases: pasadas (Completada, No concretada, Cancelada); futuras (Pendiente, Confirmada, Rechazada, Pide cambio, Pide cancelar). Cada clase tiene una materia (`idMateria`) que da el profesor.
+- Mensajes entre quienes tuvieron clase y entre amigos aceptados sin clase, con estado Visto o No visto.
+- Amigos: aceptados (con y sin clase entre ellos), pendientes y pares sin relación.
+- Me gusta solo en reseñas (`LikesResenas`): solo a reseñas aprobadas y nunca del autor de la reseña.
+- Reseñas: solo de alumno a profesor con una clase Completada entre los dos, una por par.
+- Consultas de soporte de visitantes.
 
 ## Verificación
 
 Antes de escribir el archivo, el script revisa que la agenda, los días bloqueados, las fechas de emisión y los estados sean coherentes. Si algo falla, no escribe nada.
 
-Probado el 2026-11-02 con SQL Server 2022 (contenedor): los 3 scripts corren sin error con los valores por defecto.
+Probado el 2026-11-04 con SQL Server 2022 (contenedor): `01`, `02` y `03` corren en orden sin error, y el `.sql` generado con los valores por defecto también. Después se revisó: cada clase tiene materia que da su profesor, no hay Me gusta a reseñas no aprobadas ni propios, y no hay reseñas sin clase Completada.
 La contraseña generada coincide con la verificación PBKDF2 de `Models/BDsesion.cs`.
 
 ## Limitaciones

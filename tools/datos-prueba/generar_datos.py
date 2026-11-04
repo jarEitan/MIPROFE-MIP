@@ -157,7 +157,8 @@ def generar(args):
             plantilla = rnd.choice(DESCRIPCIONES_PROF if u["tipo"] == "profesor" else DESCRIPCIONES_ALUM)
             sql.append("INSERT [dbo].[Perfiles] ([idUsuario], [descripcion]) VALUES (%s, %s)" % (
                 ref_usuario(u["mail"]), sql_str("<p>%s</p>" % plantilla.format(m=m))))
-        for mat in rnd.sample(MATERIAS, rnd.randint(1, 3)):
+        u["materias"] = rnd.sample(MATERIAS, rnd.randint(1, 3))
+        for mat in u["materias"]:
             sql.append("INSERT [dbo].[Usuarios_Materias] ([idUsuario], [idMateria]) VALUES (%s, %s)" % (
                 ref_usuario(u["mail"]), ref_por_nombre("Materias", mat)))
         for niv in rnd.sample(NIVELES, rnd.randint(1, 2)):
@@ -230,33 +231,27 @@ def generar(args):
                       "Rechazada" if r < 0.87 else "Pide cambio" if r < 0.93 else "Pide cancelar")
         emision = min(fecha - dt.timedelta(days=rnd.randint(1, 14), hours=rnd.randint(0, 23)), hoy)
         propuesta = fecha + dt.timedelta(days=1) if estado == "Pide cambio" else None
+        materia = rnd.choice(p["materias"])  # la clase es de una materia que da el profesor
         clases.append(dict(emisor=emisor, receptor=receptor, estado=estado, fecha=fecha, emision=emision,
-                           propuesta=propuesta))
-        sql.append("INSERT [dbo].[Clases] ([idEmisor], [idReceptor], [estado], [fecha], [fechaEmision], [fechaPropuesta]) "
-                   "VALUES (%s, %s, %s, %s, %s, %s)" % (
-                       ref_usuario(emisor["mail"]), ref_usuario(receptor["mail"]), sql_str(estado), sql_dt(fecha),
-                       sql_dt(emision), sql_dt(propuesta) if propuesta else "NULL"))
+                           propuesta=propuesta, materia=materia))
+        sql.append("INSERT [dbo].[Clases] ([idEmisor], [idReceptor], [idMateria], [estado], [fecha], [fechaEmision], "
+                   "[fechaPropuesta]) VALUES (%s, %s, %s, %s, %s, %s, %s)" % (
+                       ref_usuario(emisor["mail"]), ref_usuario(receptor["mail"]), ref_por_nombre("Materias", materia),
+                       sql_str(estado), sql_dt(fecha), sql_dt(emision), sql_dt(propuesta) if propuesta else "NULL"))
 
     # ---------- amigos, likes, mensajes, reseñas ----------
     pares_amistad = set()
+    amistades = {}  # par -> estado
     for u in usuarios:
         for otro in rnd.sample(usuarios, min(len(usuarios), rnd.randint(0, 4))):
             if otro is u or (u["mail"], otro["mail"]) in pares_amistad or (otro["mail"], u["mail"]) in pares_amistad:
                 continue
             pares_amistad.add((u["mail"], otro["mail"]))
             estado = "Aceptada" if rnd.random() < 0.9 else "Pendiente"
+            amistades[frozenset((u["mail"], otro["mail"]))] = estado
             sql.append("INSERT [dbo].[Amigos] ([idUsuario1], [idUsuario2], [estado]) VALUES (%s, %s, %s)" % (
                 ref_usuario(u["mail"]), ref_usuario(otro["mail"]), sql_str(estado)))
 
-    pares_like = set()
-    for u in usuarios:
-        pool = profesores if u["tipo"] == "alumno" else usuarios
-        for otro in rnd.sample(pool, min(len(pool), rnd.randint(0, 6))):
-            if otro is u or (u["mail"], otro["mail"]) in pares_like:
-                continue
-            pares_like.add((u["mail"], otro["mail"]))
-            sql.append("INSERT [dbo].[Likes] ([idEmisor], [idReceptor]) VALUES (%s, %s)" % (
-                ref_usuario(u["mail"]), ref_usuario(otro["mail"])))
 
     # Mensajes entre quienes tuvieron clase (la más antigua marca el inicio del chat)
     chats = {}
@@ -265,6 +260,10 @@ def generar(args):
         if clave_par not in chats or c["emision"] < chats[clave_par]:
             chats[clave_par] = c["emision"]
     usuario_por_mail = {u["mail"]: u for u in usuarios}
+    for par, estado_amistad in amistades.items():
+        a, b = sorted(par)
+        if estado_amistad == "Aceptada" and (a, b) not in chats and rnd.random() < 0.5:
+            chats[(a, b)] = hoy - dt.timedelta(days=rnd.randint(10, 300))  # amigos sin clase: chat por amistad
     for (a, b), desde in chats.items():
         n = rnd.randint(2, 6)
         momentos = sorted(desde + (hoy - desde) * rnd.random() for _ in range(n))
@@ -280,6 +279,7 @@ def generar(args):
 
     # Reseñas: solo de un alumno a un profesor con una clase Completada, una por par
     resenado = set()
+    aprobadas = []
     for c in clases:
         if c["estado"] != "Completada" or "alumno" not in (c["emisor"]["tipo"], c["receptor"]["tipo"]):
             continue
@@ -293,6 +293,16 @@ def generar(args):
                    "(%s, %s, %s, %d, %s)" % (ref_usuario(alum["mail"]), ref_usuario(prof["mail"]),
                                              "NULL" if estado == "NULL" else sql_str(estado),
                                              rnd.choice([3, 4, 4, 5, 5]), sql_str(rnd.choice(RESENAS))))
+        if estado == "Aprobada":
+            aprobadas.append((alum["mail"], prof["mail"]))
+
+    # Me gusta solo en reseñas aprobadas, nunca del autor de la reseña
+    for autor, receptor in aprobadas:
+        otros = [u["mail"] for u in usuarios if u["mail"] not in (autor, receptor)]
+        for mail in rnd.sample(otros, rnd.randint(0, 3)):
+            sql.append("INSERT [dbo].[LikesResenas] ([idUsuario], [idResena]) VALUES (%s, (SELECT ID FROM Resenas "
+                       "WHERE idEmisor = %s AND idReceptor = %s))" % (ref_usuario(mail), ref_usuario(autor),
+                                                                   ref_usuario(receptor)))
 
     for i in range(args.consultas):
         tipo, msg = CONSULTAS[i % len(CONSULTAS)]
@@ -309,7 +319,7 @@ def generar(args):
 
 def cabecera(hoy, args):
     borrar = ["Amigos", "Clases", "Consultas_Soporte", "Disponibilidad", "Escuelas_Usuarios", "InfoProfesores",
-              "Likes", "Mensajes", "Perfiles", "Profesores_Modalidades", "Resenas", "Titulos", "Usuarios_Materias",
+              "LikesResenas", "Mensajes", "Perfiles", "Profesores_Modalidades", "Resenas", "Titulos", "Usuarios_Materias",
               "Usuarios_Niveles", "Escuelas", "Materias", "Modalidades", "Niveles", "Usuarios"]
     lineas = ["USE [MIP]", "GO"]
     lineas += ["DELETE FROM [dbo].[%s]" % t for t in borrar]
@@ -321,6 +331,7 @@ def cabecera(hoy, args):
 
 def verificar(usuarios, clases, disponibilidad, sql, hoy):
     """Chequeos de coherencia: fallan si algo no cumple las reglas de la BD."""
+    # Reseñas (solo con clase Completada) y Me gusta (solo a reseñas aprobadas, nunca del autor) se arman con esas reglas en generar().
     assert len({u["mail"] for u in usuarios}) == len(usuarios), "mails repetidos"
     for c in clases:
         info = disponibilidad[c["receptor"]["mail"] if c["receptor"]["tipo"] == "profesor" else c["emisor"]["mail"]]
@@ -330,6 +341,8 @@ def verificar(usuarios, clases, disponibilidad, sql, hoy):
         assert c["emision"] <= hoy and c["emision"] <= c["fecha"], "fechaEmision inválida"
         if c["fecha"] < hoy:
             assert c["estado"] in ("Completada", "No concretada", "Cancelada"), "clase pasada sin cerrar"
+        prof = c["receptor"] if c["receptor"]["tipo"] == "profesor" else c["emisor"]
+        assert c["materia"] in prof["materias"], "materia que el profesor no da"
         if c["propuesta"] is not None:
             assert c["estado"] == "Pide cambio", "fechaPropuesta sin pedido de cambio"
 
