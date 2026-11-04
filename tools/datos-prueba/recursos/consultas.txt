@@ -1,0 +1,31 @@
+# tipo|mensaje  (tipos válidos: cuenta, clases, sugerencia, otro)
+cuenta|No puedo iniciar sesión, me dice que la contraseña es incorrecta.
+cuenta|Quiero cambiar el mail de mi cuenta, ¿cómo lo hago?
+cuenta|Me olvidé la contraseña y no me llega el correo de recuperación.
+cuenta|Subí mi DNI hace una semana y todavía no me verificaron.
+cuenta|¿Cómo puedo borrar mi cuenta definitivamente?
+cuenta|Mi perfil muestra una foto que no es mía, ¿pueden revisarlo?
+cuenta|Me registré como alumno pero quiero cambiarme a profesor.
+cuenta|No me deja guardar la descripción de mi perfil.
+clases|No me aparece una clase que pedí ayer.
+clases|El profesor no se conectó a la clase virtual y no sé cómo reclamar.
+clases|Quiero cancelar una clase confirmada pero no encuentro el botón.
+clases|Me aparece una clase como no concretada y sí se dio.
+clases|¿Cómo reprogramo una clase con el mismo profesor?
+clases|Pedí una clase en un horario que figura libre pero me la rechazaron.
+clases|No me llegó la notificación de que el profesor aceptó mi pedido.
+clases|El horario de la clase en mi calendario no coincide con el que pedí.
+sugerencia|Sería útil poder filtrar por precio.
+sugerencia|Estaría bueno que se pueda ordenar a los profesores por puntuación.
+sugerencia|Me gustaría poder adjuntar archivos en el chat.
+sugerencia|Podrían agregar un recordatorio por mail antes de cada clase.
+sugerencia|Sería lindo poder marcar profesores como favoritos.
+sugerencia|Agreguen una opción para ver el calendario de la semana completo.
+sugerencia|Estaría bueno tener modo oscuro en el sitio.
+sugerencia|Me gustaría poder buscar profesores por colegio.
+otro|Consulta general de prueba.
+otro|Quería felicitarlos por la plataforma, me ayudó mucho.
+otro|¿Tienen app para el celular?
+otro|¿Cómo se calculan las puntuaciones de los profesores?
+otro|Quisiera saber cómo se protegen mis datos personales.
+otro|¿Se pueden dar clases desde otro país?

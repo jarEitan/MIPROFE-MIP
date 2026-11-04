@@ -1,0 +1,41 @@
+# nombre|dirección (la dirección es opcional)
+Nacional Buenos Aires|Bolívar 263, Monserrat
+Carlos Pellegrini|Marcelo T. de Alvear 1851, Recoleta
+Belgrano Day School|Av. Cabildo 1960, Belgrano
+Colegio San Martín|Av. Rivadavia 4500, Caballito
+ORT Argentina|Montevideo 950, Recoleta
+Liceo Nº 1|Av. Rivadavia 4000, Almagro
+Colegio Mariano Moreno|Av. Cabildo 3500, Núñez
+Colegio Nicolás Avellaneda|Av. Boedo 800, Boedo
+Escuela Normal Nº 1|Av. Callao 1000, Recoleta
+Escuela Normal Nº 2|Av. Córdoba 1900, Recoleta
+Escuela Normal Nº 9|Av. Díaz Vélez 4800, Almagro
+Lenguas Vivas J. R. Fernández|Carlos Pellegrini 1515, San Nicolás
+Escuela Técnica Otto Krause|Av. Paseo Colón 650, San Telmo
+Escuela Técnica Raggio|Av. Cabildo 3059, Núñez
+Colegio del Salvador|Callao 542, Balvanera
+Colegio Champagnat|Av. Rivadavia 4000, Almagro
+Escuela Técnica Nº 7 Jorge Newbery|Av. Rivadavia 4200, Caballito
+Escuela de Comercio Carlos Pellegrini|Av. Callao 1500, Recoleta
+Colegio Nuestra Señora de la Misericordia|Av. Belgrano 1500, Monserrat
+Colegio Wellspring|Av. Libertador 1800, Vicente López
+Colegio Michael Ham|Ruta 8 km 40, Pilar
+Colegio Northlands|Av. Libertador 1500, Olivos
+Colegio San Andrés|Av. San Martín 800, Olivos
+Colegio San Jorge|Av. Hipólito Yrigoyen 1700, Quilmes
+Colegio Cardenal Newman|Av. Maipú 2000, Vicente López
+Colegio Don Bosco|Av. Mitre 400, Ramos Mejía
+Colegio Santa Ana|Av. Rivadavia 15000, Ramos Mejía
+Colegio Lasalle|Av. Rivadavia 2000, Almagro
+Colegio Sagrado Corazón|Av. Corrientes 5000, Villa Crespo
+Colegio Ward|Av. Gaona 3500, Ramos Mejía
+Colegio Pestalozzi|Freire 1700, Colegiales
+Colegio Lincoln|Av. Libertador 3000, Martínez
+Instituto Jorge Luis Borges|Av. Scalabrini Ortiz 2000, Palermo
+Escuela Técnica ORT II|Yatay 240, Almagro
+Escuela Nº 3 Dr. Juan Bautista Alberdi|Av. Warnes 500, Villa Crespo
+Instituto Inmaculada Concepción|Av. Boedo 1200, Boedo
+Colegio San Bartolomé|Av. Santa Fe 4000, Palermo
+Colegio Ward Haedo|Av. Rivadavia 17000, Haedo
+Colegio Carlos Gardel|Av. Juan B. Justo 5000, Floresta
+Instituto Cervantes del Plata|Av. Cabildo 2500, Belgrano

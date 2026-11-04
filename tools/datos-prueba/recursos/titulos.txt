@@ -1,0 +1,21 @@
+# Plantillas de títulos; {m} = materia
+Profesor/a de {m} (IFD)
+Licenciado/a en {m} (UBA)
+Profesor/a de {m} (UNLP)
+Estudiante avanzado/a de {m}
+Técnico/a en {m}
+Profesorado de {m} (ISP Joaquín V. González)
+Licenciatura en {m} (UTN)
+Profesor/a de {m} (UNSAM)
+Doctorando/a en {m} (CONICET)
+Profesor/a Nacional de {m}
+Especialización en enseñanza de {m} (UBA)
+Tecnicatura en {m} (IFTS)
+Estudiante de {m} (UNQ)
+Maestría en {m} (UNTREF)
+Certificado de {m} (Instituto Superior)
+Docente de {m} en nivel medio
+Ayudante de cátedra de {m} (UBA)
+Profesor/a de {m} (UNGS)
+Idóneo/a en {m} con 10 años de experiencia
+Licenciado/a en {m} (UNLaM)

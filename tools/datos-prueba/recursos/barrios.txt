@@ -1,0 +1,75 @@
+# Barrios de CABA y localidades de GBA
+Palermo
+Recoleta
+Belgrano
+Caballito
+Villa Urquiza
+Villa Devoto
+Villa del Parque
+Flores
+Almagro
+Boedo
+San Telmo
+Monserrat
+San Nicolás
+Retiro
+Balvanera
+Once
+Barracas
+La Boca
+Parque Patricios
+Nueva Pompeya
+Mataderos
+Liniers
+Floresta
+Villa Luro
+Villa Crespo
+Chacarita
+Colegiales
+Núñez
+Saavedra
+Coghlan
+Villa Pueyrredón
+Paternal
+Agronomía
+Parque Chas
+Villa Ortúzar
+Versalles
+Monte Castro
+Vélez Sarsfield
+Villa Real
+Parque Avellaneda
+Villa Lugano
+Villa Soldati
+Constitución
+Puerto Madero
+Vicente López
+Olivos
+Martínez
+San Isidro
+Acassuso
+Tigre
+San Fernando
+San Martín
+Ramos Mejía
+Morón
+Castelar
+Haedo
+Lomas de Zamora
+Banfield
+Avellaneda
+Quilmes
+Lanús
+Adrogué
+Temperley
+Ituzaingó
+Merlo
+San Justo
+Villa Ballester
+Munro
+Florida
+Boulogne
+Béccar
+Don Torcuato
+Wilde
+Bernal

@@ -1,0 +1,26 @@
+# Plantillas de descripción de alumnos; {m} = materia
+Busco ayuda con {m} para subir mis notas antes de los exámenes.
+Necesito apoyo en {m} para ponerme al día con el curso.
+Quiero reforzar {m} con clases semanales.
+Me cuesta {m} y quiero ir más tranquilo/a a las pruebas.
+Estoy buscando un profesor de {m} con paciencia, porque me trabo bastante.
+Tengo que rendir {m} en diciembre y necesito organizar el estudio.
+Quiero entender {m} de verdad, no solo aprender de memoria para el examen.
+Me llevé {m} a marzo y busco clases para recuperar.
+Busco clases de {m} online, por las tardes después del colegio.
+Entro al secundario el año que viene y quiero prepararme en {m}.
+Necesito ayuda con los trabajos prácticos de {m}.
+Estoy cursando el CBC y {m} se me complica. Busco clases de repaso.
+Me gustaría mejorar en {m}, sobre todo en los ejercicios de aplicación.
+Soy de los que necesitan que les expliquen {m} más de una vez. Busco paciencia.
+Quiero profundizar {m} porque me interesa para lo que quiero estudiar.
+Busco apoyo en {m} para mi hermano/a menor y para mí.
+Estoy rindiendo libre y necesito ayuda con {m}.
+Tengo parciales cerca y me falta práctica en {m}.
+Me va bien en casi todo, pero {m} me juega en contra. Quiero revertirlo.
+Prefiero clases presenciales de {m}, cerca de casa si se puede.
+Trabajo y estudio, así que busco horarios flexibles para {m}.
+Quiero practicar {m} con ejercicios de exámenes anteriores.
+Me da vergüenza preguntar en clase, por eso busco un profesor de {m} en privado.
+Necesito un empujón en {m} antes de fin de trimestre.
+Arranco la facultad y quiero llegar bien preparado/a en {m}.
