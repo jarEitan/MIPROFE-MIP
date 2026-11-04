@@ -3687,6 +3687,13 @@ fieldset {
     color: var(--colorTextoSuave);
 }
 
+/* Semana de hoy: fondo celeste para ubicarla rápido */
+.diasMes .dia.semanaActual {
+    border-color: var(--colorCeleste);
+    background-color: var(--colorCelesteSuave);
+    color: var(--colorTinta);
+}
+
 .diasMes .dia.otroMes .numero {
     color: var(--colorTextoSuave);
 }

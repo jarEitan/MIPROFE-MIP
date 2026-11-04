@@ -191,6 +191,13 @@ function dibujarMes() {
     document.getElementById("tituloMes").textContent = capitalizar(`${nombresDeMeses[calendario.mes.getMonth()]} ${calendario.mes.getFullYear()}`);
 
     const hoy = fechaATexto(new Date());
+    // La semana de hoy (lunes a domingo) se pinta distinto para ubicarse rápido en la grilla
+    const lunes = inicioDeHoy();
+    lunes.setDate(lunes.getDate() - ((lunes.getDay() + 6) % 7));
+    const domingo = new Date(lunes);
+    domingo.setDate(lunes.getDate() + 6);
+    const inicioSemana = fechaATexto(lunes);
+    const finSemana = fechaATexto(domingo);
     const grilla = rangoDeLaGrilla(calendario.mes);
     const dias = [];
     for (let dia = new Date(grilla.inicio); dia <= grilla.fin; dia.setDate(dia.getDate() + 1)) {
@@ -203,6 +210,7 @@ function dibujarMes() {
         boton.setAttribute("aria-label", `${textoDiaLargo(dia)}${texto === hoy ? " (hoy)" : ""}: ${textoDelContadorDeClases(clases)}`);
         if (texto === hoy) { boton.classList.add("hoy"); boton.setAttribute("aria-current", "date"); }
         if (texto < hoy) boton.classList.add("pasado");
+        if (texto >= inicioSemana && texto <= finSemana) boton.classList.add("semanaActual");
         if (dia.getMonth() !== calendario.mes.getMonth()) boton.classList.add("otroMes");
 
         boton.append(crearElemento("span", "numero", String(dia.getDate())));
@@ -341,6 +349,8 @@ function crearTurno(clase, delDia) {
     const pedido = textoDePedido(clase);
     if (pedido) detalles.append(crearDetalle("bi-info-circle", pedido));
     if (clase.motivo) detalles.append(crearDetalle("bi-info-circle", clase.motivo));
+    const plazo = textoPlazoDeCancelacion(clase);
+    if (plazo) detalles.append(crearDetalle("bi-clock", plazo));
     const choque = choqueConOtraClase(clase, delDia);
     if (choque) detalles.append(crearDetalle("bi-exclamation-triangle", `Se superpone con la de las ${textoHoraDe(leerFechaLocal(choque.fecha))}.`));
     if (detalles.children.length > 0) tarjeta.append(detalles);
@@ -352,6 +362,15 @@ function crearTurno(clase, delDia) {
 
     turno.append(hora, tarjeta);
     return turno;
+}
+
+// Regla de las 24 h: hasta ahí se cancela o se cambia sola; después la otra persona tiene que aceptar
+function textoPlazoDeCancelacion(clase) {
+    if (clase.estado !== "Confirmada" || !clase.puedeCancelar) return "";
+    if (clase.muyCerca) return `Faltan menos de 24 h: para cancelar o cambiar el horario, ${clase.nombreOtro} tiene que aceptar.`;
+    const limite = leerFechaLocal(clase.fecha);
+    limite.setHours(limite.getHours() - 24);
+    return `Podés cancelar o cambiar el horario hasta el ${textoFechaCorta(limite)} hs.`;
 }
 
 function crearDetalle(icono, texto) {

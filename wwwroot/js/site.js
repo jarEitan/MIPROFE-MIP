@@ -1889,7 +1889,7 @@ function enviarResena() {
 
 
 // ================= HEADER: buscador de usuarios =================
-// Los usuarios se piden recién al abrir la lupa y de a 20 (el TOP del SP buscarUsuarios).
+// Los usuarios se piden recién con la primera letra escrita y de a 20 (el TOP del SP buscarUsuarios).
 // Cada respuesta se guarda por texto: al borrar letras no se vuelve a pedir. Si una búsqueda trajo menos de 20,
 // ahí están todos los que coinciden, así que al agregar letras se filtra acá (salvo un ID, que se busca exacto).
 const usuariosPorBusqueda = 20;
@@ -1950,6 +1950,10 @@ function cerrarBuscadorDeUsuarios() {
 function buscarUsuarios(textoEscrito) {
     const texto = textoEscrito.trim();
     const clave = normalizarTexto(texto);
+    if (clave === "") {
+        document.getElementById("resultadosUsuarios").hidden = true;
+        return;
+    }
     const guardados = busquedasDeUsuarios.get(clave) ?? buscarEntreLosGuardados(clave);
     if (guardados) {
         busquedasDeUsuarios.set(clave, guardados);
