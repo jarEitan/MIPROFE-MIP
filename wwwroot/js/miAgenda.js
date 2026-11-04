@@ -383,7 +383,11 @@ function inicializarMiAgenda() {
     inicializarListaDeDias();
     document.getElementById("botonGuardarAgenda").addEventListener("click", guardarMiAgenda);
     document.getElementById("formularioBloquearDia").addEventListener("submit", bloquearUnDia);
-    document.getElementById("botonImportarFeriados").addEventListener("click", importarFeriados);
+    document.getElementById("botonImportarFeriados").addEventListener("click", () => abrirDialogo("dialogoImportarFeriados"));
+    document.getElementById("botonConfirmarFeriados").addEventListener("click", () => {
+        cerrarDialogo("dialogoImportarFeriados");
+        importarFeriados();
+    });
     document.getElementById("listaDiasBloqueados").addEventListener("click", evento => {
         const boton = evento.target.closest("[data-desbloquear-dia]");
         if (boton) desbloquearUnDia(boton.dataset.desbloquearDia);

@@ -440,6 +440,23 @@
 
 <!-- ================= DIÁLOGO: NO SE DIO ================= -->
 @* Lo abren calendario.js y historial.js (data-no-se-dio): una clase completada de las últimas 48 h pasa a No concretada *@
+@* Lo abre "Importar feriados" (miAgenda.js): explica qué hace antes de bloquear los días *@
+<dialog class="dialog" id="dialogoImportarFeriados" aria-labelledby="tituloImportarFeriados">
+    <div class="dialog-header">
+        <h2 class="dialog-title" id="tituloImportarFeriados">¿Importar los feriados?</h2>
+        <button type="button" class="btn-close" data-bs-dismiss="dialog" aria-label="Cerrar"></button>
+    </div>
+    <div class="dialog-body">
+        <p>Vamos a traer los feriados y días no laborables oficiales de Argentina de los próximos 12 meses y a bloquearlos en tu agenda.</p>
+        <p>Así los alumnos no te van a poder pedir clases esos días. Los que ya tenías bloqueados quedan igual.</p>
+        <p>Si ya tenés clases en alguno de esos días, no se cancelan: te avisamos para que las revises en Mis clases. Cualquier día lo podés desbloquear después en "Días bloqueados".</p>
+    </div>
+    <div class="dialog-footer">
+        <button type="button" class="boton contorno chico" data-bs-dismiss="dialog">Cancelar</button>
+        <button type="button" class="boton principal chico" id="botonConfirmarFeriados">Importar</button>
+    </div>
+</dialog>
+
 <dialog class="dialog" id="dialogoNoSeDio" aria-labelledby="tituloNoSeDio">
     <div class="dialog-header">
         <h2 class="dialog-title" id="tituloNoSeDio">¿La clase no se dio?</h2>
