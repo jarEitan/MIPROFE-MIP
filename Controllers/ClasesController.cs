@@ -42,6 +42,11 @@ public class ClasesController : Controller
         return Json(new { tieneAgenda = agenda.franjas.Count > 0, semana = agenda.franjas, dias = dias });
     }
 
+    public IActionResult MateriasProfesor(int idProfesor)
+    {
+        return Json(new BD().obtenerMateriasProfesor(idProfesor));
+    }
+
     public IActionResult Calendario(DateTime desde, DateTime hasta)
     {
         int idUsuario = int.Parse(HttpContext.Session.GetString("idUsuario") ?? "0");
@@ -50,15 +55,15 @@ public class ClasesController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public IActionResult EnviarPedido(int idProfesor, DateTime fecha, string? mensaje)
+    public IActionResult EnviarPedido(int idProfesor, int idMateria, DateTime fecha, string? mensaje)
     {
         string? idAlumno = HttpContext.Session.GetString("idUsuario");
         if (idAlumno == null) return Unauthorized();
 
-        ResultadoClase resultado = new BD().enviarPedidoClase(int.Parse(idAlumno), idProfesor, fecha, mensaje);
+        ResultadoClase resultado = new BD().enviarPedidoClase(int.Parse(idAlumno), idProfesor, idMateria, fecha, mensaje);
         if (resultado.codigo == 0 && !string.IsNullOrWhiteSpace(mensaje))
         {
-            avisarPorChat(int.Parse(idAlumno), idProfesor, "Te pedí una clase para el " + fecha.ToString("dd/MM 'a las' HH:mm") + ". " + mensaje);
+            avisarPorChat(int.Parse(idAlumno), idProfesor, "Te pedí una clase de " + resultado.materia + " para el " + fecha.ToString("dd/MM 'a las' HH:mm") + ". " + mensaje);
         }
         return Json(conInsignia(resultado));
     }

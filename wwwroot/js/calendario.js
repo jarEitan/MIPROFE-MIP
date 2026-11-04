@@ -346,6 +346,9 @@ function crearTurno(clase, delDia) {
     tarjeta.append(crearElemento("i", `linea ${lineaDeClase(clase)}`), encabezado);
 
     const detalles = crearElemento("ul", "detalleTurno");
+    const detalleMateria = crearDetalle("bi-book", clase.materia);
+    detalleMateria.classList.add("fw-bold");
+    detalles.append(detalleMateria);
     const pedido = textoDePedido(clase);
     if (pedido) detalles.append(crearDetalle("bi-info-circle", pedido));
     if (clase.motivo) detalles.append(crearDetalle("bi-info-circle", clase.motivo));
@@ -569,7 +572,7 @@ function abrirCancelacionDeClase() {
 
     document.getElementById("tituloCancelarClase").textContent = esPedido ? "¿Cancelar el pedido?" : esSolicitud ? "¿Pedir la cancelación?" : "¿Cancelar esta clase?";
     document.getElementById("textoCancelarClase").replaceChildren(
-        esSolicitud ? "Tu clase con " : `Vas a cancelar ${esPedido ? "tu pedido de clase" : "tu clase"} con `,
+        esSolicitud ? `Tu clase de ${claseElegida.materia} con ` : `Vas a cancelar ${esPedido ? "tu pedido de clase" : "tu clase"} de ${claseElegida.materia} con `,
         nombre,
         ` (${fechaTexto}). `,
         esPedido ? "Todavía nadie lo aceptó, así que no hay ningún compromiso."

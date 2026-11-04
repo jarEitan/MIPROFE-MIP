@@ -55,7 +55,7 @@ Reglas de código: **[Info/systemPrompt.md](Info/systemPrompt.md)** (obligatorio
 | Historial | `HistorialController`: Obtener | `obtenerHistorialClases` |
 | Soporte | `ConsultasController`: Enviar | `enviarConsulta` |
 | Moderación (`tipoUsuario = 'admin'`, se crean a mano en la BD) | `ModeracionController`: Index, Responder (la respuesta va por mensaje directo), Verificar, FotoDni (la pide "Ver DNI" del Perfil) | `obtenerConsultasPendientes`, `responderConsulta`, `obtenerUsuariosPorVerificar`, `verificarUsuario`, `obtenerFotoDni` |
-| Clases (pedidos) | `ClasesController`: EnviarPedido, Responder, Cancelar, Reubicar, ResponderSolicitud, RetirarSolicitud, NoSeDio | `enviarPedidoClase`, `aceptarPedidoClase`, `rechazarPedidoClase`, `cancelarClase`, `reubicarClase`, `aceptarSolicitudClase`, `rechazarSolicitudClase`, `retirarSolicitudClase`, `marcarClaseNoConcretada` |
+| Clases (pedidos) | `ClasesController`: EnviarPedido, MateriasProfesor, Responder, Cancelar, Reubicar, ResponderSolicitud, RetirarSolicitud, NoSeDio | `enviarPedidoClase`, `obtenerMateriasProfesor`, `aceptarPedidoClase`, `rechazarPedidoClase`, `cancelarClase`, `reubicarClase`, `aceptarSolicitudClase`, `rechazarSolicitudClase`, `retirarSolicitudClase`, `marcarClaseNoConcretada` |
 | Agenda / calendario | `ClasesController`: Calendario, HorariosOcupados, DiasConAgenda, MiAgenda, GuardarAgenda, BloquearDia, DesbloquearDia | `obtenerCalendarioClases`, `obtenerContadoresClases`, `obtenerHorariosOcupados`, `obtenerDisponibilidad`, `borrarDisponibilidadSemanal`, `agregarFranja`, `bloquearDia`, `desbloquearDia` |
 
 Pendiente (sin hacer): sugerencias del buscador, moderación de reseñas, filtros avanzados, pedido de un alumno por un profesor. Detalle en [progreso.md](Info/progreso.md).

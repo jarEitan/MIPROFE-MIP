@@ -114,7 +114,7 @@ function crearFilaHistorial(clase, columnaContraparte, conAccion, opciones, tipo
 
     fila.append(
         celdaContraparte,
-        crearCeldaHistorial("Materia", clase.materias || "–"),
+        crearCeldaHistorial("Materia", clase.materia),
         crearCeldaHistorial("Colegio", clase.colegios || "–"),
         crearCeldaPuntuacionHistorial(clase, nombreOtro),
         celdaDia

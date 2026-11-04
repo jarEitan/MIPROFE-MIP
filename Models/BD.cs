@@ -102,6 +102,14 @@ public class BD
         }
     }
 
+    public List<OpcionPerfil> obtenerMateriasProfesor(int idProfesor)
+    {
+        using (var connection = new SqlConnection(connectionString))
+        {
+            return connection.Query<OpcionPerfil>("EXEC obtenerMateriasProfesor @idProfesor", new { idProfesor = idProfesor }).ToList();
+        }
+    }
+
     public OpcionesPerfil obtenerOpcionesPerfil()
     {
         using (var connection = new SqlConnection(connectionString))
@@ -197,12 +205,12 @@ public class BD
 
     // codigo: 0 = ok (con idClase), 1 = vos no sos alumno o el profesor no existe, 2 = tiene que empezar dentro de 1 hora
     // o más y dentro de los próximos 90 días, 3 = fuera de la agenda del profesor, 4 = ya tenés una clase en ese horario,
-    // 5 = el profesor ya tiene una clase confirmada en ese horario. mensaje (opcional) va al chat del profesor
-    public ResultadoClase enviarPedidoClase(int idAlumno, int idProfesor, DateTime fecha, string? mensaje)
+    // 5 = el profesor ya tiene una clase confirmada en ese horario, 6 = el profesor no da esa materia. mensaje (opcional) va al chat del profesor
+    public ResultadoClase enviarPedidoClase(int idAlumno, int idProfesor, int idMateria, DateTime fecha, string? mensaje)
     {
         using (var connection = new SqlConnection(connectionString))
         {
-            return connection.QueryFirst<ResultadoClase>("EXEC enviarPedidoClase @idAlumno, @idProfesor, @fecha, @mensaje", new { idAlumno = idAlumno, idProfesor = idProfesor, fecha = fecha, mensaje = mensaje });
+            return connection.QueryFirst<ResultadoClase>("EXEC enviarPedidoClase @idAlumno, @idProfesor, @idMateria, @fecha, @mensaje", new { idAlumno = idAlumno, idProfesor = idProfesor, idMateria = idMateria, fecha = fecha, mensaje = mensaje });
         }
     }
 
