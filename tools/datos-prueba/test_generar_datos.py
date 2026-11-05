@@ -69,6 +69,20 @@ class TestGenerador(unittest.TestCase):
         malo = dict(self.d, likes=self.d["likes"] + [dict(self.d["likes"][0], usuario=dict(self.d["usuarios"][0], verificado=False))])
         self.assertIn("me gusta de una cuenta sin verificar", g.verificar(malo))
 
+    def test_fotos_hombre_y_mujer_por_nombre_de_archivo(self):
+        with tempfile.TemporaryDirectory() as t:
+            carpeta = os.path.join(t, "userData", "fotos-perfil")
+            os.makedirs(carpeta)
+            for nombre in ("hombre-01.webp", "mujer-ana.jpg", "logo.png", "hombre-notas.txt"):
+                open(os.path.join(carpeta, nombre), "w").close()
+            original = g.detectar_wwwroot
+            g.detectar_wwwroot = lambda: t
+            try:
+                rec = g.cargar_recursos()
+            finally:
+                g.detectar_wwwroot = original
+            self.assertEqual(rec["genero_foto"], {"hombre-01.webp": "h", "mujer-ana.jpg": "m"})
+
     def test_imagenes(self):
         res = g.generar(dict(CONFIG, usar_fotos_propias=False))  # sin avatares de userData: SVG de reserva
         pngs = [c for r, c in res.imagenes if r.endswith(".png")]

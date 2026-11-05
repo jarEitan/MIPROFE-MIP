@@ -51,7 +51,7 @@ Todo el texto sale de `recursos/*.txt`: una entrada por línea, UTF-8, se ignora
 | `chats` | conversaciones separadas por una línea `---`; cada línea es un mensaje y se alterna quién habla; `{m}` materia, `{n}` nombre del otro |
 | `consultas` | `tipo\|mensaje` (tipos: `cuenta`, `clases`, `sugerencia`, `otro`) |
 
-Avatares: cada usuario con foto recibe uno al azar (se pueden repetir) de los de `recursos/fotos_perfil.txt` del mismo género que su nombre (si el nombre no está en las listas, cualquiera). Para sumar uno, poné el `.jpg`, `.png` o `.webp` en `wwwroot/userData/fotos-perfil/` y agregá la línea `archivo|h` o `archivo|m`; los archivos que no están en la lista (fotos reales de cuentas, el logo) no se usan. No se copian: el `.sql` apunta directo a ese archivo. Solo si no hay ninguno se dibuja un avatar SVG con iniciales. No se generan denuncias.
+Avatares: cada usuario con foto recibe uno al azar (se pueden repetir) de los de `recursos/fotos_perfil.txt` del mismo género que su nombre (si el nombre no está en las listas, cualquiera). Para sumar uno, poné el `.jpg`, `.png` o `.webp` en `wwwroot/userData/fotos-perfil/` con un nombre que empiece con `hombre-` o `mujer-` (por ejemplo `mujer-07.webp`) y se usa solo; si no, agregá la línea `archivo|h` o `archivo|m` a `recursos/fotos_perfil.txt`. Conviene que sean fotos (no ilustraciones) cuadradas de 256x256; los archivos que no están en la lista (fotos reales de cuentas, el logo) no se usan. No se copian: el `.sql` apunta directo a ese archivo. Solo si no hay ninguno se dibuja un avatar SVG con iniciales. No se generan denuncias.
 
 ## Imágenes
 
