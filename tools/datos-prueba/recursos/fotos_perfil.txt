@@ -1,5 +1,5 @@
 # Avatares de wwwroot/userData/fotos-perfil que se usan en los datos de prueba: archivo|h (hombre) o archivo|m (mujer).
-# Los que no están en la lista no se usan (por ejemplo fotos reales de cuentas). Los archivos que empiezan con hombre- o mujer- (hombre-01.webp) se usan solos, sin anotarlos acá.
+# Los que no están en la lista no se usan (por ejemplo fotos reales de cuentas). Los archivos que empiezan con h- (hombre) o m- (mujer), como h-001.webp, se usan solos, sin anotarlos acá.
 perfil-10-20261020083815335.webp|h
 perfil-12-20261020084042527.webp|h
 perfil-14-20261020084221937.webp|h

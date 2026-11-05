@@ -73,7 +73,7 @@ class TestGenerador(unittest.TestCase):
         with tempfile.TemporaryDirectory() as t:
             carpeta = os.path.join(t, "userData", "fotos-perfil")
             os.makedirs(carpeta)
-            for nombre in ("hombre-01.webp", "mujer-ana.jpg", "logo.png", "hombre-notas.txt"):
+            for nombre in ("h-001.webp", "m-ana.jpg", "logo.png", "hombre-01.webp", "h-notas.txt"):
                 open(os.path.join(carpeta, nombre), "w").close()
             original = g.detectar_wwwroot
             g.detectar_wwwroot = lambda: t
@@ -81,7 +81,7 @@ class TestGenerador(unittest.TestCase):
                 rec = g.cargar_recursos()
             finally:
                 g.detectar_wwwroot = original
-            self.assertEqual(rec["genero_foto"], {"hombre-01.webp": "h", "mujer-ana.jpg": "m"})
+            self.assertEqual(rec["genero_foto"], {"h-001.webp": "h", "m-ana.jpg": "m"})
 
     def test_imagenes(self):
         res = g.generar(dict(CONFIG, usar_fotos_propias=False))  # sin avatares de userData: SVG de reserva

@@ -137,11 +137,11 @@ def cargar_recursos(carpeta=None):
             raise ErrorGenerador("fotos_perfil.txt: línea inválida (archivo|h o archivo|m): %s" % l)
         if os.path.isfile(os.path.join(fotos, archivo.strip())) and archivo.strip().lower().endswith(EXT_FOTOS):
             rec["genero_foto"][archivo.strip()] = genero.strip()
-    # Para sumar fotos sin tocar la lista: hombre-<lo que sea>.webp o mujer-<lo que sea>.webp
+    # Para sumar fotos sin tocar la lista: h-<lo que sea>.webp (hombre) o m-<lo que sea>.webp (mujer)
     for archivo in (os.listdir(fotos) if os.path.isdir(fotos) else []):
         prefijo = archivo.lower().split("-", 1)[0]
-        if prefijo in ("hombre", "mujer") and archivo.lower().endswith(EXT_FOTOS):
-            rec["genero_foto"][archivo] = prefijo[0]
+        if prefijo in ("h", "m") and archivo.lower().endswith(EXT_FOTOS):
+            rec["genero_foto"][archivo] = prefijo
     rec["fotos"] = sorted(rec["genero_foto"])
     return rec
 
