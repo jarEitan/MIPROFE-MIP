@@ -35,7 +35,7 @@ Contraseña de todas las cuentas (también las comunes): `12345678`. El admin no
 
 La cuenta propia (nombre, apellido, mail y tipo) recibe el trato de `alumno.completo`, o el de `profe.estrella` si es profesor. Los perfiles armados se suman a las cantidades pedidas.
 Las demás cuentas son `nombre.apellido@mip.edu.ar` sin tildes (si se repite, lleva número).
-Un alumno con DNI subido queda verificado; un profesor verificado siempre tiene DNI.
+Un alumno con DNI subido queda verificado; un profesor verificado siempre tiene DNI. Las cuentas sin verificar no tienen clases, amigos, mensajes ni me gusta (como en los SP, que no las dejan interactuar).
 
 ## Listas y avatares
 
@@ -43,14 +43,15 @@ Todo el texto sale de `recursos/*.txt`: una entrada por línea, UTF-8, se ignora
 
 | Archivo | Formato |
 |---|---|
-| `nombres`, `apellidos`, `calles`, `barrios`, `materias` | un valor por línea |
+| `nombres_hombre`, `nombres_mujer`, `apellidos`, `calles`, `barrios`, `materias` | un valor por línea |
+| `fotos_perfil` | `archivo|h` o `archivo|m`: avatares de `wwwroot/userData/fotos-perfil/` que se usan y de qué género son |
 | `colegios` | `nombre\|dirección` (la dirección es opcional) |
 | `titulos`, `descripciones_profesor`, `descripciones_alumno` | plantillas; `{m}` es la materia |
 | `resenas_5`, `resenas_4`, `resenas_3`, `resenas_1y2` | la reseña elige el archivo según su puntuación |
 | `chats` | conversaciones separadas por una línea `---`; cada línea es un mensaje y se alterna quién habla; `{m}` materia, `{n}` nombre del otro |
 | `consultas` | `tipo\|mensaje` (tipos: `cuenta`, `clases`, `sugerencia`, `otro`) |
 
-Avatares: cada usuario con foto recibe uno al azar (se pueden repetir) de los que ya están en `wwwroot/userData/fotos-perfil/` (los `perfil-*.webp` del repo; para sumar más, poné `.jpg`, `.png` o `.webp` en esa carpeta). No se copian: el `.sql` apunta directo a ese archivo. Solo si la carpeta está vacía se dibuja un avatar SVG con iniciales. No se generan denuncias.
+Avatares: cada usuario con foto recibe uno al azar (se pueden repetir) de los de `recursos/fotos_perfil.txt` del mismo género que su nombre (si el nombre no está en las listas, cualquiera). Para sumar uno, poné el `.jpg`, `.png` o `.webp` en `wwwroot/userData/fotos-perfil/` con un nombre que empiece con `h-` (hombre) o `m-` (mujer), por ejemplo `m-007.webp`, y se usa solo; si no, agregá la línea `archivo|h` o `archivo|m` a `recursos/fotos_perfil.txt`. Conviene que sean fotos (no ilustraciones) cuadradas de 256x256; los archivos que no están en la lista (fotos reales de cuentas, el logo) no se usan. No se copian: el `.sql` apunta directo a ese archivo. Solo si no hay ninguno se dibuja un avatar SVG con iniciales. No se generan denuncias.
 
 ## Imágenes
 
@@ -77,7 +78,7 @@ Genera `salida/MIP-datos-prueba.sql` y las imágenes al lado (`salida/` no se su
 | Parámetro | Por defecto | Qué hace |
 |---|---|---|
 | `--profesores`, `--alumnos` | 40, 120 | Cantidad de cada tipo |
-| `--clases` | 2500 | Clases a intentar crear (algunas se descartan si no caen en una agenda libre) |
+| `--clases` | 400 | Clases a intentar crear (algunas se descartan si no caen en una agenda libre) |
 | `--consultas` | 30 | Consultas de soporte de visitantes |
 | `--colegios`, `--materias` | todos | Cuántos de la lista usar |
 | `--amigos-por-usuario` | 4 | Máximo de amigos que inicia cada usuario |
@@ -88,7 +89,7 @@ Genera `salida/MIP-datos-prueba.sql` y las imágenes al lado (`salida/` no se su
 | `--prob-chat-amigos-sin-clase` | 0.5 | Chats entre amigos aceptados sin clase |
 | `--estados-pasadas`, `--estados-futuras` | 80/10/10 y 45/35/7/6/7 | Porcentajes, p. ej. `Completada=80,Cancelada=20` |
 | `--estrellas` | 2/3/15/35/45 | Distribución, p. ej. `5=60,4=40` |
-| `--anios`, `--dias-futuro`, `--hoy` | 2, 30, ahora | Historia, clases a futuro y fecha de referencia `AAAA-MM-DD` |
+| `--dias-historial`, `--dias-futuro`, `--hoy` | 30, 30, ahora | Días de historial (clases pasadas), clases a futuro y fecha de referencia `AAAA-MM-DD` |
 | `--precio-min`, `--precio-max`, `--precio-paso` | 3000, 9000, 500 | Precio por hora |
 | `--prob-profesor-verificado` | 0.85 | Profesores verificados |
 | `--prob-foto`, `--prob-dni` | 0.75, 0.6 | Usuarios con foto y con DNI |

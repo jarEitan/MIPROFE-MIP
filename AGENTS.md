@@ -15,6 +15,7 @@ Reglas de código: **[Info/systemPrompt.md](Info/systemPrompt.md)** (obligatorio
 | **CSS** | [guiaDeEstilo.md](Info/guiaDeEstilo.md) secciones 1–2 (orden y clases) y 6 (Bootstrap) |
 | **Views (Razor)** | [guiaDeEstilo.md](Info/guiaDeEstilo.md) sección 3 + bloque "Frontend" de [systemPrompt.md](Info/systemPrompt.md) |
 | **JS** | [guiaDeEstilo.md](Info/guiaDeEstilo.md) sección 4 + bloque "Frontend" de [systemPrompt.md](Info/systemPrompt.md) |
+| **Avisos (snackbar) y modales de confirmación** | [guiaNotificaciones.md](Info/guiaNotificaciones.md) |
 | **Qué sigue / qué falta** | [progreso.md](Info/progreso.md) |
 | **Antes de dar algo por terminado** | [guiaDeEstilo.md](Info/guiaDeEstilo.md) sección 7 |
 
@@ -22,6 +23,7 @@ Reglas de código: **[Info/systemPrompt.md](Info/systemPrompt.md)** (obligatorio
 - Antes de crear una clase CSS nueva, ver si se resuelve con una existente + selector descendiente.
 - Si no te aclaro la arquitectura de una función nueva, preguntame antes de programar: cómo se mueven los datos (vista → controller → SP), dónde se filtran (SP, `BD.cs` o JS) y cómo se administran (tablas y estados).
 - **No usar funciones en SQL** (ni `CREATE FUNCTION` ni funciones de SQL Server fuera de la lista de [systemPrompt.md](Info/systemPrompt.md)). Las fechas salen crudas del SP y el texto con fecha lo arma el sitio.
+- **Cuentas sin verificar** (alumno o profesor con `verificado = 0`): no salen en el catálogo ni pueden tener clases, amistades, mensajes (salvo con un moderador), reseñas ni me gusta. Cada SP de interacción lo revisa y devuelve `codigo 9`; el JS muestra `textoCuentaNoVerificada` (clases.js).
 
 ## Índice de archivos
 
