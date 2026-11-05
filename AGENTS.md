@@ -22,6 +22,7 @@ Reglas de código: **[Info/systemPrompt.md](Info/systemPrompt.md)** (obligatorio
 - Antes de crear una clase CSS nueva, ver si se resuelve con una existente + selector descendiente.
 - Si no te aclaro la arquitectura de una función nueva, preguntame antes de programar: cómo se mueven los datos (vista → controller → SP), dónde se filtran (SP, `BD.cs` o JS) y cómo se administran (tablas y estados).
 - **No usar funciones en SQL** (ni `CREATE FUNCTION` ni funciones de SQL Server fuera de la lista de [systemPrompt.md](Info/systemPrompt.md)). Las fechas salen crudas del SP y el texto con fecha lo arma el sitio.
+- **Cuentas sin verificar** (alumno o profesor con `verificado = 0`): no salen en el catálogo ni pueden tener clases, amistades, mensajes (salvo con un moderador), reseñas ni me gusta. Cada SP de interacción lo revisa y devuelve `codigo 9`; el JS muestra `textoCuentaNoVerificada` (clases.js).
 
 ## Índice de archivos
 

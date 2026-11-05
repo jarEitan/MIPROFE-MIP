@@ -11,7 +11,7 @@ public class MensajeChat
 }
 
 // codigo: 0 = ok, 1 = sos vos, 2 = la persona no existe
-// Los datos son de la otra persona. puedeEscribir = son amigos, tienen una clase o ya le escribió. marcados = cuántos mensajes suyos se acaban de marcar como Visto
+// Los datos son de la otra persona. puedeEscribir = son amigos, tienen una clase o ya le escribió (y las dos cuentas están verificadas, salvo con un moderador). puedeInteractuar = las dos verificadas o una es moderador. marcados = cuántos mensajes suyos se acaban de marcar como Visto
 public class ResultadoChat
 {
     public int codigo { get; set; }
@@ -22,6 +22,7 @@ public class ResultadoChat
     public string tipoUsuario { get; set; } = "";
     public int marcados { get; set; }
     public bool puedeEscribir { get; set; }
+    public bool puedeInteractuar { get; set; }
     public List<MensajeChat> mensajes { get; set; } = new List<MensajeChat>();
     public int cantidadNotificaciones { get; set; }
 }

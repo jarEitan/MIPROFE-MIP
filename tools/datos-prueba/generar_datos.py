@@ -2,7 +2,7 @@
 """Genera un .sql (y las imágenes) con datos de prueba para la base MIP, con fechas relativas a hoy.
 
 Uso por consola (ver README.md); la ventana está en interfaz.pyw:
-    python generar_datos.py --profesores 40 --alumnos 120 --anios 2 --semilla 7
+    python generar_datos.py --profesores 40 --alumnos 120 --dias-historial 30 --semilla 7
 
 Solo usa la biblioteca estándar. El .sql generado solo hace DELETE + INSERT (sin funciones SQL),
 así que corre después de 01_estructura y 02_stored_procedures.
@@ -45,7 +45,7 @@ PERFILES = {
 
 CONFIG_POR_DEFECTO = dict(
     # cantidades
-    profesores=40, alumnos=120, clases=2500, consultas=30,
+    profesores=40, alumnos=120, clases=400, consultas=30,
     colegios=None, materias=None,  # None = todos los de la lista
     amigos_por_usuario=4, prob_amistad_aceptada=0.9,
     prob_resena=0.4, prob_resena_aprobada=0.9, likes_max_por_resena=3,
@@ -54,7 +54,7 @@ CONFIG_POR_DEFECTO = dict(
     estados_pasadas={"Completada": 80, "No concretada": 10, "Cancelada": 10},
     estados_futuras={"Pendiente": 45, "Confirmada": 35, "Rechazada": 7, "Pide cambio": 6, "Pide cancelar": 7},
     # fechas
-    anios=2, dias_futuro=30, hoy=None,
+    dias_historial=30, dias_futuro=30, hoy=None,
     # precios
     precio_min=3000, precio_max=9000, precio_paso=500,
     prob_profesor_verificado=0.85,
@@ -106,7 +106,7 @@ def _leer_lineas(carpeta, nombre):
 def cargar_recursos(carpeta=None):
     carpeta = carpeta or carpeta_recursos()
     rec = {n: _leer_lineas(carpeta, n + ".txt") for n in (
-        "nombres", "apellidos", "calles", "barrios", "materias", "titulos", "descripciones_profesor",
+        "nombres_hombre", "nombres_mujer", "apellidos", "calles", "barrios", "materias", "titulos", "descripciones_profesor",
         "descripciones_alumno", "resenas_5", "resenas_4", "resenas_3", "resenas_1y2")}
     rec["colegios"] = [tuple((l.split("|", 1) + [None])[:2]) for l in _leer_lineas(carpeta, "colegios.txt")]
     rec["colegios"] = [(n.strip(), (d or "").strip() or None) for n, d in rec["colegios"]]
@@ -127,8 +127,17 @@ def cargar_recursos(carpeta=None):
         raise ErrorGenerador("chats.txt no tiene conversaciones válidas")
     # Avatares predeterminados que ya están en el sitio (wwwroot/userData/fotos-perfil), sin los generados
     fotos = os.path.join(detectar_wwwroot(), *CARPETA_FOTOS_PERFIL.split("/"))
-    rec["fotos"] = sorted(f for f in os.listdir(fotos) if f.lower().endswith(EXT_FOTOS)
-                          and not f.startswith("prueba-")) if os.path.isdir(fotos) else []
+    rec["nombres"] = rec["nombres_hombre"] + rec["nombres_mujer"]
+    rec["genero"] = dict([(n, "m") for n in rec["nombres_mujer"]] + [(n, "h") for n in rec["nombres_hombre"]])
+    # Solo los avatares de fotos_perfil.txt (archivo|h o archivo|m) que están en la carpeta del sitio
+    rec["genero_foto"] = {}
+    for l in _leer_lineas(carpeta, "fotos_perfil.txt"):
+        archivo, _, genero = l.partition("|")
+        if genero.strip() not in ("h", "m"):
+            raise ErrorGenerador("fotos_perfil.txt: línea inválida (archivo|h o archivo|m): %s" % l)
+        if os.path.isfile(os.path.join(fotos, archivo.strip())) and archivo.strip().lower().endswith(EXT_FOTOS):
+            rec["genero_foto"][archivo.strip()] = genero.strip()
+    rec["fotos"] = sorted(rec["genero_foto"])
     return rec
 
 
@@ -286,14 +295,14 @@ def completar_config(config=None):
         cfg["semilla"] = random.randrange(1, 10 ** 6)
     cfg["semilla"] = int(cfg["semilla"])
     for k in ("profesores", "alumnos", "clases", "consultas", "amigos_por_usuario", "likes_max_por_resena",
-              "mensajes_min", "mensajes_max", "anios", "dias_futuro", "precio_min", "precio_max", "precio_paso"):
+              "mensajes_min", "mensajes_max", "dias_historial", "dias_futuro", "precio_min", "precio_max", "precio_paso"):
         cfg[k] = int(cfg[k])
         if cfg[k] < 0:
             raise ErrorGenerador("%s no puede ser negativo" % k)
     for k in ("prob_amistad_aceptada", "prob_resena", "prob_resena_aprobada", "prob_chat_amigos_sin_clase",
               "prob_profesor_verificado", "prob_foto", "prob_dni"):
         cfg[k] = min(1.0, max(0.0, float(cfg[k])))
-    cfg["anios"] = max(1, cfg["anios"])
+    cfg["dias_historial"] = max(1, cfg["dias_historial"])
     cfg["precio_paso"] = max(1, cfg["precio_paso"])
     cfg["mensajes_min"] = max(1, cfg["mensajes_min"])
     cfg["mensajes_max"] = max(cfg["mensajes_min"], cfg["mensajes_max"])
@@ -319,9 +328,9 @@ class _Gen:
         self.rnd = random.Random(cfg["semilla"])
         self.hoy = (dt.datetime.combine(cfg["hoy"], dt.time(20, 0)) if cfg["hoy"]
                     else dt.datetime.now().replace(microsecond=0))
-        dias_hist = 365 * cfg["anios"]
-        self.inicio = self.hoy - dt.timedelta(days=dias_hist)
-        self.margen = min(90, dias_hist // 2)  # los usuarios se inscriben en estos primeros días
+        # Los usuarios se inscriben en los primeros días (margen) y las clases ocupan los últimos dias_historial
+        self.margen = min(90, max(1, cfg["dias_historial"] // 2))
+        self.inicio = self.hoy - dt.timedelta(days=cfg["dias_historial"] + self.margen)
         mats = [m for m in rec["materias"] if cfg["materias_elegidas"] is None or m in cfg["materias_elegidas"]]
         cols = [c for c in rec["colegios"] if cfg["colegios_elegidos"] is None or c[0] in cfg["colegios_elegidos"]]
         self.materias = mats[: cfg["materias"]] if cfg["materias"] else mats
@@ -405,7 +414,7 @@ class _Gen:
         bloqueados = set()
         if u["rol"] is None:
             for _ in range(r.randint(0, 2)):  # días bloqueados (bloquearDia): fecha con 00:00 a 23:59
-                bloqueados.add((self.inicio + dt.timedelta(days=r.randint(0, 365 * c["anios"] + c["dias_futuro"]))).date())
+                bloqueados.add((self.inicio + dt.timedelta(days=r.randint(0, (self.hoy - self.inicio).days + c["dias_futuro"]))).date())
         self.disp[u["mail"]] = {"dias": dias, "bloqueados": bloqueados}
 
     # -- clases --
@@ -442,8 +451,7 @@ class _Gen:
         return cl
 
     def clases_al_azar(self):
-        profes = [u for u in self.usuarios if u["tipo"] == "profesor" and u["rol"] != "nuevo"]
-        alumnos = [u for u in self.usuarios if u["tipo"] == "alumno" and u["rol"] != "nuevo"]
+        profes, alumnos = self.activos("profesor"), self.activos("alumno")
         if not profes or not alumnos:
             return
         d0 = self.inicio.date() + dt.timedelta(days=self.margen)
@@ -455,8 +463,9 @@ class _Gen:
                 self.crear_clase(p, a, f, alumno_emite=self.rnd.random() < 0.8)
 
     # -- perfiles armados --
-    def activos(self, tipo):
-        return [u for u in self.usuarios if u["tipo"] == tipo and u["rol"] != "nuevo"]
+    def activos(self, tipo=None):
+        """Los que pueden tener clases e interactuar: verificados y no recién inscriptos (como en los SP)."""
+        return [u for u in self.usuarios if (tipo is None or u["tipo"] == tipo) and u["rol"] != "nuevo" and u["verificado"]]
 
     def armar_estrella(self, u):
         alumnos = self.activos("alumno")
@@ -482,7 +491,7 @@ class _Gen:
 
     def armar_completo(self, u):
         profes = self.activos("profesor")
-        otros = [x for x in self.usuarios if x is not u and x["rol"] != "nuevo"]
+        otros = [x for x in self.activos() if x is not u]
         if not profes:
             return
         hoy = self.hoy.date()
@@ -553,7 +562,7 @@ class _Gen:
 
     # -- amigos, mensajes, reseñas, likes, consultas --
     def amistades_al_azar(self):
-        pool = [u for u in self.usuarios if u["rol"] != "nuevo"]
+        pool = self.activos()
         for u in pool:
             for otro in self.rnd.sample(pool, min(len(pool), self.rnd.randint(0, self.c["amigos_por_usuario"]))):
                 if otro is not u:
@@ -593,7 +602,7 @@ class _Gen:
             if par in pares or am["estado"] != "Aceptada":
                 continue
             if par in self.chats_forzados or self.rnd.random() < self.c["prob_chat_amigos_sin_clase"]:
-                pares[par] = (self.hoy - dt.timedelta(days=self.rnd.randint(10, 300)), self.rnd.choice(self.materias))
+                pares[par] = (self.hoy - dt.timedelta(days=self.rnd.randint(1, min(300, self.c["dias_historial"]))), self.rnd.choice(self.materias))
         for par, (desde, materia) in pares.items():
             self.armar_chat(por_mail[par[0]], por_mail[par[1]], desde, materia, self.chats_forzados.get(par))
 
@@ -615,7 +624,7 @@ class _Gen:
             aprobada = cl["forzar_resena"] or r.random() < (0.95 if estrella else c["prob_resena_aprobada"])
             self.resenas.append(dict(alum=alum, prof=prof, estado="Aprobada" if aprobada else None, punt=punt,
                                      texto=r.choice(self.rec[textos[punt]])))
-        pool = [u for u in self.usuarios if u["rol"] != "nuevo"]
+        pool = self.activos()
         for rs in self.resenas:  # Me gusta solo a reseñas aprobadas, nunca del autor
             if rs["estado"] != "Aprobada":
                 continue
@@ -635,7 +644,7 @@ class _Gen:
                 nombre=("%s %s" % (nombre, apellido))[:100], correo="%s.%s%d@example.com" % (
                     normalizar(nombre), normalizar(apellido), i + 1), tipo=tipo, mensaje=msg,
                 estado="Pendiente" if r.random() < 0.3 else "Resuelta",
-                fecha=self.hoy - dt.timedelta(days=r.randint(0, 365 * self.c["anios"]))))
+                fecha=self.hoy - dt.timedelta(days=r.randint(0, self.c["dias_historial"]))))
 
     # -- imágenes --
     def asignar_imagenes(self):
@@ -644,8 +653,11 @@ class _Gen:
         for n, u in enumerate(self.usuarios, 1):
             forzada = u["foto_forzada"]
             if forzada is True or (forzada is None and r.random() < c["prob_foto"]):
-                if avatares:  # se repiten: el archivo ya está en el sitio, solo se referencia
-                    u["foto"] = "/%s/%s" % (CARPETA_FOTOS_PERFIL, r.choice(avatares))
+                # Avatar del mismo género que el nombre (si el nombre no está en las listas, cualquiera)
+                genero = self.rec["genero"].get(u["nombre"])
+                propios = [f for f in avatares if genero is None or self.rec["genero_foto"][f] == genero]
+                if propios:  # se repiten: el archivo ya está en el sitio, solo se referencia
+                    u["foto"] = "/%s/%s" % (CARPETA_FOTOS_PERFIL, r.choice(propios))
                 else:
                     fondo, patron = estilo_avatar(r, c["patrones"])
                     contenido = svg_avatar((u["nombre"][:1] + u["apellido"][:1]).upper(), fondo, patron)
@@ -735,8 +747,8 @@ class _Gen:
                   "Usuarios_Materias", "Usuarios_Niveles", "Escuelas", "Materias", "Modalidades", "Niveles", "Usuarios"]
         c = self.c
         return (["USE [%s]" % c["base"].replace("]", "]]"), "GO"] + ["DELETE FROM [dbo].[%s]" % t for t in borrar]
-                + ["GO", "-- Generado por tools/datos-prueba/generar_datos.py: hoy=%s, semilla=%s, anios=%d, "
-                   "profesores=%d, alumnos=%d, clases=%d" % (self.hoy.date(), c["semilla"], c["anios"], c["profesores"],
+                + ["GO", "-- Generado por tools/datos-prueba/generar_datos.py: hoy=%s, semilla=%s, dias_historial=%d, "
+                   "profesores=%d, alumnos=%d, clases=%d" % (self.hoy.date(), c["semilla"], c["dias_historial"], c["profesores"],
                                                            c["alumnos"], len(self.clases)), "GO"])
 
     def resumen(self):
@@ -853,6 +865,20 @@ def verificar(d):
             p.append("mensaje entre %s sin clase ni amistad aceptada" % sorted(par))
         if m["estado"] not in ("Visto", "No visto"):
             p.append("mensaje con estado inválido")
+    # Los SP no dejan interactuar a cuentas sin verificar (salvo los moderadores)
+    sin_verificar = lambda *us: any(not u["verificado"] for u in us)
+    for c in d["clases"]:
+        if sin_verificar(c["emisor"], c["receptor"]):
+            p.append("clase con una cuenta sin verificar")
+    for a in d["amistades"].values():
+        if sin_verificar(a["u1"], a["u2"]):
+            p.append("amistad con una cuenta sin verificar")
+    for m in d["mensajes"]:
+        if sin_verificar(m["emisor"], m["receptor"]):
+            p.append("mensaje con una cuenta sin verificar")
+    for l in d["likes"]:
+        if sin_verificar(l["usuario"]):
+            p.append("me gusta de una cuenta sin verificar")
     return sorted(set(p))
 
 

@@ -645,6 +645,18 @@ function inicializarVerDni() {
     });
 }
 
+// El botón se ve apagado y, al tocarlo, solo explica el motivo (corta los otros clicks del botón)
+function bloquearBotonDePerfil(boton, motivo) {
+    boton.removeAttribute("href");
+    boton.setAttribute("aria-disabled", "true");
+    boton.title = motivo;
+    boton.addEventListener("click", evento => {
+        evento.preventDefault();
+        evento.stopImmediatePropagation();
+        mostrarSnackbar(motivo, "error");
+    }, true);
+}
+
 function esPerfilPropio() {
     return document.getElementById("perfil").dataset.perfilPropio === "true";
 }
@@ -686,12 +698,17 @@ function mostrarPerfil(perfil) {
         boton.dataset.nombreProfesor = nombreCompleto;
     });
     // Solo se puede escribir a quien es amigo, tiene una clase con vos o ya te escribió (sin sesión, el botón lleva a iniciar sesión)
+    const haySesion = document.getElementById("perfil").dataset.haySesion === "true";
     const botonMensaje = document.getElementById("botonMensaje");
-    if (botonMensaje && document.getElementById("perfil").dataset.haySesion === "true" && !perfil.puedeEscribir) {
-        botonMensaje.removeAttribute("href");
-        botonMensaje.setAttribute("aria-disabled", "true");
-        botonMensaje.title = "Necesitás ser amigo o haber tenido una clase para chatear";
-        botonMensaje.addEventListener("click", () => mostrarSnackbar(botonMensaje.title, "error"));
+    if (botonMensaje && haySesion && !perfil.puedeEscribir) {
+        bloquearBotonDePerfil(botonMensaje, perfil.puedeInteractuar ? "Necesitás ser amigo o haber tenido una clase para chatear" : textoCuentaNoVerificada);
+    }
+    // Con una de las dos cuentas sin verificar no hay amistad, clases ni me gusta (los SP lo vuelven a revisar)
+    if (haySesion && !esPerfilPropio() && !perfil.puedeInteractuar) {
+        ["botonAmistad", "botonPedirClasePerfil"].forEach(id => {
+            const boton = document.getElementById(id);
+            if (boton) bloquearBotonDePerfil(boton, textoCuentaNoVerificada);
+        });
     }
     // Reseña: solo con una clase terminada y realizada, y una por persona (el SP darResena vuelve a revisarlo)
     document.querySelectorAll("#perfil [data-dar-resena]").forEach(boton => {
@@ -1134,6 +1151,8 @@ function alternarMeGustaResena(boton) {
                 animarMeGusta(boton, resultado.leGusta);
             } else if (resultado.codigo == 1) {
                 mostrarSnackbar("Esa reseña ya no existe.", "error");
+            } else if (resultado.codigo == 9) {
+                mostrarSnackbar("Para dar me gusta, tu cuenta tiene que estar verificada.", "error");
             } else {
                 mostrarSnackbar("No podés darle me gusta a tu propia reseña.", "error");
             }
@@ -1212,6 +1231,8 @@ function cambiarAmistad(accion) {
                 mostrarSnackbar("No podés agregarte a vos mismo.", "error");
             } else if (accion === "enviar" && resultado.codigo == 2) {
                 mostrarSnackbar("Este perfil ya no existe.", "error");
+            } else if (resultado.codigo == 9) {
+                mostrarSnackbar(textoCuentaNoVerificada, "error");
             } else {
                 mostrarSnackbar("Algo cambió mientras tanto. Recargá la página.", "error");
             }
@@ -1907,6 +1928,8 @@ function enviarResena() {
                 if (document.getElementById("perfil")?.dataset.idPerfil === datos.get("idReceptor")) cargarPerfil();
             } else if (respuesta.codigo == 1) {
                 mostrarMensaje(mensaje, "Podés dejar una reseña después de tener una clase con esta persona.");
+            } else if (respuesta.codigo == 9) {
+                mostrarMensaje(mensaje, textoCuentaNoVerificada);
             } else {
                 mostrarMensaje(mensaje, "Ya le dejaste una reseña a esta persona.");
             }

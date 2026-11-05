@@ -33,7 +33,7 @@ SPINS = {  # clave: (etiqueta, mínimo, máximo)
     "clases": ("Clases a intentar crear", 0, 50000), "consultas": ("Consultas de soporte", 0, 1000),
     "amigos_por_usuario": ("Amigos por usuario (máx.)", 0, 30), "likes_max_por_resena": ("Me gusta por reseña (máx.)", 0, 50),
     "mensajes_min": ("Mensajes por chat (mín.)", 1, 50), "mensajes_max": ("Mensajes por chat (máx.)", 1, 50),
-    "anios": ("Años de historia", 1, 10), "dias_futuro": ("Días a futuro", 0, 365),
+    "dias_historial": ("Días de historial", 1, 3650), "dias_futuro": ("Días a futuro", 0, 365),
     "precio_min": ("Precio mínimo por hora ($)", 0, 1000000), "precio_max": ("Precio máximo por hora ($)", 0, 1000000),
     "precio_paso": ("Paso del precio ($)", 1, 100000),
 }
@@ -251,7 +251,7 @@ class Ventana(tk.Tk):
         a = self.tarjeta(marco, "Fechas y precios", row=0, column=0, padx=(0, 6), sticky="nsew")
         self.entrada(a, 1, "Hoy (AAAA-MM-DD, vacío = ahora)", "hoy", 12)
         ttk.Button(a, text="Hoy", command=lambda: self.vars["hoy"].set(dt.date.today().isoformat())).grid(row=1, column=2, padx=(8, 0))
-        for i, k in enumerate(("anios", "dias_futuro", "precio_min", "precio_max", "precio_paso"), 2):
+        for i, k in enumerate(("dias_historial", "dias_futuro", "precio_min", "precio_max", "precio_paso"), 2):
             self.spin(a, i, k)
         b = self.tarjeta(marco, "Estados de clases", row=0, column=1, padx=(6, 0), sticky="nsew")
         for titulo, clave, estados, fila0 in (("Pasadas", "estados_pasadas", motor.ESTADOS_PASADAS, 1),

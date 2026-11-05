@@ -55,6 +55,20 @@ class TestGenerador(unittest.TestCase):
         for f in fotos:
             self.assertIn(f.rsplit("/", 1)[1], avatares)
 
+    def test_avatar_del_mismo_genero(self):
+        rec = g.cargar_recursos()
+        con_genero = [u for u in self.d["usuarios"] if u["foto"] and u["nombre"] in rec["genero"]]
+        self.assertTrue(con_genero)
+        for u in con_genero:
+            self.assertEqual(rec["genero_foto"][u["foto"].rsplit("/", 1)[1]], rec["genero"][u["nombre"]], u["nombre"])
+
+    def test_historial_de_30_dias_y_sin_verificar_sin_clases(self):
+        hoy = self.d["hoy"]
+        self.assertTrue(all(c["fecha"] >= hoy - dt.timedelta(days=31) for c in self.d["clases"]))
+        self.assertTrue(any(not u["verificado"] for u in self.d["usuarios"]))
+        malo = dict(self.d, likes=self.d["likes"] + [dict(self.d["likes"][0], usuario=dict(self.d["usuarios"][0], verificado=False))])
+        self.assertIn("me gusta de una cuenta sin verificar", g.verificar(malo))
+
     def test_imagenes(self):
         res = g.generar(dict(CONFIG, usar_fotos_propias=False))  # sin avatares de userData: SVG de reserva
         pngs = [c for r, c in res.imagenes if r.endswith(".png")]
