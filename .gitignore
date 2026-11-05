@@ -270,3 +270,4 @@ __pycache__/
 *.pyc
 # Salida del generador de datos de prueba
 tools/datos-prueba/salida/
+tools/datos-prueba/configuraciones/ultima.json

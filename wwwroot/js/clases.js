@@ -405,13 +405,27 @@ function abrirPedidoDeClase(idProfesor, nombreProfesor) {
     document.getElementById("nombreProfesorPedido").textContent = nombreProfesor || "el profesor";
     document.getElementById("mensajePedido").value = "";
     mostrarMensaje(document.getElementById("mensajePedirClase"), "");
+    cargarMateriasDelPedido(idProfesor);
     selectorDePedido.configurar({ idOtroUsuario: idProfesor, nombreOtro: nombreProfesor });
     abrirDialogo("dialogoPedirClase");
+}
+
+function cargarMateriasDelPedido(idProfesor) {
+    const selectMateria = document.getElementById("materiaPedido");
+    selectMateria.replaceChildren(new Option("Elegí una materia", ""));
+    fetch("/Clases/MateriasProfesor?idProfesor=" + idProfesor).then(r => r.json()).then(materias => {
+        // Si mientras tanto se abrió el pedido para otro profesor, esta respuesta ya no sirve
+        if (document.getElementById("dialogoPedirClase").dataset.idProfesor !== String(idProfesor)) return;
+        materias.forEach(materia => selectMateria.append(new Option(materia.nombre, materia.id)));
+        if (materias.length == 1) selectMateria.value = materias[0].id;
+    }).catch(e => console.error(e));
 }
 
 function enviarPedidoDeClase() {
     const mensajePedir = document.getElementById("mensajePedirClase");
     const botonEnviar = document.getElementById("botonEnviarPedido");
+    const selectMateria = document.getElementById("materiaPedido");
+    if (selectMateria.value === "") return mostrarErrorEnCampo(mensajePedir, selectMateria, "Elegí la materia de la clase.");
     const horario = selectorDePedido.valor();
     if (!horario) return mostrarErrorEnCampo(mensajePedir, selectorDePedido.campoDia, "Elegí un día y una hora de inicio.");
 
@@ -419,6 +433,7 @@ function enviarPedidoDeClase() {
     botonEnviar.disabled = true;
     enviarAccionDeClase("/Clases/EnviarPedido", {
         idProfesor: document.getElementById("dialogoPedirClase").dataset.idProfesor,
+        idMateria: selectMateria.value,
         fecha: horario,
         mensaje: document.getElementById("mensajePedido").value.trim()
     })
@@ -429,10 +444,11 @@ function enviarPedidoDeClase() {
                     2: "Elegí un horario que empiece dentro de 1 hora o más y dentro de los próximos 90 días.",
                     3: "Ese horario está fuera de la agenda del profesor.",
                     4: "Ya tenés una clase en ese horario. Elegí otro.",
-                    5: "El profesor ya tiene una clase confirmada en ese horario. Elegí otro."
+                    5: "El profesor ya tiene una clase confirmada en ese horario. Elegí otro.",
+                    6: "Ese profesor no da esa materia. Elegí otra."
                 };
                 mostrarMensaje(mensajePedir, mensajes[cuerpo.codigo]);
-                if (cuerpo.codigo >= 3) selectorDePedido.recargar();
+                if (cuerpo.codigo >= 3 && cuerpo.codigo <= 5) selectorDePedido.recargar();
                 return;
             }
             cerrarDialogo("dialogoPedirClase");
@@ -507,6 +523,11 @@ function refrescarPanel() {
 function abrirPestanaYClase(parametros) {
     if (parametros.get("tab") === "chat") {
         if (typeof mostrarChat === "function") mostrarChat(parametros.get("chat"));
+        return;
+    }
+
+    if (parametros.get("tab") === "agenda") {
+        document.getElementById("botonTabAgenda")?.click();
         return;
     }
 

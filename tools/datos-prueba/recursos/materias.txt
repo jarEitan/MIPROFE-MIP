@@ -1,0 +1,31 @@
+# Materias (la columna admite hasta 100 caracteres)
+Matemática
+Física
+Química
+Biología
+Lengua
+Literatura
+Inglés
+Alemán
+Historia
+Geografía
+Economía
+Programación
+Francés
+Filosofía
+Contabilidad
+Álgebra
+Análisis Matemático
+Estadística
+Música
+Dibujo
+Portugués
+Italiano
+Hebreo
+Tecnología
+Ciencias Naturales
+Ciencias Sociales
+Educación Cívica
+Psicología
+Robótica
+Diseño Gráfico

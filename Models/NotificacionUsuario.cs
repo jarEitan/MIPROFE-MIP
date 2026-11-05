@@ -24,4 +24,6 @@ public class NotificacionUsuario
     public DateTime? fechaPropuesta { get; set; }
     // En mensajesSinLeer: cuántos mensajes sin leer hay de esa persona (en el resto, 1)
     public int cantidad { get; set; }
+    // Materia de la clase (null en solicitudAmistad y mensajesSinLeer)
+    public string? materia { get; set; }
 }

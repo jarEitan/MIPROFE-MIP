@@ -26,7 +26,7 @@ public class ClaseHistorial
     public string apellidoOtro { get; set; } = "";
     public string? fotoOtro { get; set; }
     public string tipoOtro { get; set; } = "";
-    public string? materias { get; set; }
+    public string materia { get; set; } = "";
     public string? colegios { get; set; }
     public int? puntuacion { get; set; }
     public bool puedeDarResena { get; set; }

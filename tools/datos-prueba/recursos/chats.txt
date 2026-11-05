@@ -1,0 +1,215 @@
+# Conversaciones de ida y vuelta separadas por una línea ---
+# Cada línea es un mensaje; se alterna quién habla. {m} = materia de la clase, {n} = nombre del otro
+Hola! Vi tu perfil, ¿das clases de {m}?
+Hola! Sí, claro. ¿Para qué nivel sería?
+Para el secundario, tengo prueba la semana que viene
+Perfecto, ¿te queda bien el jueves a la tarde?
+---
+Buenas, ¿cuánto cobrás por hora?
+Hola {n}! Está en mi perfil, pero si son varias clases te puedo hacer un precio
+Bárbaro, te escribo después de hablar con mis viejos
+Dale, cualquier cosa avisame
+---
+Hola profe, ¿podemos cambiar el horario del jueves?
+Sí, ¿a qué hora te queda mejor?
+¿Viernes a la misma hora?
+Dale, te lo confirmo en un rato
+Genial, gracias!
+---
+Gracias por la clase de hoy, me sirvió un montón
+De nada! Practicá los ejercicios que quedaron y la próxima los corregimos
+Dale, los hago hoy a la noche
+---
+Te mando el material que vimos de {m}
+Gracias! Lo miro ahora
+Cualquier duda me escribís
+---
+Hola {n}, ¿cómo andás? ¿Pudiste mirar lo de la clase pasada?
+Sí, hice casi todo pero me trabé en uno
+¿En cuál? Mandame una foto y lo vemos
+Ahí va
+Ah, ese es un clásico. Te lo explico mañana en clase
+---
+Profe, ¿tenés algún horario libre el sábado?
+Déjame ver la agenda... sí, a las 10 me queda libre
+Reservado entonces, gracias!
+---
+Hola! ¿Das clases presenciales o solo online?
+Las dos modalidades. Presenciales en zona Caballito o Almagro
+Ah, perfecto, yo vivo por Almagro
+Entonces nos quedamos cerca, jaja
+---
+Che, ¿vas a estar para la clase de mañana?
+Sí, ahí estoy. ¿Necesitás que traiga algo?
+Si podés, el libro de {m}
+Listo
+---
+Perdón, llego 10 minutos tarde, se complicó el tren
+Tranquilo, te espero
+Gracias, ya estoy llegando
+---
+Hola, soy el papá de un alumno. ¿Tenés lugar para dos clases por semana?
+Hola! Sí, tengo lugar martes y jueves
+Perfecto, ¿cómo hacemos para agendar?
+Pidan la clase desde mi perfil y yo la confirmo
+Gracias, ahora la pido
+---
+Buenas! Rindo {m} en diciembre, ¿llegamos?
+Si arrancamos ya, sí. Armamos un plan de estudio
+Buenísimo, ¿cuántas clases serían?
+Calculo unas ocho, una por semana
+Dale, empecemos esta semana
+---
+Hola {n}! Te quería agradecer, aprobé el parcial con 8
+Qué alegría! Te lo merecías, estudiaste mucho
+Ahora vamos por el final
+Dale, vamos con todo
+---
+¿Podés repetir el ejercicio 3? No me quedó claro
+Claro, mirá: primero despejás la incógnita y después reemplazás
+Ahhh, ahora sí. Gracias!
+Sin problema
+---
+Hola, ¿sigue disponible el horario del lunes?
+Hola! Sí, el lunes a las 17 está libre
+Lo pido ahora mismo
+Perfecto, te lo confirmo apenas llegue
+---
+Hola, me recomendó tu perfil una amiga
+Qué bueno! ¿Cómo se llama tu amiga?
+Camila, tomó clases de {m} con vos el año pasado
+Sí, me acuerdo! Muy buena alumna. ¿Con qué te ayudo?
+---
+Disculpá, tengo que cancelar la clase de hoy, me enfermé
+Uh, mejoráte pronto! Cancelala desde la página y reagendamos
+Dale, gracias por entender
+---
+Hola, ¿me pasás tu WhatsApp?
+Mejor hablemos por acá, así queda todo en la plataforma
+Ok, no hay problema
+---
+¿Cómo te fue en el examen?
+Más o menos, creo que me fue bien en la parte de teoría
+Esperemos las notas, seguro salió bien
+Ojalá, gracias por todo
+---
+Hola profe! ¿Puede mandarme el resumen de la clase?
+Sí, esta noche te lo subo
+Gracias!!
+---
+Buen día, ¿tenés disponibilidad para una clase de repaso esta semana?
+Buen día! Tengo el miércoles a las 18, ¿te sirve?
+Me sirve, la pido
+Perfecto
+---
+Che, ¿ya viste que armaron un grupo para estudiar {m}?
+No, ¿quién lo armó?
+Los chicos de 5to, si querés te agrego
+Dale, agregame
+---
+Hola {n}, ¿te parece que la próxima clase sea virtual? Estoy de viaje
+Sin problema, mandame el link cuando esté lista la clase
+Lo armo y te lo paso
+---
+Buenas tardes, ¿podríamos hacer la clase una hora más tarde?
+Déjame ver... sí, puedo a las 19
+Perfecto, muchas gracias!
+---
+Hola, soy nuevo en la plataforma. ¿Cómo hago para pedir una clase?
+Hola! Entrá a mi perfil y tocá "Pedir clase". Elegís día y horario
+Ahí lo veo, gracias!
+Cualquier cosa me escribís
+---
+¿Viste la tarea que dejó la profe de {m}?
+Sí, es larguísima
+Hagámosla juntos mañana
+Dale, ¿a las 5?
+Perfecto
+---
+Te pasé unos ejercicios extra de {m} por si querés practicar
+Genial, gracias! Los hago el finde
+---
+Hola! Quería saber si preparás para ingreso a la universidad
+Sí, preparo {m} para el CBC y para ingresos
+¿Cuánto dura el curso?
+Depende de cuánto sepas, pero con dos meses alcanza en general
+Genial, quiero empezar
+---
+Gracias por la paciencia, me costó pero lo entendí
+No hay de qué, cada uno tiene su ritmo. ¡Bien ahí!
+---
+Hola, ¿querés que nos veamos en la biblioteca para la clase?
+Me parece perfecto, ¿cuál?
+La de Villa Crespo, a la una
+Ahí estoy
+---
+Feliz cumple!!
+Gracias {n}!! Qué bueno que te acordaste
+Un abrazo grande
+---
+Hola, ¿tenés algún libro para recomendarme de {m}?
+Sí, te mando el título esta noche
+Gracias, me hace falta
+---
+Me olvidé el cuaderno, ¿te pasás los apuntes?
+Dale, te los saco una foto
+Sos un genio, gracias
+---
+Hola {n}, ¿cómo va el estudio?
+Tranquilo, avanzando de a poco
+Si te trabás con algo, escribime
+Gracias, lo voy a hacer
+---
+Buenas, quería consultarte por un tema de la clase de ayer
+Decime
+Me quedó una duda con el último ejemplo
+Mañana lo repasamos, no te preocupes
+Gracias!
+---
+¿Puedo llevar a un compañero a la próxima clase?
+Sí, pero avisame así reorganizo el material
+Listo, le aviso
+Genial
+---
+Hola, ¿todavía das clases de {m}? Te escribo por el aviso
+Hola! Sí, todavía tengo horarios
+Buenísimo, ¿qué día te queda mejor?
+Los martes y jueves a la tarde
+Ok, voy a pedir una clase
+---
+Muchas gracias por todo, rendí y aprobé
+Felicitaciones!!! Qué alegría me das
+Gracias a vos, sin las clases no lo lograba
+---
+Hola profe, ¿hay clase el feriado?
+Sí, si querés podemos hacerla
+Dale, mejor, así no pierdo el ritmo
+---
+Hola! ¿Cómo andás? Me llegó tu solicitud de amistad
+Hola {n}! Sí, quería tenerte a mano para coordinar las clases
+Perfecto, la acepté
+Genial
+---
+Te escribo para avisarte que ya quedó cargada la agenda de la semana que viene
+Gracias por avisar, voy a pedir un horario
+Dale, cualquier cosa me avisás
+---
+Disculpá la hora, ¿me ayudás con un ejercicio de {m}?
+Sí, mandame la foto
+Ahí va. Es el 5
+Ya te respondo, dame un momento
+Mil gracias
+---
+¿Cómo te fue con la tarea?
+La terminé, pero no estoy seguro de uno
+Mandámela y le doy un vistazo antes de la clase
+Joya, gracias
+---
+Hola, soy la mamá de {n}. ¿Cómo viene con {m}?
+Hola! Viene muy bien, está más seguro con los ejercicios
+Qué alegría, muchas gracias
+De nada, es un gusto trabajar con él
+---
+Hola, ¿me confirmás la clase de mañana?
+Confirmada! Nos vemos a las 18
+Gracias, hasta mañana

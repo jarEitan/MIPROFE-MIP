@@ -8,11 +8,11 @@ public class BD
 {
     private static string connectionString = @"Server=localhost;Database=MIP;Integrated Security=True;TrustServerCertificate=True;";
 
-    public Usuario obtenerPerfil(int idUsuario)
+    public Usuario obtenerPerfil(int idUsuario, int idVisitante)
     {
         using (var connection = new SqlConnection(connectionString))
         {
-            using (var tablas = connection.QueryMultiple("EXEC obtenerPerfil @idUsuario", new { idUsuario = idUsuario }))
+            using (var tablas = connection.QueryMultiple("EXEC obtenerPerfil @idUsuario, @idVisitante", new { idUsuario = idUsuario, idVisitante = idVisitante }))
             {
                 Usuario perfil = tablas.ReadFirst<Usuario>();
                 if (perfil.codigo == 0)
@@ -25,19 +25,11 @@ public class BD
         }
     }
 
-    public ResultadoLike obtenerLike(int idEmisor, int idReceptor)
+    public ResultadoLike alternarLikeResena(int idUsuario, int idResena)
     {
         using (var connection = new SqlConnection(connectionString))
         {
-            return connection.QueryFirst<ResultadoLike>("EXEC obtenerLike @idEmisor, @idReceptor", new { idEmisor = idEmisor, idReceptor = idReceptor });
-        }
-    }
-
-    public ResultadoLike alternarLike(int idEmisor, int idReceptor)
-    {
-        using (var connection = new SqlConnection(connectionString))
-        {
-            return connection.QueryFirst<ResultadoLike>("EXEC alternarLike @idEmisor, @idReceptor", new { idEmisor = idEmisor, idReceptor = idReceptor });
+            return connection.QueryFirst<ResultadoLike>("EXEC alternarLikeResena @idUsuario, @idResena", new { idUsuario = idUsuario, idResena = idResena });
         }
     }
 
@@ -99,6 +91,14 @@ public class BD
         using (var connection = new SqlConnection(connectionString))
         {
             return connection.QueryFirst<int>("EXEC borrarResena @idResena, @idUsuario", new { idResena = idResena, idUsuario = idUsuario });
+        }
+    }
+
+    public List<OpcionPerfil> obtenerMateriasProfesor(int idProfesor)
+    {
+        using (var connection = new SqlConnection(connectionString))
+        {
+            return connection.Query<OpcionPerfil>("EXEC obtenerMateriasProfesor @idProfesor", new { idProfesor = idProfesor }).ToList();
         }
     }
 
@@ -197,12 +197,12 @@ public class BD
 
     // codigo: 0 = ok (con idClase), 1 = vos no sos alumno o el profesor no existe, 2 = tiene que empezar dentro de 1 hora
     // o más y dentro de los próximos 90 días, 3 = fuera de la agenda del profesor, 4 = ya tenés una clase en ese horario,
-    // 5 = el profesor ya tiene una clase confirmada en ese horario. mensaje (opcional) va al chat del profesor
-    public ResultadoClase enviarPedidoClase(int idAlumno, int idProfesor, DateTime fecha, string? mensaje)
+    // 5 = el profesor ya tiene una clase confirmada en ese horario, 6 = el profesor no da esa materia. mensaje (opcional) va al chat del profesor
+    public ResultadoClase enviarPedidoClase(int idAlumno, int idProfesor, int idMateria, DateTime fecha, string? mensaje)
     {
         using (var connection = new SqlConnection(connectionString))
         {
-            return connection.QueryFirst<ResultadoClase>("EXEC enviarPedidoClase @idAlumno, @idProfesor, @fecha, @mensaje", new { idAlumno = idAlumno, idProfesor = idProfesor, fecha = fecha, mensaje = mensaje });
+            return connection.QueryFirst<ResultadoClase>("EXEC enviarPedidoClase @idAlumno, @idProfesor, @idMateria, @fecha, @mensaje", new { idAlumno = idAlumno, idProfesor = idProfesor, idMateria = idMateria, fecha = fecha, mensaje = mensaje });
         }
     }
 

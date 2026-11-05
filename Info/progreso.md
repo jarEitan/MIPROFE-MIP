@@ -11,7 +11,7 @@ Objetivo: todo **refactorizado**. Cómo se hace: [guía](guiaDeEstilo.md), secci
 ## Módulos
 
 - Sesión: refactorizado
-- Likes: refactorizado
+- Likes (solo en reseñas): refactorizado
 - Amigos: refactorizado
 - Notificaciones: refactorizado
 - Chat: refactorizado

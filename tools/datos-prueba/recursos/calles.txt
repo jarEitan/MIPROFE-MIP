@@ -1,0 +1,117 @@
+# Calles de CABA y GBA
+Av. Corrientes
+Av. Rivadavia
+Av. Santa Fe
+Av. Cabildo
+Av. Las Heras
+Av. Callao
+Av. Pueyrredón
+Av. Córdoba
+Av. Belgrano
+Av. San Juan
+Av. Independencia
+Av. Entre Ríos
+Av. Boedo
+Av. Directorio
+Av. Díaz Vélez
+Av. Juan B. Justo
+Av. Scalabrini Ortiz
+Av. Álvarez Thomas
+Av. Triunvirato
+Av. Forest
+Av. Warnes
+Av. Gaona
+Av. Nazca
+Av. Beiró
+Av. San Martín
+Av. Libertador
+Av. del Libertador
+Av. Maipú
+Av. Mitre
+Av. Hipólito Yrigoyen
+Av. Gral. Paz
+Av. Eva Perón
+Av. Lacarra
+Av. Pedro Goyena
+Av. Montes de Oca
+Av. Patricios
+Av. Caseros
+Av. Jujuy
+Av. Brasil
+Av. Alberdi
+Av. Rivera
+Av. Monroe
+Av. Congreso
+Av. Crámer
+Av. Santa Fe Norte
+Defensa
+Humberto Primo
+Tucumán
+Lavalle
+Sarmiento
+Perón
+Paraguay
+Guatemala
+Honduras
+Gorriti
+Thames
+Serrano
+Armenia
+Jufré
+Scalabrini
+Billinghurst
+Bulnes
+Agüero
+Pacheco de Melo
+Peña
+Ayacucho
+Junín
+Uriburu
+Montevideo
+Libertad
+Talcahuano
+Esmeralda
+Florida
+Maipú
+Suipacha
+Tacuarí
+Bolívar
+Chacabuco
+Moreno
+Alsina
+Venezuela
+Cuba
+Echeverría
+Superí
+Zapiola
+Mendoza
+Conesa
+Ugarte
+Washington
+Jaramillo
+Donado
+Holmberg
+Olazábal
+Tronador
+Cramer
+Naón
+Estomba
+Franklin
+Yerbal
+Rosario
+Pedernera
+Bahía Blanca
+Terrada
+Irigoyen
+Segurola
+Pareja
+Nogoyá
+Campana
+Condarco
+Navarro
+Cochabamba
+Carlos Calvo
+Chile
+Piedras
+Balcarce
+Brasil

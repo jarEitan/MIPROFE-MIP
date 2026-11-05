@@ -13,6 +13,8 @@ public class ClaseCalendario
     public DateTime fechaFin { get; set; }
     public DateTime? fechaPropuesta { get; set; }
     public DateTime fechaEmision { get; set; }
+    public int idMateria { get; set; }
+    public string materia { get; set; } = "";
     public int idOtroUsuario { get; set; }
     public string nombreOtro { get; set; } = "";
     public string apellidoOtro { get; set; } = "";
@@ -40,11 +42,12 @@ public class ContadoresClases
 
 // Lo que devuelven los SP de clases. Qué significa cada codigo está arriba de cada función en BD.cs.
 // estado: cómo quedó la clase (en cancelarClase y reubicarClase). cantidadNotificaciones la pone ClasesController.
-// idOtro, fecha y fechaPropuesta: lo que ClasesController necesita para armar el mensaje de chat de cada acción.
+// materia: la del pedido nuevo. idOtro, fecha y fechaPropuesta: lo que ClasesController necesita para armar el mensaje de chat de cada acción.
 public class ResultadoClase
 {
     public int codigo { get; set; }
     public string? estado { get; set; }
+    public string? materia { get; set; }
     public int? idClase { get; set; }
     public int? idOtro { get; set; }
     public DateTime? fecha { get; set; }

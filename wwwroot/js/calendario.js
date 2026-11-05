@@ -191,6 +191,13 @@ function dibujarMes() {
     document.getElementById("tituloMes").textContent = capitalizar(`${nombresDeMeses[calendario.mes.getMonth()]} ${calendario.mes.getFullYear()}`);
 
     const hoy = fechaATexto(new Date());
+    // La semana de hoy (lunes a domingo) se pinta distinto para ubicarse rápido en la grilla
+    const lunes = inicioDeHoy();
+    lunes.setDate(lunes.getDate() - ((lunes.getDay() + 6) % 7));
+    const domingo = new Date(lunes);
+    domingo.setDate(lunes.getDate() + 6);
+    const inicioSemana = fechaATexto(lunes);
+    const finSemana = fechaATexto(domingo);
     const grilla = rangoDeLaGrilla(calendario.mes);
     const dias = [];
     for (let dia = new Date(grilla.inicio); dia <= grilla.fin; dia.setDate(dia.getDate() + 1)) {
@@ -203,16 +210,24 @@ function dibujarMes() {
         boton.setAttribute("aria-label", `${textoDiaLargo(dia)}${texto === hoy ? " (hoy)" : ""}: ${textoDelContadorDeClases(clases)}`);
         if (texto === hoy) { boton.classList.add("hoy"); boton.setAttribute("aria-current", "date"); }
         if (texto < hoy) boton.classList.add("pasado");
+        if (texto >= inicioSemana && texto <= finSemana) boton.classList.add("semanaActual");
         if (dia.getMonth() !== calendario.mes.getMonth()) boton.classList.add("otroMes");
 
         boton.append(crearElemento("span", "numero", String(dia.getDate())));
         const lineas = crearElemento("span", "lineas");
-        clases.slice(0, maximoLineasPorDia).forEach(clase => lineas.append(crearElemento("i", `linea ${lineaDeClase(clase)}`)));
+        clases.slice(0, maximoLineasPorDia).forEach(clase => lineas.append(boton.classList.contains("semanaActual") ? crearResumenDeClase(clase) : crearElemento("i", `linea ${lineaDeClase(clase)}`)));
         if (clases.length > maximoLineasPorDia) lineas.append(crearElemento("span", "mas", `+${clases.length - maximoLineasPorDia}`));
         boton.append(lineas);
         dias.push(boton);
     }
     document.getElementById("diasMes").replaceChildren(...dias);
+}
+
+// En la semana de hoy cada clase muestra "12:00 · Julián · Matemática" con el color de su línea
+function crearResumenDeClase(clase) {
+    const resumen = crearElemento("span", `resumen ${lineaDeClase(clase)}`);
+    resumen.append(crearElemento("strong", "", textoHoraDe(leerFechaLocal(clase.fecha))), crearElemento("span", "alumno", clase.nombreOtro), crearElemento("span", "materia", clase.materia));
+    return resumen;
 }
 
 // Qué pasa con la clase, en su tarjeta: lo que pidió el otro o lo que pediste vos
@@ -338,9 +353,14 @@ function crearTurno(clase, delDia) {
     tarjeta.append(crearElemento("i", `linea ${lineaDeClase(clase)}`), encabezado);
 
     const detalles = crearElemento("ul", "detalleTurno");
+    const detalleMateria = crearDetalle("bi-book", clase.materia);
+    detalleMateria.classList.add("fw-bold");
+    detalles.append(detalleMateria);
     const pedido = textoDePedido(clase);
     if (pedido) detalles.append(crearDetalle("bi-info-circle", pedido));
     if (clase.motivo) detalles.append(crearDetalle("bi-info-circle", clase.motivo));
+    const plazo = textoPlazoDeCancelacion(clase);
+    if (plazo) detalles.append(crearDetalle("bi-clock", plazo));
     const choque = choqueConOtraClase(clase, delDia);
     if (choque) detalles.append(crearDetalle("bi-exclamation-triangle", `Se superpone con la de las ${textoHoraDe(leerFechaLocal(choque.fecha))}.`));
     if (detalles.children.length > 0) tarjeta.append(detalles);
@@ -352,6 +372,15 @@ function crearTurno(clase, delDia) {
 
     turno.append(hora, tarjeta);
     return turno;
+}
+
+// Regla de las 24 h: hasta ahí se cancela o se cambia sola; después la otra persona tiene que aceptar
+function textoPlazoDeCancelacion(clase) {
+    if (clase.estado !== "Confirmada" || !clase.puedeCancelar) return "";
+    if (clase.muyCerca) return `Faltan menos de 24 h: para cancelar o cambiar el horario, ${clase.nombreOtro} tiene que aceptar.`;
+    const limite = leerFechaLocal(clase.fecha);
+    limite.setHours(limite.getHours() - 24);
+    return `Podés cancelar o cambiar el horario hasta el ${textoFechaCorta(limite)} hs.`;
 }
 
 function crearDetalle(icono, texto) {
@@ -550,7 +579,7 @@ function abrirCancelacionDeClase() {
 
     document.getElementById("tituloCancelarClase").textContent = esPedido ? "¿Cancelar el pedido?" : esSolicitud ? "¿Pedir la cancelación?" : "¿Cancelar esta clase?";
     document.getElementById("textoCancelarClase").replaceChildren(
-        esSolicitud ? "Tu clase con " : `Vas a cancelar ${esPedido ? "tu pedido de clase" : "tu clase"} con `,
+        esSolicitud ? `Tu clase de ${claseElegida.materia} con ` : `Vas a cancelar ${esPedido ? "tu pedido de clase" : "tu clase"} de ${claseElegida.materia} con `,
         nombre,
         ` (${fechaTexto}). `,
         esPedido ? "Todavía nadie lo aceptó, así que no hay ningún compromiso."
