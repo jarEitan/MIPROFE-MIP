@@ -15,6 +15,7 @@ Reglas de código: **[Info/systemPrompt.md](Info/systemPrompt.md)** (obligatorio
 | **CSS** | [guiaDeEstilo.md](Info/guiaDeEstilo.md) secciones 1–2 (orden y clases) y 6 (Bootstrap) |
 | **Views (Razor)** | [guiaDeEstilo.md](Info/guiaDeEstilo.md) sección 3 + bloque "Frontend" de [systemPrompt.md](Info/systemPrompt.md) |
 | **JS** | [guiaDeEstilo.md](Info/guiaDeEstilo.md) sección 4 + bloque "Frontend" de [systemPrompt.md](Info/systemPrompt.md) |
+| **Avisos (snackbar) y modales de confirmación** | [guiaNotificaciones.md](Info/guiaNotificaciones.md) |
 | **Qué sigue / qué falta** | [progreso.md](Info/progreso.md) |
 | **Antes de dar algo por terminado** | [guiaDeEstilo.md](Info/guiaDeEstilo.md) sección 7 |
 
