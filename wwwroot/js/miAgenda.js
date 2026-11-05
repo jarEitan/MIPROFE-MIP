@@ -217,14 +217,20 @@ function proximaFranjaLibre(franjas) {
 function cargarMiAgenda() {
     return pedirJson("/Clases/MiAgenda")
         .then(agenda => {
+            diasBloqueadosActuales = new Set((agenda.diasBloqueados || []).map(dia => dia.fecha.slice(0, 10)));
             diasDeAgenda = nombresDeDiasDeAgenda.map((_, indice) => {
                 const franjas = agenda.franjas.filter(franja => franja.diaSemana === indice + 1).map(franja => ({ desde: franja.desde.slice(0, 5), hasta: franja.hasta.slice(0, 5) }));
                 return { activo: franjas.length > 0, franjas };
             });
             dibujarDiasDeAgenda();
-            dibujarDiasBloqueados(agenda.diasBloqueados);
+            return cargarMapaDeFeriados(agenda.diasBloqueados).then(() => {
+                dibujarDiasBloqueados(agenda.diasBloqueados, mapaDeFeriados);
+            });
+        })
+        .then(() => {
             marcarCambiosDeAgenda(false);
-            actualizarAvisosDeAgenda(agenda.franjas.length > 0);
+            actualizarAvisosDeAgenda(true);
+            actualizarEstadoBotonFeriados();
         })
         .catch(error => {
             console.error(error);
@@ -264,22 +270,101 @@ function guardarMiAgenda() {
 }
 
 // ----- Días bloqueados -----
-function dibujarDiasBloqueados(dias) {
-    const lista = document.getElementById("listaDiasBloqueados");
-    if (dias.length === 0) {
-        lista.replaceChildren(crearElemento("li", "sinBloqueos", "No tenés días bloqueados."));
+let mapaDeFeriados = new Map();
+let feriadosOcultos = false;
+let diasBloqueadosActuales = new Set();
+
+function rangoBloqueado(dias) {
+    if (!dias || dias.length === 0) return { desde: null, hasta: null };
+    const fechas = dias.map(dia => dia.fecha.slice(0, 10)).sort();
+    return { desde: fechas[0], hasta: fechas[fechas.length - 1] };
+}
+
+function cargarMapaDeFeriados(dias) {
+    const { desde, hasta } = rangoBloqueado(dias);
+    if (!desde || !hasta) {
+        mapaDeFeriados = new Map();
+        return Promise.resolve(mapaDeFeriados);
+    }
+
+    const anios = new Set([new Date(`${desde}T00:00:00`).getFullYear(), new Date(`${hasta}T00:00:00`).getFullYear()]);
+    return Promise.all([...anios].map(anio => fetch(`https://api.argentinadatos.com/v1/feriados/${anio}`)
+        .then(respuesta => respuesta.ok ? respuesta.json() : [])
+        .catch(() => [])))
+        .then(listas => {
+            const mapa = new Map();
+            listas.flat().forEach(feriado => {
+                if (!feriado?.fecha) return;
+                const fecha = feriado.fecha.slice(0, 10);
+                if (fecha < desde || fecha > hasta) return;
+                const nombre = feriado.motivo || feriado.nombre || "Feriado";
+                if (!mapa.has(fecha) || !mapa.get(fecha)) mapa.set(fecha, nombre);
+            });
+            mapaDeFeriados = mapa;
+            return mapa;
+        });
+}
+
+function actualizarEstadoBotonFeriados() {
+    const boton = document.getElementById("botonOcultarFeriados");
+    const badge = document.getElementById("badgeOcultarFeriados");
+    const icono = boton?.querySelector(".iconoOcultarFeriados");
+    const texto = boton?.querySelector(".textoOcultarFeriados");
+    if (!boton || !badge || !icono || !texto) return;
+
+    const cantidad = [...diasBloqueadosActuales].filter(fecha => mapaDeFeriados.has(fecha)).length;
+    boton.setAttribute("aria-pressed", String(feriadosOcultos));
+
+    if (feriadosOcultos) {
+        icono.className = "bi bi-eye iconoOcultarFeriados";
+        texto.textContent = "Mostrar feriados";
+        badge.hidden = cantidad === 0;
+        badge.textContent = `${cantidad} ${cantidad === 1 ? "feriado oculto" : "feriados ocultos"}`;
         return;
     }
 
-    lista.replaceChildren(...dias.map(dia => {
+    icono.className = "bi bi-eye-slash iconoOcultarFeriados";
+    texto.textContent = "Ocultar feriados";
+    badge.hidden = true;
+}
+
+function dibujarDiasBloqueados(dias, feriados = mapaDeFeriados) {
+    const lista = document.getElementById("listaDiasBloqueados");
+    if (dias.length === 0) {
+        lista.replaceChildren(crearElemento("li", "sinBloqueos", "No tenés días bloqueados."));
+        actualizarEstadoBotonFeriados();
+        return;
+    }
+
+    const diasVisibles = dias.filter(dia => {
         const fecha = dia.fecha.slice(0, 10);
+        const esFeriado = Boolean(feriados.get(fecha));
+        return !(feriadosOcultos && esFeriado);
+    });
+
+    if (diasVisibles.length === 0) {
+        lista.replaceChildren(crearElemento("li", "sinBloqueos", "No hay días bloqueados visibles."));
+        actualizarEstadoBotonFeriados();
+        return;
+    }
+
+    lista.replaceChildren(...diasVisibles.map(dia => {
+        const fecha = dia.fecha.slice(0, 10);
+        const nombreFeriado = feriados.get(fecha);
         const item = crearElemento("li");
         item.dataset.fecha = fecha;
-        const texto = crearElemento("div");
-        texto.append(crearElemento("strong", "", textoDiaLargo(leerFechaLocal(fecha))));
+        if (nombreFeriado) item.classList.add("feriado");
+
+        const texto = crearElemento("div", "contenidoBloqueado");
+        const filaTitulo = crearElemento("div", "filaTituloBloqueado");
+        filaTitulo.append(crearElemento("strong", "", textoDiaLargo(leerFechaLocal(fecha))));
+        if (nombreFeriado) filaTitulo.append(crearElemento("span", "etiquetaFeriado", " " + `Feriado: ${nombreFeriado}`));
+        texto.append(filaTitulo);
+
         if (dia.clasesEseDia > 0) {
             texto.append(crearElemento("small", "", `Tenés ${dia.clasesEseDia} ${dia.clasesEseDia === 1 ? "clase" : "clases"} ese día: avisales o cancelalas.`));
         }
+
         const desbloquear = crearElemento("button", "boton contorno chico", "Desbloquear");
         desbloquear.type = "button";
         desbloquear.dataset.desbloquearDia = fecha;
@@ -287,6 +372,25 @@ function dibujarDiasBloqueados(dias) {
         item.append(texto, desbloquear);
         return item;
     }));
+
+    actualizarEstadoBotonFeriados();
+}
+
+function alternarFeriadosOcultos() {
+    feriadosOcultos = !feriadosOcultos;
+    const dias = document.querySelectorAll("#listaDiasBloqueados li[data-fecha]");
+    const lista = document.getElementById("listaDiasBloqueados");
+    if (!lista) return;
+
+    const diasBloqueados = [...dias].map(item => ({ fecha: item.dataset.fecha, clasesEseDia: Number(item.dataset.clasesEseDia || 0) }));
+    const feriadosEnAgenda = new Map();
+    [...document.querySelectorAll("#listaDiasBloqueados li[data-fecha]")].forEach(item => {
+        const fecha = item.dataset.fecha;
+        const nombre = mapaDeFeriados.get(fecha);
+        if (nombre) feriadosEnAgenda.set(fecha, nombre);
+    });
+
+    dibujarDiasBloqueados(diasBloqueados.length ? diasBloqueados : [], feriadosEnAgenda.size ? feriadosEnAgenda : mapaDeFeriados);
 }
 
 function bloquearUnDia(evento) {
@@ -329,26 +433,25 @@ function desbloquearUnDia(fecha) {
         });
 }
 
-// Bloquea los feriados de Argentina de hoy a un año (api.argentinadatos.com, desde el navegador), menos los que ya estaban bloqueados
 function importarFeriados() {
     const boton = document.getElementById("botonImportarFeriados");
     boton.disabled = true;
     const hoy = new Date();
     const desde = fechaATexto(hoy);
     const hasta = fechaATexto(new Date(hoy.getFullYear() + 1, hoy.getMonth(), hoy.getDate()));
-    const yaBloqueados = [...document.querySelectorAll("#listaDiasBloqueados li[data-fecha]")].map(item => item.dataset.fecha);
+    const yaBloqueados = [...diasBloqueadosActuales];
 
-    // El año que viene puede no estar publicado todavía: si falla, se sigue con el actual
-    const anioActual = fetch(`https://api.argentinadatos.com/v1/feriados/${hoy.getFullYear()}`).then(respuesta => {
-        if (!respuesta.ok) throw new Error(`Error ${respuesta.status} al traer los feriados`);
-        return respuesta.json();
-    });
-    const anioSiguiente = fetch(`https://api.argentinadatos.com/v1/feriados/${hoy.getFullYear() + 1}`).then(respuesta => respuesta.ok ? respuesta.json() : []).catch(() => []);
+    const anioActual = fetch(`https://api.argentinadatos.com/v1/feriados/${hoy.getFullYear()}`)
+        .then(respuesta => respuesta.ok ? respuesta.json() : [])
+        .catch(() => []);
+    const anioSiguiente = fetch(`https://api.argentinadatos.com/v1/feriados/${hoy.getFullYear() + 1}`)
+        .then(respuesta => respuesta.ok ? respuesta.json() : [])
+        .catch(() => []);
 
     Promise.all([anioActual, anioSiguiente])
         .then(listas => {
-            const fechas = [...new Set(listas.flat().map(feriado => feriado.fecha))].filter(fecha => fecha >= desde && fecha <= hasta && !yaBloqueados.includes(fecha));
-            // Si un día no se pudo bloquear, los demás igual quedan
+            const fechas = [...new Set(listas.flat().map(feriado => feriado.fecha))]
+                .filter(fecha => fecha >= desde && fecha <= hasta && !yaBloqueados.includes(fecha));
             return Promise.all(fechas.map(fecha => enviarAccionDeClase("/Clases/BloquearDia", { fecha }).catch(() => ({ codigo: -1 }))));
         })
         .then(resultados => {
@@ -370,7 +473,6 @@ function importarFeriados() {
         .finally(() => { boton.disabled = false; });
 }
 
-
 // ================= INICIALIZACIÓN =================
 function inicializarMiAgenda() {
     if (!document.getElementById("miAgenda")) return;
@@ -384,6 +486,10 @@ function inicializarMiAgenda() {
     document.getElementById("botonGuardarAgenda").addEventListener("click", guardarMiAgenda);
     document.getElementById("formularioBloquearDia").addEventListener("submit", bloquearUnDia);
     document.getElementById("botonImportarFeriados").addEventListener("click", () => abrirDialogo("dialogoImportarFeriados"));
+    document.getElementById("botonOcultarFeriados").addEventListener("click", () => {
+        feriadosOcultos = !feriadosOcultos;
+        cargarMiAgenda();
+    });
     document.getElementById("botonConfirmarFeriados").addEventListener("click", () => {
         cerrarDialogo("dialogoImportarFeriados");
         importarFeriados();
