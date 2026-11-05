@@ -5902,3 +5902,15 @@ tr.resaltada td {
         transform: none;
     }
 }
+
+.listaBloqueados li.feriado {
+    background-color: #EAF8EE;
+    border-color: #A8D8B0;
+}
+
+.listaBloqueados li.feriado .contenidoBloqueado {
+    display: grid;
+    gap: .25rem;
+    flex: 1 1 12rem;
+    min-width: 0;
+}

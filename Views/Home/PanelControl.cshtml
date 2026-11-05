@@ -1,7 +1,7 @@
 @* Panel de Control. Los contadores y las notificaciones vienen de la BD (HomeController.PanelControl). Las clases son un
    calendario + agenda del día que dibuja calendario.js con fetch a /Clases/Calendario; las acciones (aceptar, rechazar,
    cambiar horario, cancelar) se envían con fetch a ClasesController. La agenda del profesor es miAgenda.js, el chat
-   se pide y se envía con fetch a MensajesController (chat.js) y el historial es historial.js. *@
+   se pide y se envía with fetch a MensajesController (chat.js) y el historial es historial.js. *@
 @{
     ViewData["Title"] = "Panel de Control";
     ContadoresClases contadores = ViewBag.contadores ?? new ContadoresClases();
@@ -320,6 +320,11 @@
                                 </form>
                                 <p class="mensajeError" id="mensajeBloqueo" role="alert"></p>
                                 <button class="boton contorno chico mt-3" type="button" id="botonImportarFeriados"><i class="bi bi-calendar-event" aria-hidden="true"></i> Importar feriados</button>
+                                <button class="boton contorno chico mt-3" type="button" id="botonOcultarFeriados" aria-pressed="false">
+                                    <i class="bi bi-eye-slash iconoOcultarFeriados" aria-hidden="true"></i>
+                                    <span class="textoOcultarFeriados">Ocultar feriados</span>
+                                    <span class="badge text-bg-secondary ms-2" id="badgeOcultarFeriados" hidden>0 ocultos</span>
+                                </button>
                                 <ul class="listaBloqueados" id="listaDiasBloqueados" aria-live="polite"></ul>
                             </div>
                         </div>
