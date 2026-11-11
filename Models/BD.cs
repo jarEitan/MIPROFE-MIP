@@ -4,6 +4,7 @@ using Microsoft.Data.SqlClient;
 namespace MIP_MIPROFESOR.Models;
 
 // Los SP están en MIP_Estructuras/MIP-BD_02_stored_procedures.sql. Login y registro en BDsesion.cs.
+// En los SP de interacción (amistad, chat, clases, reseñas y me gusta), codigo 9 = alguna de las dos cuentas no está verificada.
 public class BD
 {
     private static string connectionString = @"Server=localhost;Database=MIP;Integrated Security=True;TrustServerCertificate=True;";

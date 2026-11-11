@@ -50,6 +50,9 @@ function textoFechaCorta(fecha) {
     return `${nombresDeDias[fecha.getDay()].slice(0, 3)} ${dosDigitos(fecha.getDate())}/${dosDigitos(fecha.getMonth() + 1)} ${textoHoraDe(fecha)}`;
 }
 
+// Respuesta de los SP de interacción con codigo 9 (alguna de las dos cuentas no está verificada)
+const textoCuentaNoVerificada = "Solo se puede entre cuentas verificadas: la tuya o la de esta persona todavía no lo está.";
+
 // POST con el token anti-falsificación. Devuelve lo que contestó el SP (con su codigo). Sin sesión lleva a
 // Iniciar sesión; si el servidor falla, tira un error y lo agarra el .catch de quien llama.
 function enviarAccionDeClase(url, datos) {
@@ -129,6 +132,8 @@ function inicializarSolicitudesDeAmistad() {
 
                 if (cuerpo.codigo == 0) {
                     mostrarSnackbar(aceptar ? `Ahora ${nombre} y vos son amigos.` : `Rechazaste la solicitud de ${nombre}.`, "exito");
+                } else if (cuerpo.codigo == 9) {
+                    mostrarSnackbar(textoCuentaNoVerificada, "error");
                 } else {
                     mostrarSnackbar("Esa solicitud ya no está pendiente.", "info");
                 }
@@ -445,7 +450,8 @@ function enviarPedidoDeClase() {
                     3: "Ese horario está fuera de la agenda del profesor.",
                     4: "Ya tenés una clase en ese horario. Elegí otro.",
                     5: "El profesor ya tiene una clase confirmada en ese horario. Elegí otro.",
-                    6: "Ese profesor no da esa materia. Elegí otra."
+                    6: "Ese profesor no da esa materia. Elegí otra.",
+                    9: textoCuentaNoVerificada
                 };
                 mostrarMensaje(mensajePedir, mensajes[cuerpo.codigo]);
                 if (cuerpo.codigo >= 3 && cuerpo.codigo <= 5) selectorDePedido.recargar();

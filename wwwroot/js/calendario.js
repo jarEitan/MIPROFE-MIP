@@ -25,7 +25,8 @@ let claseElegida = null;
 // (la otra persona ya respondió, canceló, etc.)
 const mensajesDePantallaVieja = {
     1: "Esta acción no la podés hacer vos en esta clase.",
-    2: "Esta clase cambió mientras tanto (ya se respondió, se canceló o venció). Actualizamos tus clases."
+    2: "Esta clase cambió mientras tanto (ya se respondió, se canceló o venció). Actualizamos tus clases.",
+    9: textoCuentaNoVerificada
 };
 
 // ----- Datos -----

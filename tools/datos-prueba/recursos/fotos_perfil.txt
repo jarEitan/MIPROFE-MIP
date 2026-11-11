@@ -1,0 +1,26 @@
+# Avatares de wwwroot/userData/fotos-perfil que se usan en los datos de prueba: archivo|h (hombre) o archivo|m (mujer).
+# Los que no están en la lista no se usan (por ejemplo fotos reales de cuentas). Los archivos que empiezan con h- (hombre) o m- (mujer), como h-001.webp, se usan solos, sin anotarlos acá.
+perfil-10-20261020083815335.webp|h
+perfil-12-20261020084042527.webp|h
+perfil-14-20261020084221937.webp|h
+perfil-16-20261020084330881.webp|h
+perfil-18-20261020084445552.webp|h
+perfil-20-20261020084638776.webp|h
+perfil-22-20261020084923485.webp|h
+perfil-24-20261020085321263.webp|h
+perfil-4-20261020082817537.webp|h
+perfil-6-20261020083145596.webp|h
+perfil-8-20261020083508689.webp|h
+perfil-11-20261020083930791.webp|m
+perfil-13-20261020084130336.webp|m
+perfil-15-20261020084254086.webp|m
+perfil-17-20261020084404655.webp|m
+perfil-19-20261020084557927.webp|m
+perfil-21-20261020084742639.webp|m
+perfil-23-20261020085120536.webp|m
+perfil-25-20261020085451312.webp|m
+perfil-3-20261020082509471.webp|m
+perfil-5-20261020082957624.webp|m
+perfil-7-20261020083310626.webp|m
+perfil-9-20261020083630530.webp|m
+perfil-459-20261020085113274.webp|h

@@ -196,7 +196,7 @@ function cargarChatAbierto(bajarAlFinal) {
                     mostrarCabeceraDelChat(chat.id, chat.nombre, chat.apellido, chat.fotoPerfil, chat.tipoUsuario);
                     document.getElementById("formularioChat").hidden = false;
                 }
-                bloquearRedaccionDelChat(!chat.puedeEscribir);
+                bloquearRedaccionDelChat(!chat.puedeEscribir, chat.puedeInteractuar ? textoSinPermisoChat : textoCuentaNoVerificada);
                 dibujarMensajes(chat.mensajes, bajarAlFinal);
                 if (chat.marcados > 0) quitarNotificacionDelChat(chat.id, chat.cantidadNotificaciones);
             } else if (chat.codigo == 1) {
@@ -214,13 +214,13 @@ function cargarChatAbierto(bajarAlFinal) {
         });
 }
 
-// Sin amistad, clase ni mensaje previo no se puede escribir: el campo muestra el motivo
-function bloquearRedaccionDelChat(bloqueada) {
+// Sin amistad, clase ni mensaje previo (o con una cuenta sin verificar) no se puede escribir: el campo muestra el motivo
+function bloquearRedaccionDelChat(bloqueada, motivo) {
     const campoMensaje = document.getElementById("campoMensajeChat");
     campoMensaje.disabled = bloqueada;
     document.getElementById("botonEnviarChat").disabled = bloqueada;
-    campoMensaje.placeholder = bloqueada ? textoSinPermisoChat : "Escribí un mensaje...";
-    campoMensaje.title = bloqueada ? textoSinPermisoChat : "";
+    campoMensaje.placeholder = bloqueada ? motivo : "Escribí un mensaje...";
+    campoMensaje.title = bloqueada ? motivo : "";
 }
 
 function mostrarErrorDelChat(texto) {
@@ -334,6 +334,8 @@ function enviarMensajeDelChat() {
                 mostrarSnackbar("Esta persona no existe o no se le pueden mandar mensajes.", "error");
             } else if (cuerpo.codigo == 3) {
                 mostrarSnackbar("El mensaje no puede estar vacío ni pasar los 1000 caracteres.", "error");
+            } else if (cuerpo.codigo == 9) {
+                mostrarSnackbar(textoCuentaNoVerificada, "error");
             } else {
                 mostrarSnackbar(textoSinPermisoChat, "error");
             }
