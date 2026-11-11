@@ -396,10 +396,21 @@ class _Gen:
         if u["verificado"]:
             u["tiene_dni"] = True
         plantillas = self.rec["descripciones_profesor" if tipo == "profesor" else "descripciones_alumno"]
-        if rol or r.random() < 0.9:
+        if u["descripcion"] is None and (rol is not None or r.random() < 0.9 or u["verificado"]):
             u["descripcion"] = r.choice(plantillas).replace("{m}", r.choice(u["materias"]).lower())
         if tipo == "profesor":
             self.datos_profesor(u)
+            if u["verificado"]:
+                u["materias"] = u["materias"] or [self.rnd.choice(self.materias)]
+                u["niveles"] = u["niveles"] or [self.rnd.choice(NIVELES)]
+                u["escuelas"] = u["escuelas"] or [self.rnd.choice(self.colegios)]
+                u["descripcion"] = u["descripcion"] or self.rnd.choice(plantillas).replace("{m}", r.choice(u["materias"]).lower())
+                if not u.get("titulos"):
+                    u["titulos"] = [self.rnd.choice(self.rec["titulos"]).replace("{m}", r.choice(u["materias"]))]
+                if not u.get("modalidades"):
+                    u["modalidades"] = [MODALIDADES[0]]
+                if u.get("precio", 0) <= 0:
+                    u["precio"] = self.c["precio_min"]
         self.usuarios.append(u)
         return u
 
@@ -808,6 +819,47 @@ def generar(config=None):
 
 # ---------- verificación ----------
 
+def _problema_usuario(u):
+    """Reglas mínimas por tipo de usuario. Los no verificados solo exigen lo básico."""
+    p = []
+    if not u.get("mail") or not u.get("nombre") or not u.get("apellido") or not u.get("dni"):
+        p.append("usuario sin mail/nombre/apellido/dni")
+
+    if u.get("tipo") == "profesor":
+        if u.get("verificado"):
+            if not u.get("descripcion"):
+                p.append("profesor verificado sin descripción")
+            if not u.get("direccion"):
+                p.append("profesor verificado sin dirección")
+            if not u.get("fotoDni"):
+                p.append("profesor verificado sin foto de DNI")
+            if not u.get("precio") or u["precio"] <= 0:
+                p.append("profesor verificado sin precio válido")
+            if not u.get("materias"):
+                p.append("profesor verificado sin materias")
+            if not u.get("niveles"):
+                p.append("profesor verificado sin niveles")
+            if not u.get("escuelas"):
+                p.append("profesor verificado sin escuelas")
+            if not u.get("titulos"):
+                p.append("profesor verificado sin títulos")
+            if not u.get("modalidades"):
+                p.append("profesor verificado sin modalidades")
+    elif u.get("tipo") == "alumno":
+        if u.get("verificado"):
+            if not u.get("descripcion"):
+                p.append("alumno verificado sin descripción")
+            if not u.get("direccion"):
+                p.append("alumno verificado sin dirección")
+            if not u.get("fotoDni"):
+                p.append("alumno verificado sin foto de DNI")
+            if not u.get("niveles"):
+                p.append("alumno verificado sin niveles")
+            if not u.get("escuelas"):
+                p.append("alumno verificado sin escuelas")
+    return sorted(set(p))
+
+
 def verificar(d):
     """Chequeos de coherencia con las reglas de la BD. Devuelve la lista de problemas (vacía si está todo bien)."""
     p = []
@@ -815,6 +867,10 @@ def verificar(d):
     mails = [u["mail"] for u in d["usuarios"]]
     if len(set(mails)) != len(mails):
         p.append("mails repetidos")
+
+    for u in d["usuarios"]:
+        p.extend(f"{u['mail']}: {q}" for q in _problema_usuario(u))
+
     ocupado = set()
     completadas = set()
     pares_clase = set()
