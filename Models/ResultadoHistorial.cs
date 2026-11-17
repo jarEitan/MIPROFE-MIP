@@ -24,12 +24,12 @@ public class ClaseHistorial
     public int idOtroUsuario { get; set; }
     public string nombreOtro { get; set; } = "";
     public string apellidoOtro { get; set; } = "";
-    public string? fotoOtro { get; set; }
+    public string fotoOtro { get; set; } = "";
     public string tipoOtro { get; set; } = "";
     public string materia { get; set; } = "";
-    public string? colegios { get; set; }
-    public int? puntuacion { get; set; }
+    public string colegios { get; set; } = "";
+    public int puntuacion { get; set; }
     public bool puedeDarResena { get; set; }
     public bool puedeMarcarNoSeDio { get; set; }
-    public string? motivo { get; set; }
+    public string motivo { get; set; } = "";
 }

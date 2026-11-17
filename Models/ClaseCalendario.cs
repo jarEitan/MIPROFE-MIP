@@ -11,16 +11,16 @@ public class ClaseCalendario
     public string estado { get; set; } = "";
     public DateTime fecha { get; set; }
     public DateTime fechaFin { get; set; }
-    public DateTime? fechaPropuesta { get; set; }
+    public DateTime fechaPropuesta { get; set; }
     public DateTime fechaEmision { get; set; }
     public int idMateria { get; set; }
     public string materia { get; set; } = "";
     public int idOtroUsuario { get; set; }
     public string nombreOtro { get; set; } = "";
     public string apellidoOtro { get; set; } = "";
-    public string? fotoOtro { get; set; }
+    public string fotoOtro { get; set; } = "";
     public string miRol { get; set; } = "";
-    public string? esperaA { get; set; }
+    public string esperaA { get; set; } = "";
     public bool requiereAccion { get; set; }
     public bool muyCerca { get; set; }
     public bool puedeResponder { get; set; }
@@ -29,7 +29,7 @@ public class ClaseCalendario
     public bool puedeReubicar { get; set; }
     public bool puedeCancelar { get; set; }
     public bool puedeMarcarNoSeDio { get; set; }
-    public string? motivo { get; set; }
+    public string motivo { get; set; } = "";
 }
 
 // Los contadores del Panel de Control (SP obtenerContadoresClases)
@@ -46,12 +46,12 @@ public class ContadoresClases
 public class ResultadoClase
 {
     public int codigo { get; set; }
-    public string? estado { get; set; }
-    public string? materia { get; set; }
-    public int? idClase { get; set; }
-    public int? idOtro { get; set; }
-    public DateTime? fecha { get; set; }
-    public DateTime? fechaPropuesta { get; set; }
+    public string estado { get; set; } = "";
+    public string materia { get; set; } = "";
+    public int idClase { get; set; }
+    public int idOtro { get; set; }
+    public DateTime fecha { get; set; }
+    public DateTime fechaPropuesta { get; set; }
     public int cantidadNotificaciones { get; set; }
 }
 

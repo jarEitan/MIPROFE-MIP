@@ -57,14 +57,17 @@ public class PerfilesController : Controller
         int idVisitante = int.Parse(HttpContext.Session.GetString("idUsuario") ?? "0");
         Usuario perfil = new BD().obtenerPerfil(id, idVisitante);
         // Se vuelve a limpiar al mostrar, por si quedó algo cargado a mano en la base
-        perfil.descripcion = limpiarDescripcion(perfil.descripcion);
+        perfil.descripcion = limpiarDescripcion(perfil.descripcion) ?? "";
         // Cuenta suspendida: se ve el perfil, pero sin su información (queda guardada por si se quita la suspensión)
-        if (perfil.tipoUsuario != null && perfil.tipoUsuario.EndsWith("Baneado"))
+        if (perfil.tipoUsuario.EndsWith("Baneado"))
         {
-            perfil.descripcion = null;
-            perfil.materias = perfil.niveles = perfil.modalidades = perfil.colegios = null;
+            perfil.descripcion = "";
+            perfil.materias = "";
+            perfil.niveles = "";
+            perfil.modalidades = "";
+            perfil.colegios = "";
             perfil.titulos = new List<string>();
-            perfil.precioHora = null;
+            perfil.precioHora = 0;
         }
         return Json(perfil);
     }
@@ -85,8 +88,8 @@ public class PerfilesController : Controller
     {
         int idUsuario = int.Parse(HttpContext.Session.GetString("idUsuario") ?? "0");
         Usuario datos = new BD().obtenerDatosEdicion(idUsuario);
-        datos.descripcion = limpiarDescripcion(datos.descripcion);
-        datos.tieneFotoDni = datos.fotoDni != null;
+        datos.descripcion = limpiarDescripcion(datos.descripcion) ?? "";
+        datos.tieneFotoDni = !string.IsNullOrEmpty(new BD().obtenerFotoDni(idUsuario));
         datos.faltantes = new BD().obtenerFaltantesVerificacion(idUsuario);
         return Json(datos);
     }
@@ -114,16 +117,16 @@ public class PerfilesController : Controller
         edicion.nombre = nombre;
         edicion.apellido = apellido;
         // Se valida antes de tocar la BD. El tipo sale de la sesión, no del formulario
-        if (HttpContext.Session.GetString("tipoUsuario") == "profesor" && edicion.fechaNacimiento != null && !SesionController.esMayorDeEdad(edicion.fechaNacimiento)) return Json(new Usuario { codigo = 6 });
+        if (HttpContext.Session.GetString("tipoUsuario") == "profesor" && !default(DateTime).Equals(edicion.fechaNacimiento) && !SesionController.esMayorDeEdad(edicion.fechaNacimiento)) return Json(new Usuario { codigo = 6 });
 
         BD bd = new BD();
         Usuario anteriores = bd.obtenerDatosEdicion(idUsuario);
-        edicion.descripcion = limpiarDescripcion(edicion.descripcion);
-        if (edicion.descripcion != null && edicion.descripcion.Length > 5000) return Json(new Usuario { codigo = 3 });
+        edicion.descripcion = limpiarDescripcion(edicion.descripcion) ?? "";
+        if (edicion.descripcion.Length > 5000) return Json(new Usuario { codigo = 3 });
 
         edicion.mail = (edicion.mail ?? "").Trim().ToLowerInvariant();
-        edicion.dni = limpiarTexto(edicion.dni?.Replace(".", "").Replace("-", "").Replace(" ", ""));
-        edicion.direccion = limpiarTexto(edicion.direccion);
+        edicion.dni = limpiarTexto(edicion.dni.Replace(".", "").Replace("-", "").Replace(" ", "")) ?? "";
+        edicion.direccion = limpiarTexto(edicion.direccion) ?? "";
         edicion.titulos = edicion.titulos.Where(titulo => !string.IsNullOrWhiteSpace(titulo)).Select(titulo => titulo.Trim()).ToList();
 
         // Los profesores mandan cada colegio con el año desde el que dan clase ahí ("20:2015,21:2019"): el SP recibe los IDs y el año lo guarda guardarAnioEscuela
@@ -152,7 +155,8 @@ public class PerfilesController : Controller
         {
             // Las fotos reemplazadas ya no se usan
             if (fotoPerfil != null) borrarArchivo(anteriores.fotoPerfil);
-            if (fotoDni != null) borrarArchivo(anteriores.fotoDni);
+            string? fotoDniAnterior = bd.obtenerFotoDni(idUsuario);
+            if (fotoDni != null && !string.IsNullOrEmpty(fotoDniAnterior)) borrarArchivo(fotoDniAnterior);
 
             // El header y el aviso de verificación se arman con la sesión
             SesionController.guardarSesion(HttpContext.Session, resultado);
@@ -218,54 +222,32 @@ public class PerfilesController : Controller
     }
 
     // Guarda la foto del DNI tal cual en wwwroot/userData/dni/ (Program.cs bloquea esa carpeta: no se puede abrir desde la web).
-    // Devuelve la URL ("/userData/dni/...") o null si no es una imagen JPG, PNG o WEBP.
     private string? guardarFotoDni(IFormFile archivo, int idUsuario)
     {
         if (archivo.Length > pesoMaximoFoto) return null;
 
-        using (var memoria = new MemoryStream())
-        {
-            archivo.CopyTo(memoria);
-            string? extension;
-            memoria.Position = 0;
-            using (SKCodec? codec = SKCodec.Create(memoria))
-            {
-                if (codec == null) return null;
-                extension = codec.EncodedFormat switch
-                {
-                    SKEncodedImageFormat.Jpeg => ".jpg",
-                    SKEncodedImageFormat.Png => ".png",
-                    SKEncodedImageFormat.Webp => ".webp",
-                    _ => null
-                };
-            }
-            if (extension == null) return null;
+        string extension = Path.GetExtension(archivo.FileName).ToLowerInvariant();
+        if (extension != ".jpg" && extension != ".jpeg" && extension != ".png" && extension != ".webp") return null;
 
-            string carpeta = Path.Combine(entorno.WebRootPath, "userData", "dni");
-            Directory.CreateDirectory(carpeta);
-            string nombreArchivo = $"dni-{idUsuario}-{Guid.NewGuid():N}{extension}";
-            System.IO.File.WriteAllBytes(Path.Combine(carpeta, nombreArchivo), memoria.ToArray());
-            return $"/userData/dni/{nombreArchivo}";
+        string carpeta = Path.Combine(entorno.WebRootPath, "userData", "dni");
+        Directory.CreateDirectory(carpeta);
+        string nombreArchivo = $"dni-{idUsuario}-{DateTime.Now:yyyyMMddHHmmssfff}{extension}";
+        string rutaCompleta = Path.Combine(carpeta, nombreArchivo);
+
+        using (var flujo = archivo.OpenReadStream())
+        using (var destino = System.IO.File.Create(rutaCompleta))
+        {
+            flujo.CopyTo(destino);
         }
+
+        return "/userData/dni/" + nombreArchivo;
     }
 
-    // Borra una foto guardada por el sitio (solo dentro de userData/fotos-perfil o userData/dni)
-    private void borrarArchivo(string? ruta)
+    private void borrarArchivo(string? rutaRelativa)
     {
-        if (string.IsNullOrWhiteSpace(ruta)) return;
+        if (string.IsNullOrEmpty(rutaRelativa)) return;
 
-        string? rutaCompleta = null;
-        if (ruta.StartsWith("/userData/fotos-perfil/")) rutaCompleta = Path.Combine(entorno.WebRootPath, "userData", "fotos-perfil", Path.GetFileName(ruta));
-        if (ruta.StartsWith("/userData/dni/")) rutaCompleta = Path.Combine(entorno.WebRootPath, "userData", "dni", Path.GetFileName(ruta));
-        if (rutaCompleta == null) return;
-
-        try
-        {
-            if (System.IO.File.Exists(rutaCompleta)) System.IO.File.Delete(rutaCompleta);
-        }
-        catch (IOException)
-        {
-            // Si el archivo está en uso queda huérfano: no impide guardar el perfil
-        }
+        string rutaCompleta = Path.Combine(entorno.WebRootPath, rutaRelativa.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
+        if (System.IO.File.Exists(rutaCompleta)) System.IO.File.Delete(rutaCompleta);
     }
 }

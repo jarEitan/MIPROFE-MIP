@@ -57,8 +57,8 @@
     {
         string nombre = n.nombreOtro + " " + n.apellidoOtro;
         string materia = n.materia ?? "";
-        string clase = n.fechaClase == null ? "" : n.fechaClase.Value.ToString("dd/MM 'a las' HH:mm");
-        string propuesta = n.fechaPropuesta == null ? "" : n.fechaPropuesta.Value.ToString("dd/MM 'a las' HH:mm");
+        string clase = n.fechaClase == default ? "" : n.fechaClase.ToString("dd/MM 'a las' HH:mm");
+        string propuesta = n.fechaPropuesta == default ? "" : n.fechaPropuesta.ToString("dd/MM 'a las' HH:mm");
         switch (n.tipo)
         {
             case "solicitudAmistad": return ("Solicitud de amistad", nombre + " te envió una solicitud de amistad.", "Ver perfil");
@@ -66,7 +66,7 @@
             case "pedidoPorResponder":
             case "propuestaPorResponder":
                 return (n.tipo == "pedidoPorResponder" ? "Pedido de clase" : "Nuevo horario propuesto",
-                    nombre + (n.fechaPropuesta != null ? " pidió cambiar la clase de " + materia + " del " + clase + " al " + propuesta + "."
+                    nombre + (n.fechaPropuesta != default ? " pidió cambiar la clase de " + materia + " del " + clase + " al " + propuesta + "."
                         : n.tipo == "pedidoPorResponder" ? " te pidió una clase de " + materia + " para el " + clase + "." : " te propone dar la clase de " + materia + " el " + clase + "."),
                     "Responder");
             case "horarioRechazado": return ("Horario rechazado", nombre + " no aceptó el horario de la clase de " + materia + " del " + clase + ". Proponé otro o cancelá la clase.", "Proponer otro horario");
@@ -176,9 +176,9 @@
                                         {
                                             <a href="@urlDestino">Ver perfil</a>
                                         }
-                                        @if (notificacion.fecha != null)
+                                        @if (notificacion.fecha != default)
                                         {
-                                            <small>· @tiempoRelativo(notificacion.fecha.Value)</small>
+                                            <small>· @tiempoRelativo(notificacion.fecha)</small>
                                         }
                                     </p>
                                 </div>
@@ -216,9 +216,9 @@
                                     <h3>@textoNoticia.titulo</h3>
                                     <p>
                                         @textoNoticia.mensaje
-                                        @if (noticia.fecha != null)
+                                        @if (noticia.fecha != default)
                                         {
-                                            <small>· @tiempoRelativo(noticia.fecha.Value)</small>
+                                            <small>· @tiempoRelativo(noticia.fecha)</small>
                                         }
                                     </p>
                                     @if (noticia.destino == "resena")

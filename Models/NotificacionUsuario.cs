@@ -12,18 +12,18 @@ public class NotificacionUsuario
     public string tipo { get; set; } = "";
     public string grupo { get; set; } = "accion";
     public string destino { get; set; } = "";
-    public int? idClase { get; set; }
+    public int idClase { get; set; }
     public int idOtroUsuario { get; set; }
     public string nombreOtro { get; set; } = "";
     public string apellidoOtro { get; set; } = "";
-    public string? fotoOtro { get; set; }
+    public string fotoOtro { get; set; } = "";
     // Cuándo pasó (la solicitud de amistad no tiene fecha). En claseNoConcretada, si es igual a fechaClase, no se acordó un horario
-    public DateTime? fecha { get; set; }
+    public DateTime fecha { get; set; }
     // Horario de la clase y, si hay un cambio pedido, el horario nuevo (en pedidoPorResponder / propuestaPorResponder solo si es un cambio de horario)
-    public DateTime? fechaClase { get; set; }
-    public DateTime? fechaPropuesta { get; set; }
+    public DateTime fechaClase { get; set; }
+    public DateTime fechaPropuesta { get; set; }
     // En mensajesSinLeer: cuántos mensajes sin leer hay de esa persona (en el resto, 1)
     public int cantidad { get; set; }
     // Materia de la clase (null en solicitudAmistad y mensajesSinLeer)
-    public string? materia { get; set; }
+    public string materia { get; set; } = "";
 }

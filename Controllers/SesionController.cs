@@ -31,7 +31,7 @@ public class SesionController : Controller
     [ValidateAntiForgeryToken]
     public IActionResult IniciarSesion(string mail, string contrasena, string? volver)
     {
-        Usuario cuenta = new BDsesion().iniciarSesion(mail, contrasena);
+        UsuarioPrivado cuenta = new BDsesion().iniciarSesion(mail, contrasena);
 
         if (cuenta.codigo == 0)
         {
@@ -71,7 +71,7 @@ public class SesionController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public IActionResult Registrarse(Usuario registro)
+    public IActionResult Registrarse(UsuarioPrivado registro)
     {
         // Para que nadie se registre como moderador (admin) desde el formulario
         registro.tipoUsuario = (registro.tipoUsuario == "profesor" ? "profesor" : "alumno");
@@ -93,7 +93,7 @@ public class SesionController : Controller
         registro.nombre = nombre;
         registro.apellido = apellido;
 
-        Usuario cuenta = new BDsesion().registrarUsuario(registro);
+        UsuarioPrivado cuenta = new BDsesion().registrarUsuario(registro);
 
         if (cuenta.codigo == 0)
         {
@@ -126,23 +126,33 @@ public class SesionController : Controller
     // También la usa PerfilesController al guardar el perfil. Le carga a la cuenta lo que le falta para verificarse
     public static void guardarSesion(ISession sesion, Usuario cuenta)
     {
-        sesion.SetString("idUsuario", cuenta.id.ToString());
-        sesion.SetString("nombre", cuenta.nombre);
-        sesion.SetString("apellido", cuenta.apellido);
-        sesion.SetString("tipoUsuario", cuenta.tipoUsuario);
-        sesion.SetString("fotoPerfil", cuenta.fotoPerfil ?? "");
-        sesion.SetString("verificado", cuenta.verificado ? "true" : "false");
+        guardarSesion(sesion, cuenta.id, cuenta.nombre, cuenta.apellido, cuenta.tipoUsuario, cuenta.fotoPerfil, cuenta.verificado);
+    }
+
+    public static void guardarSesion(ISession sesion, UsuarioPrivado cuenta)
+    {
+        guardarSesion(sesion, cuenta.id, cuenta.nombre, cuenta.apellido, cuenta.tipoUsuario, cuenta.fotoPerfil, cuenta.verificado);
+    }
+
+    private static void guardarSesion(ISession sesion, int idUsuario, string nombre, string apellido, string tipoUsuario, string fotoPerfil, bool verificado)
+    {
+        sesion.SetString("idUsuario", idUsuario.ToString());
+        sesion.SetString("nombre", nombre);
+        sesion.SetString("apellido", apellido);
+        sesion.SetString("tipoUsuario", tipoUsuario);
+        sesion.SetString("fotoPerfil", fotoPerfil ?? "");
+        sesion.SetString("verificado", verificado ? "true" : "false");
 
         // ["el DNI", "la dirección", "tu colegio"] → "el DNI, la dirección y tu colegio"
-        cuenta.faltantes = new BD().obtenerFaltantesVerificacion(cuenta.id);
-        string datosFaltantes = string.Join(", ", cuenta.faltantes);
-        if (cuenta.faltantes.Count > 1)
+        List<string> faltantes = new BD().obtenerFaltantesVerificacion(idUsuario);
+        string datosFaltantes = string.Join(", ", faltantes);
+        if (faltantes.Count > 1)
         {
-            datosFaltantes = string.Join(", ", cuenta.faltantes.Take(cuenta.faltantes.Count - 1)) + " y " + cuenta.faltantes.Last();
+            datosFaltantes = string.Join(", ", faltantes.Take(faltantes.Count - 1)) + " y " + faltantes.Last();
         }
         sesion.SetString("datosFaltantes", datosFaltantes);
 
-        int cantidadNotificaciones = new BD().contarNotificaciones(cuenta.id);
+        int cantidadNotificaciones = new BD().contarNotificaciones(idUsuario);
         sesion.SetString("cantidadNotificaciones", cantidadNotificaciones.ToString());
     }
 }

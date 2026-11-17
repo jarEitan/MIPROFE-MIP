@@ -98,7 +98,7 @@ public class ClasesController : Controller
         if (resultado.codigo == 0 && !string.IsNullOrWhiteSpace(motivo))
         {
             string accion = resultado.estado == "Pide cancelar" ? "Pedí cancelar" : "Cancelé";
-            avisarPorChat(int.Parse(idUsuario), resultado.idOtro!.Value, accion + " la clase del " + resultado.fecha!.Value.ToString("dd/MM 'a las' HH:mm") + ". Motivo: " + motivo);
+            avisarPorChat(int.Parse(idUsuario), resultado.idOtro, accion + " la clase del " + resultado.fecha.ToString("dd/MM 'a las' HH:mm") + ". Motivo: " + motivo);
         }
         return Json(conInsignia(resultado));
     }
@@ -113,7 +113,7 @@ public class ClasesController : Controller
         ResultadoClase resultado = new BD().reubicarClase(int.Parse(idUsuario), idClase, fecha, motivo);
         if (resultado.codigo == 0 && !string.IsNullOrWhiteSpace(motivo))
         {
-            avisarPorChat(int.Parse(idUsuario), resultado.idOtro!.Value, "Pedí cambiar la clase del " + resultado.fecha!.Value.ToString("dd/MM 'a las' HH:mm") + " al " + fecha.ToString("dd/MM 'a las' HH:mm") + ". Motivo: " + motivo);
+            avisarPorChat(int.Parse(idUsuario), resultado.idOtro, "Pedí cambiar la clase del " + resultado.fecha.ToString("dd/MM 'a las' HH:mm") + " al " + fecha.ToString("dd/MM 'a las' HH:mm") + ". Motivo: " + motivo);
         }
         return Json(conInsignia(resultado));
     }
@@ -129,9 +129,9 @@ public class ClasesController : Controller
         if (aceptar)
         {
             resultado = new BD().aceptarSolicitudClase(int.Parse(idUsuario), idClase);
-            if (resultado.codigo == 0 && resultado.fechaPropuesta != null)
+            if (resultado.codigo == 0 && resultado.fechaPropuesta != default)
             {
-                avisarPorChat(int.Parse(idUsuario), resultado.idOtro!.Value, "El cambio de horario fue aceptado, el nuevo horario es: " + resultado.fechaPropuesta.Value.ToString("dd/MM 'a las' HH:mm") + ".");
+                avisarPorChat(int.Parse(idUsuario), resultado.idOtro, "El cambio de horario fue aceptado, el nuevo horario es: " + resultado.fechaPropuesta.ToString("dd/MM 'a las' HH:mm") + ".");
             }
         }
         else

@@ -238,13 +238,13 @@
                             }
 
                             <ul class="datos">
-                                <li><i class="bi bi-star-fill" aria-hidden="true"></i> @(profesor.cantidadResenas == 0 ? "Sin reseñas" : (profesor.calificacion ?? 0).ToString("0.0")) @if (profesor.cantidadResenas > 0) { <text>(@profesor.cantidadResenas)</text> }</li>
+                                <li><i class="bi bi-star-fill" aria-hidden="true"></i> @(profesor.cantidadResenas == 0 ? "Sin reseñas" : profesor.calificacion.ToString("0.0")) @if (profesor.cantidadResenas > 0) { <text>(@profesor.cantidadResenas)</text> }</li>
                                 <li><i class="bi bi-laptop" aria-hidden="true"></i> @profesor.modalidades</li>
                                 <li><i class="bi bi-mortarboard" aria-hidden="true"></i> @profesor.niveles</li>
                             </ul>
 
                             <footer>
-                                <p><strong>$ @((profesor.precioHora ?? 0).ToString("N0"))</strong> <span>/ hora</span></p>
+                                <p><strong>$ @((profesor.precioHora).ToString("N0"))</strong> <span>/ hora</span></p>
                                 <a class="boton principal chico" asp-controller="Home" asp-action="Perfil" asp-route-id="@profesor.id">Ver perfil</a>
                             </footer>
                         </article>

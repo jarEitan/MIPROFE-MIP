@@ -2,7 +2,7 @@
     ViewData["Title"] = "Crear cuenta";
     string mensaje = ViewBag.mensaje ?? "";
     Usuario registro = ViewBag.registro ?? new Usuario();
-    string fechaNacimiento = registro.fechaNacimiento?.ToString("yyyy-MM-dd") ?? "";
+    string fechaNacimiento = registro.fechaNacimiento != default ? registro.fechaNacimiento.ToString("yyyy-MM-dd") : "";
     string fechaMaxima = DateTime.Today.ToString("yyyy-MM-dd");
     string rolSolicitado = ViewBag.rol ?? "";
     string rol = registro.tipoUsuario == "profesor" || (registro.tipoUsuario == "" && rolSolicitado == "profesor") ? "profesor" : "alumno";
@@ -66,9 +66,6 @@
                                 <div class="campoConIcono">
                                     <i class="bi bi-lock" aria-hidden="true"></i>
                                     <input class="form-control" type="password" id="registroContrasena" name="contrasena" required minlength="8" placeholder="Creá una contraseña" autocomplete="new-password" aria-describedby="ayudaContrasena" />
-                                    <button class="verContrasena" type="button" data-ver-contrasena="registroContrasena" aria-label="Mostrar contraseña" aria-pressed="false">
-                                        <i class="bi bi-eye" aria-hidden="true"></i>
-                                    </button>
                                 </div>
                                 <small id="ayudaContrasena">Usá al menos 8 caracteres.</small>
                             </div>

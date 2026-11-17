@@ -18,7 +18,7 @@ public class ResultadoChat
     public int id { get; set; }
     public string nombre { get; set; } = "";
     public string apellido { get; set; } = "";
-    public string? fotoPerfil { get; set; }
+    public string fotoPerfil { get; set; } = "";
     public string tipoUsuario { get; set; } = "";
     public int marcados { get; set; }
     public bool puedeEscribir { get; set; }
@@ -32,7 +32,7 @@ public class ConversacionChat
     public int idOtroUsuario { get; set; }
     public string nombreOtro { get; set; } = "";
     public string apellidoOtro { get; set; } = "";
-    public string? fotoOtro { get; set; }
+    public string fotoOtro { get; set; } = "";
     public string tipoOtro { get; set; } = "";
     public string ultimoMensaje { get; set; } = "";
     public DateTime fechaUltimoMensaje { get; set; }
@@ -44,6 +44,6 @@ public class ConversacionChat
 public class ResultadoMensaje
 {
     public int codigo { get; set; }
-    public int? id { get; set; }
-    public DateTime? fechaEnvio { get; set; }
+    public int id { get; set; }
+    public DateTime fechaEnvio { get; set; }
 }
