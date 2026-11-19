@@ -22,9 +22,12 @@ function dibujarHistorial(contenedor, resultado, opciones) {
     }
 
     if (resultado.clases.length === 0) {
-        contenedor.append(resultado.esPropio
-            ? crearEstadoVacioHistorial("Todavía no hay clases en tu historial", "Las clases completadas, no concretadas y canceladas aparecen acá.")
-            : crearEstadoVacioHistorial("Todavía no tiene clases completadas", "Cuando termine sus primeras clases, van a aparecer acá."));
+        if (resultado.esPropio) {
+            contenedor.append(crearEstadoVacioHistorial("Todavía no hay clases en tu historial", "Las clases completadas, no concretadas y canceladas aparecen acá."));
+        } else {
+            const nombreCompleto = `${resultado.nombre} ${resultado.apellido}`.trim();
+            contenedor.append(crearEstadoVacioHistorial(`${nombreCompleto} todavía no formó parte de ninguna clase`, "Cuando termine sus primeras clases, van a aparecer acá."));
+        }
         return;
     }
 

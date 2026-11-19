@@ -303,11 +303,19 @@ public class BD
     }
 
     // Mirando el propio se ven todas las clases; mirando el de otro, solo las completadas
-    public List<ClaseHistorial> obtenerHistorialClases(int idUsuario, int idVisitante, int desde, int cantidad)
+    public ResultadoHistorial obtenerHistorialClases(int idUsuario, int idVisitante, int desde, int cantidad)
     {
         using (var connection = new SqlConnection(connectionString))
         {
-            return connection.Query<ClaseHistorial>("EXEC obtenerHistorialClases @idUsuario, @idVisitante, @desde, @cantidad", new { idUsuario = idUsuario, idVisitante = idVisitante, desde = desde, cantidad = cantidad }).ToList();
+            using (var tablas = connection.QueryMultiple("EXEC obtenerHistorialClases @idUsuario, @idVisitante, @desde, @cantidad", new { idUsuario = idUsuario, idVisitante = idVisitante, desde = desde, cantidad = cantidad }))
+            {
+                ResultadoHistorial historial = tablas.ReadFirst<ResultadoHistorial>();
+                if (historial.codigo == 0)
+                {
+                    historial.clases = tablas.Read<ClaseHistorial>().ToList();
+                }
+                return historial;
+            }
         }
     }
 
