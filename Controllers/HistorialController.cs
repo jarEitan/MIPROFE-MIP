@@ -14,6 +14,24 @@ public class HistorialController : Controller
         {
             cantidad = 20;
         }
-        return Json(new BD().obtenerHistorialClases(id, idVisitante, desde, cantidad));
+        BD bd = new BD();
+        List<ClaseHistorial> clases = bd.obtenerHistorialClases(id, idVisitante, desde, cantidad);
+        ResultadoHistorial historial = new ResultadoHistorial
+        {
+            id = id,
+            tipoUsuario = bd.obtenerTipoUsuario(id) ?? "",
+            esPropio = idVisitante == id,
+            total = clases.Count,
+            clases = clases
+        };
+        if (historial.clases.Count == 0)
+        {
+            historial.codigo = 1;
+        }
+        else
+        {
+            historial.codigo = 0;
+        }
+        return Json(historial);
     }
 }
