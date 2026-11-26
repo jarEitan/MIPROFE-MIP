@@ -451,7 +451,8 @@ function enviarPedidoDeClase() {
                     4: "Ya tenés una clase en ese horario. Elegí otro.",
                     5: "El profesor ya tiene una clase confirmada en ese horario. Elegí otro.",
                     6: "Ese profesor no da esa materia. Elegí otra.",
-                    9: textoCuentaNoVerificada
+                    9: textoCuentaNoVerificada,
+                    99: "El mensaje contiene contenido no válido. Revisalo antes de enviar el pedido."
                 };
                 mostrarMensaje(mensajePedir, mensajes[cuerpo.codigo]);
                 if (cuerpo.codigo >= 3 && cuerpo.codigo <= 5) selectorDePedido.recargar();

@@ -1,12 +1,20 @@
 using System.Globalization;
 using Microsoft.AspNetCore.Mvc;
 using MIP_MIPROFESOR.Models;
+using MIP_MIPROFESOR.Services;
 
 namespace MIP_MIPROFESOR.Controllers;
 
 // Clases entre alumno y profesor y agenda del profesor. Se llama con fetch desde clases.js, calendario.js y miAgenda.js
 public class ClasesController : Controller
 {
+    private readonly IGroqModerationService moderacion;
+
+    public ClasesController(IGroqModerationService moderacion)
+    {
+        this.moderacion = moderacion;
+    }
+
     // Lo ocupado ese día y la agenda del profesor de la pareja (el propio si quien pide es profesor)
     public IActionResult HorariosOcupados(int idOtroUsuario, DateTime dia, int? idClaseExcluir)
     {
@@ -55,15 +63,21 @@ public class ClasesController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public IActionResult EnviarPedido(int idProfesor, int idMateria, DateTime fecha, string? mensaje)
+    public async Task<IActionResult> EnviarPedido(int idProfesor, int idMateria, DateTime fecha, string? mensaje)
     {
         string? idAlumno = HttpContext.Session.GetString("idUsuario");
         if (idAlumno == null) return Unauthorized();
 
-        ResultadoClase resultado = new BD().enviarPedidoClase(int.Parse(idAlumno), idProfesor, idMateria, fecha, mensaje);
-        if (resultado.codigo == 0 && !string.IsNullOrWhiteSpace(mensaje))
+        string mensajeLimpio = mensaje?.Replace("\r\n", "\n").Trim() ?? "";
+        if (mensajeLimpio != "" && !await moderacion.EsContenidoValidoAsync(mensajeLimpio))
         {
-            avisarPorChat(int.Parse(idAlumno), idProfesor, "Te pedí una clase de " + resultado.materia + " para el " + fecha.ToString("dd/MM 'a las' HH:mm") + ". " + mensaje);
+            return Json(new { codigo = 99 });
+        }
+
+        ResultadoClase resultado = new BD().enviarPedidoClase(int.Parse(idAlumno), idProfesor, idMateria, fecha, mensajeLimpio == "" ? null : mensajeLimpio);
+        if (resultado.codigo == 0 && mensajeLimpio != "")
+        {
+            avisarPorChat(int.Parse(idAlumno), idProfesor, "Te pedí una clase de " + resultado.materia + " para el " + fecha.ToString("dd/MM 'a las' HH:mm") + ". " + mensajeLimpio);
         }
         return Json(conInsignia(resultado));
     }
