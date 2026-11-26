@@ -223,16 +223,6 @@ main {
     overflow-x: clip;
 }
 
-::selection {
-    background-color: var(--colorCeleste);
-    color: var(--colorTinta);
-}
-
-:focus-visible {
-    outline: 3px solid var(--colorFoco, var(--colorTinta));
-    outline-offset: 3px;
-}
-
 /* Sobre fondos oscuros el foco es celeste */
 .pie,
 .llamadoFinal,
@@ -2155,7 +2145,7 @@ fieldset {
 
 .perfiles .card li::before,
 .mision .card li::before {
-    content: "✓";
+    content: "X";
     display: inline-flex;
     align-items: center;
     justify-content: center;

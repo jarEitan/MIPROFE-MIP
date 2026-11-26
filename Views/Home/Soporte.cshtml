@@ -2,7 +2,6 @@
     ViewData["Title"] = "Soporte";
 }
 
-<!-- ================= CABECERA CON BUSCADOR DE AYUDA ================= -->
 <section class="cabecera">
     <div class="container">
         <h1>¿En qué te podemos ayudar hoy?</h1>
@@ -17,7 +16,6 @@
     </div>
 </section>
 
-<!-- ================= ACCESOS RÁPIDOS ================= -->
 <section class="ayuda">
     <div class="container">
         <div class="row row-cols-1 md:row-cols-3 g-3 lg:g-4">
@@ -49,7 +47,6 @@
     </div>
 </section>
 
-<!-- ================= PREGUNTAS FRECUENTES ================= -->
 <section class="preguntas" id="seccionPreguntas">
     <div class="container">
         <div class="row justify-content-center">
@@ -126,7 +123,6 @@
     </div>
 </section>
 
-<!-- ================= CONTACTO ================= -->
 <section class="contacto" id="seccionContacto">
     <div class="container">
         <div class="row justify-content-center">
@@ -136,7 +132,6 @@
                     <p>Completá el formulario y un moderador de MIP te responde por mensaje directo en tu Panel de Control.</p>
                 </div>
 
-                @* La respuesta llega por mensaje directo: hace falta una cuenta. El nombre y el correo los toma el SP de la sesión *@
                 @if (Context.Session.GetString("idUsuario") == null)
                 {
                     <div class="card estadoVacio">

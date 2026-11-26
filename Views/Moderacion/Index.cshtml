@@ -44,7 +44,7 @@
                         <h3><a asp-controller="Home" asp-action="Perfil" asp-route-id="@consulta.idUsuario">@consulta.nombre</a></h3>
                         <p>@consulta.mensaje</p>
                         @* Las denuncias del Perfil son consultas que empiezan con "Denuncia:" y nombran el perfil ("usuario con id 5").
-                           Desde ese perfil se borra la reseña (tacho) o se suspende la cuenta *@
+                           Moderación puede abrir el perfil desde el texto con el botón que arma moderacion.js. *@
                         @if (consulta.mensaje.StartsWith("Denuncia:"))
                         {
                             Match perfilDenunciado = Regex.Match(consulta.mensaje, @"usuario con id (\d+)");

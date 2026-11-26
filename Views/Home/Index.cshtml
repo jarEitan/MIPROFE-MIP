@@ -4,7 +4,6 @@
     List<Usuario> profesoresDestacados = ViewBag.profesoresDestacados ?? new List<Usuario>();
 }
 
-<!-- ================= PORTADA / BUSCADOR ================= -->
 <section class="portada">
     <div class="container">
         <div class="row align-items-center gy-5">
@@ -13,7 +12,6 @@
 
                 <p>En miProfesor creemos que aprender nunca debería depender de la suerte.</p>
 
-                @* El formulario envía a Catalogo?busqueda= *@
                 <form class="buscador" id="formularioBuscador"
                       method="get" asp-controller="Catalogo" asp-action="Index" onsubmit="return validarBusqueda()" novalidate>
                     <label for="campoBusqueda" class="visually-hidden">Buscar materia, profesor o colegio</label>
@@ -34,7 +32,6 @@
                 }
             </div>
 
-            @* Plancha de pegatinas de ejemplo, solo decorativa. La clase de cada una la ubica *@
             <div class="col-12 md:col-10 lg:col-6 mx-auto" aria-hidden="true">
                 <div class="plancha">
                     <span class="pegatina celeste tutorias" style="--giro:-4deg"><i class="bi bi-mortarboard" aria-hidden="true"></i> Tutorías entre colegios</span>
@@ -73,10 +70,8 @@
     </div>
 </section>
 
-<!-- ================= CINTA DE PALABRAS (decorativa) ================= -->
 <section class="cinta" aria-hidden="true">
     <div>
-        @* Se repite cuatro veces y se desplaza una copia: las otras tres cubren hasta las pantallas más anchas sin cortes *@
         @for (int repeticion = 0; repeticion < 4; repeticion++)
         {
             <ul>
@@ -89,7 +84,6 @@
     </div>
 </section>
 
-<!-- ================= CÓMO FUNCIONA ================= -->
 <section class="pasos" id="seccionComoFunciona">
     <div class="container">
         <div class="encabezadoSeccion">
@@ -117,7 +111,6 @@
     </div>
 </section>
 
-<!-- ================= PERFILES: ALUMNO / PROFESOR ================= -->
 <section class="perfiles">
     <div class="container">
         <div class="encabezadoSeccion">
@@ -163,7 +156,6 @@
     </div>
 </section>
 
-<!-- ================= FRASES (plancha de notas del Miro) ================= -->
 <section class="frases">
     <div class="container">
         <ul>
@@ -173,7 +165,6 @@
     </div>
 </section>
 
-<!-- ================= PROFESORES DESTACADOS ================= -->
 <section class="destacados">
     <div class="container">
         <div class="encabezadoSeccion">
@@ -195,7 +186,6 @@
                     string nombreCompleto = profesor.nombre + " " + profesor.apellido;
                     string iniciales = (profesor.nombre.Length > 0 ? profesor.nombre.Substring(0, 1) : "") + (profesor.apellido.Length > 0 ? profesor.apellido.Substring(0, 1) : "");
                     iniciales = iniciales == "" ? "?" : iniciales.ToUpper();
-                    // La descripción es HTML del editor: en la tarjeta va como texto corto
                     string resumen = System.Net.WebUtility.HtmlDecode(System.Text.RegularExpressions.Regex.Replace(profesor.descripcion ?? "", "<[^>]*>", " "));
                     resumen = System.Text.RegularExpressions.Regex.Replace(resumen, @"\s+", " ").Trim();
                     if (resumen.Length > 140) resumen = resumen.Substring(0, 137).TrimEnd() + "...";
@@ -263,7 +253,6 @@
     </div>
 </section>
 
-<!-- ================= PREGUNTAS FRECUENTES ================= -->
 <section class="preguntas">
     <div class="container">
         <div class="row justify-content-center">
@@ -340,7 +329,6 @@
     </div>
 </section>
 
-<!-- ================= LLAMADO FINAL ================= -->
 <section class="llamadoFinal">
     <div class="container">
         <div class="row align-items-center gy-3">

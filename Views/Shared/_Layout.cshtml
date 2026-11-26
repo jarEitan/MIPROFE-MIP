@@ -7,7 +7,6 @@
     <meta name="theme-color" content="#FF5757" />
     <title>@ViewData["Title"] | MiProfesor (MIP)</title>
 
-    @* Open Graph: vista previa al compartir el link *@
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="MiProfesor (MIP)" />
     <meta property="og:title" content="@ViewData["Title"] | MiProfesor (MIP)" />
@@ -19,13 +18,10 @@
     <link rel="preload" href="~/fonts/erasBoldItc.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="~/fonts/fredokaLatin.woff2" as="font" type="font/woff2" crossorigin />
 
-    @* Bootstrap 6 (alpha): CSS con @layer, por eso site.css (sin layer) siempre gana sin !important *@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/lib/bootstrap-icons/font/bootstrap-icons.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
-@* Todo lo que se repite en todas las páginas está acá (no hay partials).
-   Claves de sesión: "idUsuario", "nombre", "apellido", "tipoUsuario", "fotoPerfil", "verificado", "datosFaltantes" y "cantidadNotificaciones". *@
 @{
     string tipoUsuarioSesion = Context.Session.GetString("tipoUsuario") ?? "";
     string idUsuarioSesion = Context.Session.GetString("idUsuario") ?? "";
@@ -57,8 +53,6 @@
 <body data-tipo-usuario="@tipoUsuarioSesion">
     <a class="saltarContenido" href="#contenido">Saltar al contenido</a>
 
-    <!-- ================= HEADER ================= -->
-    @* Cambia según el tipo de usuario: sin sesión → invitado. En pantallas < lg el menú es un drawer lateral (<dialog>); desde lg queda en línea *@
     <header class="encabezado" id="encabezado">
         <nav class="navbar lg:navbar-expand">
             <div class="container">
@@ -125,7 +119,6 @@
                         </ul>
 
                         <div class="acciones">
-                            @* Buscador de usuarios: la lupa se agranda y se hace un campo. Los usuarios se piden recién con la primera letra (site.js) *@
                             <div class="buscadorUsuarios" id="buscadorUsuarios">
                                 <div class="cajaBuscadorUsuarios">
                                     <button type="button" class="botonLupa" id="botonBuscarUsuarios" aria-label="Buscar usuarios" aria-expanded="false" aria-controls="resultadosUsuarios"><i class="bi bi-search" aria-hidden="true"></i></button>
@@ -141,17 +134,14 @@
                             }
                             else
                             {
-                                @* El moderador (admin) no tiene Panel de Control: su acceso es Moderación, en el menú *@
                                 @if (tipoUsuarioSesion != "admin")
                                 {
                                     <a class="boton secundario" asp-controller="Home" asp-action="PanelControl">
                                         <i class="bi bi-bar-chart-line" aria-hidden="true"></i> Panel de Control
-                                        @* Siempre está en el HTML (oculta si no hay nada): site.js la actualiza con fetch a /Notificaciones/Contar *@
                                         <span class="badge theme-primary" id="insigniaNotificaciones" aria-label="@cantidadNotificaciones notificaciones" @(cantidadNotificaciones == "0" ? "hidden" : null)>@cantidadNotificaciones</span>
                                     </a>
                                 }
 
-                                @* Nombre y foto llevan al perfil (ahí está el botón Cerrar sesión) *@
                                 <a class="usuario" asp-controller="Home" asp-action="Perfil" asp-route-id="@idUsuarioSesion" aria-label="Ir a mi perfil">
                                     @if (fotoPerfil != "")
                                     {
@@ -175,8 +165,7 @@
         </nav>
     </header>
 
-    <!-- ================= AVISO: CUENTA NO VERIFICADA ================= -->
-    @* Estilo Pop up del UI Kit. Se puede cerrar hasta la próxima sesión (site.js lo recuerda en sessionStorage) *@
+
     @if (mostrarAvisoVerificacion)
     {
         <div class="avisoVerificacion" id="avisoVerificacion" role="status" hidden>
@@ -217,12 +206,11 @@
         </div>
     }
 
-    <!-- ================= MAIN ================= -->
     <main role="main" id="contenido">
         @RenderBody()
     </main>
 
-    <!-- ================= FOOTER ================= -->
+
     <footer class="pie">
         <div class="container">
             <div class="row g-4">
@@ -273,10 +261,7 @@
         </div>
     </footer>
 
-    <!-- ================= DIÁLOGO: PEDIR CLASE ================= -->
-    @* En todas las páginas para los alumnos: lo abren los botones [data-pedir-clase] (data-id-profesor y data-nombre-profesor)
-       del Catálogo y del Perfil. Lo maneja site.js (abrirPedidoDeClase) y lo manda con fetch a /Clases/EnviarPedido.
-       Para otros usuarios el botón avisa o lleva a Iniciar sesión. *@
+
     @if (tipoUsuarioSesion == "alumno")
     {
         <dialog class="dialog" id="dialogoPedirClase" aria-labelledby="tituloPedirClase">
@@ -334,9 +319,7 @@
         </dialog>
     }
 
-    <!-- ================= DIÁLOGO: DAR RESEÑA ================= -->
-    @* Alumnos y profesores con sesión. Lo abre cualquier botón [data-dar-resena] (data-id-usuario y data-nombre-usuario):
-       la estrella del Perfil y "Dar reseña" del Historial. Lo maneja site.js (abrirResena / enviarResena) y lo manda con fetch a /Resenas/Dar *@
+
     @if (tipoUsuarioSesion == "alumno" || tipoUsuarioSesion == "profesor")
     {
         <dialog class="dialog" id="dialogoDarResena" aria-labelledby="tituloDarResena">
@@ -380,13 +363,10 @@
         </dialog>
     }
 
-    @* Snackbar del UI Kit: avisos cortos abajo de la pantalla (mostrarSnackbar en site.js) *@
     <div class="snackbar" id="snackbar" role="status" aria-live="polite" hidden></div>
 
-    @* Bootstrap 6 es ESM: se carga como módulo (ya no existe window.bootstrap). jQuery no se usa. *@
     <script type="module" src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-    @* Clases y notificaciones: botones Pedir clase, insignia del header y Panel de Control *@
     <script src="~/js/clases.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

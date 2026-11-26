@@ -11,7 +11,6 @@
     List<string> nivelesElegidos = ViewBag.nivelesElegidos;
 }
 
-<!-- ================= CABECERA ================= -->
 <section class="cabecera">
     <div class="container">
         <div class="row align-items-center g-4">
@@ -20,7 +19,6 @@
                 <p>Filtrá por materia, colegio, modalidad y nivel. Todos los precios son por hora y los ves antes de contactar.</p>
             </div>
 
-            @* Pegatinas decorativas: la visibilidad responsive va en la columna, nunca sobre .pegatina *@
             <div class="col-12 md:col-5 d-none md:d-block" aria-hidden="true">
                 <div class="plancha">
                     <span class="pegatina coral" style="--giro:-5deg">Flexible</span>
@@ -32,7 +30,6 @@
     </div>
 </section>
 
-<!-- ================= FILTROS + RESULTADOS ================= -->
 <section class="catalogo">
     <div class="container">
         <div class="row g-4">
@@ -42,7 +39,6 @@
                         <i class="bi bi-funnel" aria-hidden="true"></i> Filtros
                     </button>
 
-                    @* En pantallas < lg los filtros son un drawer lateral; desde lg quedan en línea (lg:drawer) *@
                     <dialog class="lg:drawer drawer-start" tabindex="-1" id="panelFiltros" aria-labelledby="tituloFiltros">
                         <div class="drawer-header">
                             <span class="drawer-title" id="tituloFiltros">Filtros</span>
@@ -50,7 +46,6 @@
                         </div>
 
                         <div class="drawer-body">
-                            @* Sin envío: al aplicar, catalogo.js lee los campos y pide los resultados con fetch a Catalogo/Buscar *@
                             <form id="formularioFiltros" data-pagina="@ViewBag.pagina" data-por-pagina="@ViewBag.porPagina">
                                 <div class="form-field">
                                     <label for="filtroTexto">Buscar</label>
@@ -128,7 +123,6 @@
                     <p>No pudimos cargar el catálogo. Probá de nuevo en un rato.</p>
                 </div>
 
-                @* Paginación: flechas, número de página y cantidad de tarjetas por página *@
                 <nav class="paginador" id="paginador" aria-label="Páginas del catálogo" hidden>
                     <div class="paginas">
                         <button class="boton contorno chico" type="button" id="paginaAnterior" aria-label="Página anterior"><i class="bi bi-chevron-left" aria-hidden="true"></i> Anterior</button>
