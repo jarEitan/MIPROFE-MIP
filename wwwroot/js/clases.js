@@ -146,7 +146,7 @@ function inicializarSolicitudesDeAmistad() {
     });
 }
 
-// ----- Selector de día y hora (.selectorHorario: "Pedir clase" en _Layout y "Cambiar horario" en el Panel) -----
+// ----- Selector de día y hora (.selectorHorario: "Pedir clase" en Perfil y Catálogo; "Cambiar horario" en el Panel) -----
 function minutosDeHora(texto) {
     const [horas, minutos] = texto.split(":").map(Number);
     return horas * 60 + minutos;
@@ -379,7 +379,7 @@ function cerrarDialogo(idDialogo) {
     document.getElementById(idDialogo)?.close();
 }
 
-// ----- Pedir clase (botones [data-pedir-clase] del Catálogo y del Perfil) -----
+// ----- Pedir clase (botones [data-pedir-clase] del Catálogo, del Perfil y del historial del Panel) -----
 let selectorDePedido = null;
 
 function inicializarPedidoDeClase() {

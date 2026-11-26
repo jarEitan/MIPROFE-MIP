@@ -3694,7 +3694,8 @@ fieldset {
 }
 
 .diasMes .dia.otroMes .numero {
-    color: var(--colorTextoSuave);
+    color: var(--colorTinta);
+    background-color: var(--colorCoralSuave);
 }
 
 @media (hover: hover) {

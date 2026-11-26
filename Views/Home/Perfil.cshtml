@@ -99,7 +99,7 @@
                         }
                         @* Botones sociales: salen de las tablas Amigos, Mensajes y Resenas. Sin sesión llevan a Iniciar sesión.
                            Mensaje abre el chat con esta persona en el Panel de Control (chat.js). Agregar amigo cambia según cómo
-                           estén los dos (AmigosController) y la estrella abre "Dar reseña" (diálogo en _Layout, ResenasController). *@
+                           estén los dos (AmigosController) y la estrella abre "Dar reseña" (ResenasController). *@
                         @if (!esProfesor)
                         {
                             <button class="boton principal" type="button" id="botonPedirClasePerfil" data-pedir-clase data-id-profesor="@idPerfil" data-nombre-profesor="" data-solo-profesor hidden>
@@ -481,3 +481,94 @@
         </div>
     </dialog>
 }
+
+<!-- ================= MODAL: PEDIR CLASE ================= -->
+@if (Context.Session.GetString("tipoUsuario") == "alumno")
+{
+    <dialog class="dialog" id="dialogoPedirClase" aria-labelledby="tituloPedirClase">
+        <form id="formularioPedirClase" onsubmit="return enviarPedidoDeClase()" novalidate>
+            @Html.AntiForgeryToken()
+            <div class="dialog-header">
+                <h2 class="dialog-title" id="tituloPedirClase">Pedir una clase</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="dialog" aria-label="Cerrar"></button>
+            </div>
+            <div class="dialog-body">
+                <p>Elegí cuándo querés tener la clase con <strong id="nombreProfesorPedido"></strong>. Te avisamos apenas responda.</p>
+                <div class="form-field">
+                    <label for="materiaPedido">Materia</label>
+                    <select class="form-control" id="materiaPedido"></select>
+                </div>
+                <div class="selectorHorario" data-selector-horario>
+                    <p class="resumenAgenda" data-resumen-agenda hidden></p>
+                    <div class="form-field">
+                        <label id="pedidoEtiquetaDia">Día</label>
+                        <div class="tiraDias" data-campo-dia tabindex="-1" role="group" aria-labelledby="pedidoEtiquetaDia">
+                            <button class="flecha" type="button" data-mover-tira="-1" aria-label="Días anteriores"><i class="bi bi-chevron-left" aria-hidden="true"></i></button>
+                            <div class="dias" data-dias></div>
+                            <button class="flecha" type="button" data-mover-tira="1" aria-label="Días siguientes"><i class="bi bi-chevron-right" aria-hidden="true"></i></button>
+                        </div>
+                    </div>
+                    <div class="form-field">
+                        <label id="pedidoEtiquetaHora">Hora de inicio</label>
+                        <div class="franjas" data-franjas role="group" aria-labelledby="pedidoEtiquetaHora" aria-live="polite">
+                            <p class="ayudaFranjas">Elegí primero un día.</p>
+                        </div>
+                        <small>Cada clase dura 60 minutos. Las horas tachadas no están disponibles (ocupadas o a menos de 1 hora).</small>
+                    </div>
+                </div>
+                <div class="form-field">
+                    <label for="mensajePedido">Mensaje para el profesor (opcional)</label>
+                    <textarea class="form-control" id="mensajePedido" maxlength="500" rows="2" placeholder="Ej.: Tengo prueba de derivadas"></textarea>
+                    <small>Le llega por el chat junto con el pedido.</small>
+                </div>
+                <p class="mensajeError" id="mensajePedirClase" role="alert"></p>
+            </div>
+            <div class="dialog-footer">
+                <button type="button" class="boton contorno chico" data-bs-dismiss="dialog">Cancelar</button>
+                <button type="submit" class="boton principal chico" id="botonEnviarPedido"><i class="bi bi-send" aria-hidden="true"></i> Enviar pedido</button>
+            </div>
+        </form>
+    </dialog>
+}
+
+@if (Context.Session.GetString("tipoUsuario") == "alumno" || Context.Session.GetString("tipoUsuario") == "profesor")
+{
+    <dialog class="dialog" id="dialogoDarResena" aria-labelledby="tituloDarResena">
+        <form id="formularioDarResena" onsubmit="return enviarResena()" novalidate>
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="idReceptor" id="idReceptorResena" />
+            <div class="dialog-header">
+                <h2 class="dialog-title" id="tituloDarResena">Reseña para <span id="nombreResena"></span></h2>
+                <button type="button" class="btn-close" data-bs-dismiss="dialog" aria-label="Cerrar"></button>
+            </div>
+            <div class="dialog-body">
+                <fieldset class="estrellasResena">
+                    <legend>¿Cómo fueron las clases?</legend>
+                    <div class="filaEstrellas">
+                        @for (int estrella = 1; estrella <= 5; estrella++)
+                        {
+                            <label>
+                                <input class="visually-hidden" type="radio" name="puntuacion" value="@estrella" />
+                                <i class="bi bi-star-fill" aria-hidden="true"></i>
+                                <span class="visually-hidden">@estrella @(estrella == 1 ? "estrella" : "estrellas")</span>
+                            </label>
+                        }
+                        <span class="textoPuntuacion" id="textoPuntuacion" aria-hidden="true"></span>
+                    </div>
+                </fieldset>
+                <div class="form-field">
+                    <label for="descripcionResena">Comentario (opcional)</label>
+                    <textarea class="form-control" id="descripcionResena" name="descripcion" maxlength="500" rows="4" placeholder="Contá qué te sirvió y qué se podría mejorar"></textarea>
+                    <small id="contadorResena">0 / 500</small>
+                </div>
+                <p class="mensajeError" id="mensajeDarResena" role="alert"></p>
+            </div>
+            <div class="dialog-footer">
+                <button type="button" class="boton contorno chico" data-bs-dismiss="dialog">Cancelar</button>
+                <button type="submit" class="boton principal chico" id="botonEnviarResena"><i class="bi bi-send" aria-hidden="true"></i> Publicar reseña</button>
+            </div>
+        </form>
+    </dialog>
+}
+
+<!-- ================= DIÁLOGO: AMIGOS ================= -->

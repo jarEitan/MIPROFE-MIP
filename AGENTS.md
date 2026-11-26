@@ -16,7 +16,6 @@ Reglas de código: **[Info/systemPrompt.md](Info/systemPrompt.md)** (obligatorio
 | **Views (Razor)** | [guiaDeEstilo.md](Info/guiaDeEstilo.md) sección 3 + bloque "Frontend" de [systemPrompt.md](Info/systemPrompt.md) |
 | **JS** | [guiaDeEstilo.md](Info/guiaDeEstilo.md) sección 4 + bloque "Frontend" de [systemPrompt.md](Info/systemPrompt.md) |
 | **Avisos (snackbar) y modales de confirmación** | [guiaNotificaciones.md](Info/guiaNotificaciones.md) |
-| **Qué sigue / qué falta** | [progreso.md](Info/progreso.md) |
 | **Antes de dar algo por terminado** | [guiaDeEstilo.md](Info/guiaDeEstilo.md) sección 7 |
 
 ## Reglas de trabajo
@@ -61,7 +60,5 @@ Reglas de código: **[Info/systemPrompt.md](Info/systemPrompt.md)** (obligatorio
 | Agenda / calendario | `ClasesController`: Calendario, HorariosOcupados, DiasConAgenda, MiAgenda, GuardarAgenda, BloquearDia, DesbloquearDia | `obtenerCalendarioClases`, `obtenerContadoresClases`, `obtenerHorariosOcupados`, `obtenerDisponibilidad`, `borrarDisponibilidadSemanal`, `agregarFranja`, `bloquearDia`, `desbloquearDia` |
 
 Cuentas suspendidas: `tipoUsuario` = `alumnoBaneado` / `profesorBaneado`. Pueden iniciar sesión y mirar; Program.cs les devuelve 403 en todo POST salvo Sesión y Soporte.
-
-Pendiente (sin hacer): sugerencias del buscador, filtros avanzados, pedido de un alumno por un profesor. Detalle en [progreso.md](Info/progreso.md).
 
 Mantener este índice al día: si agregás o renombrás un controlador, acción o método de `BD.cs`, actualizá la tabla.

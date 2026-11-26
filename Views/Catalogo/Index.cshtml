@@ -144,6 +144,54 @@
     </div>
 </section>
 
+@if (Context.Session.GetString("tipoUsuario") == "alumno")
+{
+    <dialog class="dialog" id="dialogoPedirClase" aria-labelledby="tituloPedirClase">
+        <form id="formularioPedirClase" onsubmit="return enviarPedidoDeClase()" novalidate>
+            @Html.AntiForgeryToken()
+            <div class="dialog-header">
+                <h2 class="dialog-title" id="tituloPedirClase">Pedir una clase</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="dialog" aria-label="Cerrar"></button>
+            </div>
+            <div class="dialog-body">
+                <p>Elegí cuándo querés tener la clase con <strong id="nombreProfesorPedido"></strong>. Te avisamos apenas responda.</p>
+                <div class="form-field">
+                    <label for="materiaPedido">Materia</label>
+                    <select class="form-control" id="materiaPedido"></select>
+                </div>
+                <div class="selectorHorario" data-selector-horario>
+                    <p class="resumenAgenda" data-resumen-agenda hidden></p>
+                    <div class="form-field">
+                        <label id="pedidoEtiquetaDia">Día</label>
+                        <div class="tiraDias" data-campo-dia tabindex="-1" role="group" aria-labelledby="pedidoEtiquetaDia">
+                            <button class="flecha" type="button" data-mover-tira="-1" aria-label="Días anteriores"><i class="bi bi-chevron-left" aria-hidden="true"></i></button>
+                            <div class="dias" data-dias></div>
+                            <button class="flecha" type="button" data-mover-tira="1" aria-label="Días siguientes"><i class="bi bi-chevron-right" aria-hidden="true"></i></button>
+                        </div>
+                    </div>
+                    <div class="form-field">
+                        <label id="pedidoEtiquetaHora">Hora de inicio</label>
+                        <div class="franjas" data-franjas role="group" aria-labelledby="pedidoEtiquetaHora" aria-live="polite">
+                            <p class="ayudaFranjas">Elegí primero un día.</p>
+                        </div>
+                        <small>Cada clase dura 60 minutos. Las horas tachadas no están disponibles (ocupadas o a menos de 1 hora).</small>
+                    </div>
+                </div>
+                <div class="form-field">
+                    <label for="mensajePedido">Mensaje para el profesor (opcional)</label>
+                    <textarea class="form-control" id="mensajePedido" maxlength="500" rows="2" placeholder="Ej.: Tengo prueba de derivadas"></textarea>
+                    <small>Le llega por el chat junto con el pedido.</small>
+                </div>
+                <p class="mensajeError" id="mensajePedirClase" role="alert"></p>
+            </div>
+            <div class="dialog-footer">
+                <button type="button" class="boton contorno chico" data-bs-dismiss="dialog">Cancelar</button>
+                <button type="submit" class="boton principal chico" id="botonEnviarPedido"><i class="bi bi-send" aria-hidden="true"></i> Enviar pedido</button>
+            </div>
+        </form>
+    </dialog>
+}
+
 @section Scripts {
     <script src="~/js/catalogo.js" asp-append-version="true"></script>
 }

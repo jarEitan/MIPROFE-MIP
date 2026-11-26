@@ -1827,7 +1827,7 @@ function actualizarUsuarioEnEncabezado(usuario) {
 
 // ================= INICIALIZACIÓN =================
 // ================= RESEÑAS =================
-// "Dar reseña" (diálogo en _Layout): la estrella del Perfil y el botón del Historial ([data-dar-resena] con
+// "Dar reseña" (diálogo en Perfil y Panel): la estrella del Perfil y el botón del Historial ([data-dar-resena] con
 // data-id-usuario y data-nombre-usuario). El servidor (SP darResena) revisa que hayan tenido una clase completada.
 const textosPuntuacion = ["", "Muy mala", "Mala", "Regular", "Buena", "Excelente"];
 
@@ -1955,7 +1955,7 @@ function enviarResena() {
 // ================= HEADER: buscador de usuarios =================
 // Los usuarios se piden recién con la primera letra escrita y de a 20 (el TOP del SP buscarUsuarios).
 // Cada respuesta se guarda por texto: al borrar letras no se vuelve a pedir. Si una búsqueda trajo menos de 20,
-// ahí están todos los que coinciden, así que al agregar letras se filtra acá (salvo un ID, que se busca exacto).
+// ahí están todos los que coinciden, así que al agregar letras se filtra aca (salvo un ID, que se busca exacto).
 const usuariosPorBusqueda = 20;
 const busquedasDeUsuarios = new Map();
 let temporizadorBusquedaUsuarios = null;
