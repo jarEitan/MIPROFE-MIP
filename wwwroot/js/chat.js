@@ -334,6 +334,8 @@ function enviarMensajeDelChat() {
                 mostrarSnackbar("Esta persona no existe o no se le pueden mandar mensajes.", "error");
             } else if (cuerpo.codigo == 3) {
                 mostrarSnackbar("El mensaje no puede estar vacío ni pasar los 1000 caracteres.", "error");
+            } else if (cuerpo.codigo == 99) {
+                mostrarSnackbar("Contenido no válido.", "error");
             } else if (cuerpo.codigo == 9) {
                 mostrarSnackbar(textoCuentaNoVerificada, "error");
             } else {

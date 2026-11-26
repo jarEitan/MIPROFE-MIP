@@ -3,6 +3,7 @@ using System.Text.RegularExpressions;
 using Ganss.Xss;
 using Microsoft.AspNetCore.Mvc;
 using MIP_MIPROFESOR.Models;
+using MIP_MIPROFESOR.Services;
 using SkiaSharp;
 
 namespace MIP_MIPROFESOR.Controllers;
@@ -14,10 +15,12 @@ public class PerfilesController : Controller
     private const int ladoFotoPerfil = 256;
 
     private readonly IWebHostEnvironment entorno;
+    private readonly IGroqModerationService moderacion;
 
-    public PerfilesController(IWebHostEnvironment entorno)
+    public PerfilesController(IWebHostEnvironment entorno, IGroqModerationService moderacion)
     {
         this.entorno = entorno;
+        this.moderacion = moderacion;
     }
 
     // Etiquetas que deja pasar el editor de texto enriquecido (Quill). Todo lo demás se borra.
@@ -105,8 +108,10 @@ public class PerfilesController : Controller
     [HttpPost]
     [ValidateAntiForgeryToken]
     [RequestSizeLimit(12 * 1024 * 1024)]
-    public IActionResult GuardarPerfil(Usuario edicion, IFormFile? archivoFotoPerfil, IFormFile? archivoFotoDni)
+    public async Task<IActionResult> GuardarPerfil(Usuario edicion, IFormFile? archivoFotoPerfil, IFormFile? archivoFotoDni)
     {
+        if (edicion == null) return Json(new Usuario { codigo = 3 });
+
         string? idSesion = HttpContext.Session.GetString("idUsuario");
         if (idSesion == null) return Unauthorized();
         int idUsuario = int.Parse(idSesion);
@@ -119,65 +124,83 @@ public class PerfilesController : Controller
         // Se valida antes de tocar la BD. El tipo sale de la sesión, no del formulario
         if (HttpContext.Session.GetString("tipoUsuario") == "profesor" && !default(DateTime).Equals(edicion.fechaNacimiento) && !SesionController.esMayorDeEdad(edicion.fechaNacimiento)) return Json(new Usuario { codigo = 6 });
 
-        BD bd = new BD();
-        Usuario anteriores = bd.obtenerDatosEdicion(idUsuario);
         edicion.descripcion = limpiarDescripcion(edicion.descripcion) ?? "";
         if (edicion.descripcion.Length > 5000) return Json(new Usuario { codigo = 3 });
 
         edicion.mail = (edicion.mail ?? "").Trim().ToLowerInvariant();
-        edicion.dni = limpiarTexto(edicion.dni.Replace(".", "").Replace("-", "").Replace(" ", "")) ?? "";
+        edicion.dni = limpiarTexto((edicion.dni ?? "").Replace(".", "").Replace("-", "").Replace(" ", "")) ?? "";
         edicion.direccion = limpiarTexto(edicion.direccion) ?? "";
-        edicion.titulos = edicion.titulos.Where(titulo => !string.IsNullOrWhiteSpace(titulo)).Select(titulo => titulo.Trim()).ToList();
+        edicion.titulos = (edicion.titulos ?? new List<string>()).Where(titulo => !string.IsNullOrWhiteSpace(titulo)).Select(titulo => titulo.Trim()).ToList();
 
         // Los profesores mandan cada colegio con el año desde el que dan clase ahí ("20:2015,21:2019"): el SP recibe los IDs y el año lo guarda guardarAnioEscuela
         string[] escuelas = (edicion.idsEscuelas ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries);
         edicion.idsEscuelas = string.Join(",", escuelas.Select(escuela => escuela.Split(':')[0]));
 
-        string? fotoPerfil = null;
-        string? fotoDni = null;
-        if (archivoFotoPerfil != null)
+        string descripcionSinHtml = WebUtility.HtmlDecode(Regex.Replace(edicion.descripcion, "<[^>]+>", " ")).Trim();
+        string textoModeracion = string.Join("\n", new[]
         {
-            fotoPerfil = guardarFotoPerfil(archivoFotoPerfil, idUsuario);
-            if (fotoPerfil == null) return Json(new Usuario { codigo = 4 });
-        }
-        if (archivoFotoDni != null)
+            edicion.nombre,
+            edicion.apellido,
+            descripcionSinHtml,
+            edicion.direccion,
+            string.Join(", ", edicion.titulos)
+        }.Where(texto => !string.IsNullOrWhiteSpace(texto)));
+
+        if (await moderacion.EsContenidoValidoAsync(textoModeracion))
         {
-            fotoDni = guardarFotoDni(archivoFotoDni, idUsuario);
-            if (fotoDni == null)
+            BD bd = new BD();
+            Usuario anteriores = bd.obtenerDatosEdicion(idUsuario);
+
+            string? fotoPerfil = null;
+            string? fotoDni = null;
+            if (archivoFotoPerfil != null)
             {
-                borrarArchivo(fotoPerfil);
-                return Json(new Usuario { codigo = 4 });
+                fotoPerfil = guardarFotoPerfil(archivoFotoPerfil, idUsuario);
+                if (fotoPerfil == null) return Json(new Usuario { codigo = 4 });
             }
-        }
-
-        Usuario resultado = bd.guardarPerfilCompleto(idUsuario, edicion, fotoPerfil, fotoDni);
-        if (resultado.codigo == 0)
-        {
-            // Las fotos reemplazadas ya no se usan
-            if (fotoPerfil != null) borrarArchivo(anteriores.fotoPerfil);
-            string? fotoDniAnterior = bd.obtenerFotoDni(idUsuario);
-            if (fotoDni != null && !string.IsNullOrEmpty(fotoDniAnterior)) borrarArchivo(fotoDniAnterior);
-
-            // El header y el aviso de verificación se arman con la sesión
-            SesionController.guardarSesion(HttpContext.Session, resultado);
-
-            // Sin año válido el colegio queda sin año, y el resto del perfil ya quedó guardado
-            if (resultado.tipoUsuario == "profesor")
+            if (archivoFotoDni != null)
             {
-                foreach (string escuela in escuelas)
+                fotoDni = guardarFotoDni(archivoFotoDni, idUsuario);
+                if (fotoDni == null)
                 {
-                    string[] partes = escuela.Split(':');
-                    int.TryParse(partes.Length > 1 ? partes[1] : "", out int anio);
-                    if (bd.guardarAnioEscuela(idUsuario, int.Parse(partes[0]), anio) != 0) return Json(new Usuario { codigo = 3 });
+                    borrarArchivo(fotoPerfil);
+                    return Json(new Usuario { codigo = 4 });
                 }
             }
+
+            Usuario resultado = bd.guardarPerfilCompleto(idUsuario, edicion, fotoPerfil, fotoDni);
+            if (resultado.codigo == 0)
+            {
+                // Las fotos reemplazadas ya no se usan
+                if (fotoPerfil != null) borrarArchivo(anteriores.fotoPerfil);
+                string? fotoDniAnterior = bd.obtenerFotoDni(idUsuario);
+                if (fotoDni != null && !string.IsNullOrEmpty(fotoDniAnterior)) borrarArchivo(fotoDniAnterior);
+
+                // El header y el aviso de verificación se arman con la sesión
+                SesionController.guardarSesion(HttpContext.Session, resultado);
+
+                // Sin año válido el colegio queda sin año, y el resto del perfil ya quedó guardado
+                if (resultado.tipoUsuario == "profesor")
+                {
+                    foreach (string escuela in escuelas)
+                    {
+                        string[] partes = escuela.Split(':');
+                        int.TryParse(partes.Length > 1 ? partes[1] : "", out int anio);
+                        if (bd.guardarAnioEscuela(idUsuario, int.Parse(partes[0]), anio) != 0) return Json(new Usuario { codigo = 3 });
+                    }
+                }
+            }
+            else
+            {
+                borrarArchivo(fotoPerfil);
+                borrarArchivo(fotoDni);
+            }
+            return Json(resultado);
         }
         else
         {
-            borrarArchivo(fotoPerfil);
-            borrarArchivo(fotoDni);
+            return Json(new Usuario { codigo = 99 });
         }
-        return Json(resultado);
     }
 
     // Recorta al centro, achica a 256x256 y guarda como WEBP en wwwroot/userData/fotos-perfil/.

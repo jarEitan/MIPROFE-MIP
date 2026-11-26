@@ -1790,6 +1790,10 @@ function guardarPerfil() {
                 errorEnCampoDeEdicion(campo("edicionNombre"), mensajeNombreInvalido);
             } else if (respuesta.codigo == 6) {
                 errorEnCampoDeEdicion(campo("edicionFechaNacimiento"), mensajeProfesorMenor);
+            } else if (respuesta.codigo == 99) {
+                const dialogoEditarPerfil = document.getElementById("dialogoEditarPerfil");
+                if (dialogoEditarPerfil?.open) dialogoEditarPerfil.close();
+                mostrarSnackbar("Contenido no válido.", "error");
             } else if (respuesta.codigo == 3) {
                 mostrarMensaje(mensajeEditarPerfil, "Revisá los datos: nombre y apellido de hasta 50 caracteres, dirección de hasta 200, hasta 10 títulos, hasta 10 materias y 5 colegios, y el año de cada colegio.");
             } else {
@@ -1928,6 +1932,10 @@ function enviarResena() {
                 if (document.getElementById("perfil")?.dataset.idPerfil === datos.get("idReceptor")) cargarPerfil();
             } else if (respuesta.codigo == 1) {
                 mostrarMensaje(mensaje, "Podés dejar una reseña después de tener una clase con esta persona.");
+            } else if (respuesta.codigo == 99) {
+                const dialogoDarResena = document.getElementById("dialogoDarResena");
+                if (dialogoDarResena?.open) dialogoDarResena.close();
+                mostrarSnackbar("Contenido no válido.", "error");
             } else if (respuesta.codigo == 9) {
                 mostrarMensaje(mensaje, textoCuentaNoVerificada);
             } else {

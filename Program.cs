@@ -1,5 +1,6 @@
 using System.Globalization;
 using MIP_MIPROFESOR.Models;
+using MIP_MIPROFESOR.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +12,7 @@ CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("es-AR");
 builder.Services.AddControllersWithViews();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession();
+builder.Services.AddHttpClient<IGroqModerationService, GroqModerationService>();
 
 var app = builder.Build();
 

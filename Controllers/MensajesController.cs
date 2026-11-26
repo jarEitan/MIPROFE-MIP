@@ -1,11 +1,19 @@
 using Microsoft.AspNetCore.Mvc;
 using MIP_MIPROFESOR.Models;
+using MIP_MIPROFESOR.Services;
 
 namespace MIP_MIPROFESOR.Controllers;
 
 // Chat del Panel de Control. Se llama con fetch desde chat.js y devuelve JSON
 public class MensajesController : Controller
 {
+    private readonly IGroqModerationService moderacion;
+
+    public MensajesController(IGroqModerationService moderacion)
+    {
+        this.moderacion = moderacion;
+    }
+
     public IActionResult Conversaciones()
     {
         int idUsuario = int.Parse(HttpContext.Session.GetString("idUsuario") ?? "0");
@@ -28,11 +36,24 @@ public class MensajesController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public IActionResult Enviar(int idReceptor, string? contenido)
+    public async Task<IActionResult> Enviar(int idReceptor, string? contenido)
     {
         string? idEmisor = HttpContext.Session.GetString("idUsuario");
         if (idEmisor == null) return Unauthorized();
 
-        return Json(new BD().enviarMensaje(int.Parse(idEmisor), idReceptor, contenido?.Trim()));
+        string? contenidoLimpio = contenido?.Trim();
+        if (string.IsNullOrWhiteSpace(contenidoLimpio) || contenidoLimpio.Length > 1000)
+        {
+            return Json(new { codigo = 3 });
+        }
+
+        if (await moderacion.EsContenidoValidoAsync(contenidoLimpio))
+        {
+            return Json(new BD().enviarMensaje(int.Parse(idEmisor), idReceptor, contenidoLimpio));
+        }
+        else
+        {
+            return Json(new { codigo = 99 });
+        }
     }
 }
